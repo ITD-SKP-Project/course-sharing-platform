@@ -1,5 +1,8 @@
-<script>
+<script lang="ts">
 	import '../app.pcss';
+
+	import type { LayoutData } from './$types';
+
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
 	import { HamburgerMenu, Person, MagnifyingGlass, Home, FilePlus } from 'radix-icons-svelte';
@@ -7,6 +10,30 @@
 	import * as Card from '$lib/components/ui/card';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { onMount } from 'svelte';
+
+	export let data: LayoutData;
+	console.log(data.test, 'user locals');
+	let darkMode = data.darkmode;
+	let color = data.color;
+
+	console.log('color', color, typeof color);
+	let loaded = false;
+	onMount(() => {
+		loaded = true;
+		setTheme();
+	});
+	function setTheme() {
+		if (darkMode) {
+			document.documentElement.id = 'dark';
+		} else {
+			document.documentElement.id = 'light';
+		}
+		if (color && loaded) {
+			document.documentElement.setAttribute('theme', color);
+			color = color;
+		}
+	}
 </script>
 
 <nav class="sticky top-0 flex justify-between px-4 py-2">
@@ -76,11 +103,11 @@
 		</div>
 	</div>
 	<div class="flex gap-2">
-		<ThemeToggle />
+		<ThemeToggle {darkMode} {loaded} {color} />
 		<Button
 			variant="secondary"
 			class="justify-center2 flex items-center gap-2 px-4 pl-2"
-			href="/login?redirect=/"
+			href="/login"
 		>
 			<Person class="h-[1.2rem] w-[1.2rem]" />
 			Login

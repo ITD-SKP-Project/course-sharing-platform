@@ -1,58 +1,41 @@
 <script lang="ts">
 	import { Sun, Moon, BlendingMode } from 'radix-icons-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { onMount } from 'svelte';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import * as Tooltip from '$lib/components/ui/tooltip';
-	let darkmode = true;
-	let loaded = false;
-	let color = 'blue';
 
-	onMount(() => {
-		loaded = true;
-		const theme = localStorage.getItem('theme');
-		const colorTheme = localStorage.getItem('color');
+	export let darkMode: boolean;
+	export let loaded: boolean;
+	export let color: string;
 
-		if (theme === 'light') {
-			document.documentElement.id = 'light';
-			darkmode = false;
-		} else {
-			document.documentElement.id = 'dark';
-			darkmode = true;
-		}
-
-		if (colorTheme) {
-			document.documentElement.setAttribute('theme', colorTheme);
-			color = colorTheme;
-		}
-	});
+	$: changeColor(color);
 	function changeColor(color_: string) {
 		if (!loaded) return;
 		document.documentElement.setAttribute('theme', color_);
-		localStorage.setItem('color', color_);
-		color = color_;
+		document.cookie = `color=${JSON.stringify(color)}; path=/; samesite=strict; secure=true`;
 	}
-	$: changeColor(color);
-	function toggle() {
+
+	function toggleDatkMode() {
 		if (!loaded) return;
-		if (darkmode) {
+		if (darkMode) {
 			document.documentElement.id = 'light';
-			localStorage.setItem('theme', 'light');
+			darkMode = false;
 		} else {
 			document.documentElement.id = 'dark';
-			localStorage.setItem('theme', 'dark');
+			darkMode = true;
 		}
-		darkmode = !darkmode;
+		document.cookie = `darkmode=${JSON.stringify(darkMode)}; path=/; samesite=strict; secure=true`;
 	}
-	$: console.log(darkmode);
+
+	$: console.log(darkMode);
 	$: console.log(color);
 </script>
 
 <div class="flex gap-2">
 	<Tooltip.Root>
 		<Tooltip.Trigger tabindex={-1}>
-			<Button variant="outline" size="icon" on:click={toggle}>
-				{#if darkmode}
+			<Button variant="outline" size="icon" on:click={toggleDatkMode}>
+				{#if darkMode}
 					<Moon class="h-[1.2rem] w-[1.2rem]" />
 				{:else}
 					<Sun class="h-[1.2rem] w-[1.2rem]" />
