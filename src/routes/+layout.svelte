@@ -13,11 +13,9 @@
 	import { onMount } from 'svelte';
 
 	export let data: LayoutData;
-	console.log(data.test, 'user locals');
 	let darkMode = data.darkmode;
-	let color = data.color;
+	let color: string | null = data.color ?? null;
 
-	console.log('color', color, typeof color);
 	let loaded = false;
 	onMount(() => {
 		loaded = true;
@@ -104,14 +102,28 @@
 	</div>
 	<div class="flex gap-2">
 		<ThemeToggle {darkMode} {loaded} {color} />
-		<Button
-			variant="secondary"
-			class="justify-center2 flex items-center gap-2 px-4 pl-2"
-			href="/login"
-		>
-			<Person class="h-[1.2rem] w-[1.2rem]" />
-			Login
-		</Button>
+		{#if data.user}
+			<Button
+				variant="secondary"
+				class="justify-center2 flex items-center gap-2 px-4 pl-2"
+				on:click={async () => {
+					await fetch('/api/login', { method: 'DELETE' });
+					location.reload();
+				}}
+			>
+				<Person class="h-[1.2rem] w-[1.2rem]" />
+				Log ud
+			</Button>
+		{:else}
+			<Button
+				variant="secondary"
+				class="justify-center2 flex items-center gap-2 px-4 pl-2"
+				href="/login"
+			>
+				<Person class="h-[1.2rem] w-[1.2rem]" />
+				Login
+			</Button>
+		{/if}
 	</div>
 </nav>
 <slot />

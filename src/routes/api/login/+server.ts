@@ -13,13 +13,17 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	//! get user from database
 	const data =
-		(await sql`SELECT * from users where email = ${JSON.stringify(email)} LIMIT 1`) as DatabaseResponse<User>;
+		(await sql`SELECT * FROM users where email = ${email} LIMIT 1`) as DatabaseResponse<User>;
+	console.log(data, 'data');
 	const user = data.rows[0] ?? null;
-	if (!data || !user) throw error(401, 'Invalid credentials');
+	console.log(user, 'user');
+	if (!data || !user) throw error(401, 'Ugyldig email eller passord');
 
 	//! compare password
-	const valid = bcrypt.compareSync(password, user.password);
-	if (!valid) throw error(401, 'Invalid credentials');
+	const valid = await bcrypt.compare(password, user.password);
+	console.log(await bcrypt.compare(password, user.password));
+	console.log(valid, 'valid');
+	if (!valid) throw error(401, 'Ugyldig email eller passord');
 
 	//make token
 	const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1h' });
@@ -31,4 +35,15 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		sameSite: 'strict'
 	});
 	return json({ token });
+};
+
+// delete method to logout
+export const DELETE: RequestHandler = async ({ cookies }) => {
+	cookies.delete('token', {
+		path: '/',
+		httpOnly: true,
+		secure: true,
+		sameSite: 'strict'
+	});
+	return json({ message: 'success' });
 };

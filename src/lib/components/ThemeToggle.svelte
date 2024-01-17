@@ -6,11 +6,11 @@
 
 	export let darkMode: boolean;
 	export let loaded: boolean;
-	export let color: string;
+	export let color: string | null;
 
 	$: changeColor(color);
-	function changeColor(color_: string) {
-		if (!loaded) return;
+	function changeColor(color_: string | null) {
+		if (!loaded || !color_) return;
 		document.documentElement.setAttribute('theme', color_);
 		document.cookie = `color=${JSON.stringify(color)}; path=/; samesite=strict; secure=true`;
 	}
@@ -26,9 +26,6 @@
 		}
 		document.cookie = `darkmode=${JSON.stringify(darkMode)}; path=/; samesite=strict; secure=true`;
 	}
-
-	$: console.log(darkMode);
-	$: console.log(color);
 </script>
 
 <div class="flex gap-2">
