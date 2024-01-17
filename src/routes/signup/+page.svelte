@@ -43,7 +43,7 @@
 	}
 </script>
 
-<div class="h-screen-fix flex">
+<div class="flex h-screen-fix">
 	<img src={future} alt="city" class="hidden w-1/2 max-w-[60rem] object-cover lg:block" />
 	<div class="flex w-full flex-col items-center justify-center gap-4 lg:w-1/2">
 		<h1 class="text-4xl font-bold">Opret en konto</h1>

@@ -9,8 +9,10 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
-	import { AlertTriangle } from 'lucide-svelte';
+	import { AlertTriangle, User } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
+	import { user } from '$lib/index';
+	import type { User as UserType } from '$lib/types';
 
 	let password = '';
 	let email = '';
@@ -43,10 +45,13 @@
 			errorMessage = data.message;
 			return;
 		}
+		const data = (await response.json()) as { user: UserType; token: string };
+		user.set(data.user);
 		redirect();
 	}
 	function redirect() {
 		const redirectTo = $page.url.searchParams.get('redirect');
+
 		if (redirectTo) {
 			console.log('redirecting to', '/' + redirectTo.slice(1));
 			goto('/' + redirectTo.slice(1));
@@ -57,7 +62,7 @@
 	}
 </script>
 
-<div class="h-screen-fix flex">
+<div class="flex h-screen-fix">
 	<div class="flex w-full flex-col items-center justify-center gap-4 lg:w-1/2">
 		<!-- title -->
 		<h1 class="text-4xl font-bold">Log ind</h1>
@@ -71,11 +76,23 @@
 		<form on:submit={submit} class="flex w-full flex-col items-center justify-center gap-4">
 			<div class="flex w-full max-w-md flex-col gap-1.5">
 				<Label for="email">E-mail</Label>
-				<Input bind:value={email} type="email" id="email" placeholder="bruger@example.com" />
+				<Input
+					autocomplete="on"
+					bind:value={email}
+					type="email"
+					id="email"
+					placeholder="bruger@example.com"
+				/>
 			</div>
 			<div class="flex w-full max-w-md flex-col gap-1.5">
 				<Label for="password">Adgangskode</Label>
-				<Input bind:value={password} type="password" id="password" placeholder="Pa@$$w0rd" />
+				<Input
+					autocomplete="on"
+					bind:value={password}
+					type="password"
+					id="password"
+					placeholder="Pa@$$w0rd"
+				/>
 			</div>
 			<Button type="submit" class="mx-auto w-full max-w-md">Log ind</Button>
 		</form>

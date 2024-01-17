@@ -34,7 +34,8 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		secure: true,
 		sameSite: 'strict'
 	});
-	return json({ token });
+
+	return json({ token, user });
 };
 
 // delete method to logout

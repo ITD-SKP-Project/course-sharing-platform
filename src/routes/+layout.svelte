@@ -11,10 +11,12 @@
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { onMount } from 'svelte';
+	import { user } from '$lib/index';
 
 	export let data: LayoutData;
 	let darkMode = data.darkmode;
 	let color: string | null = data.color ?? null;
+	user.set(data.user);
 
 	let loaded = false;
 	onMount(() => {
@@ -102,12 +104,13 @@
 	</div>
 	<div class="flex gap-2">
 		<ThemeToggle {darkMode} {loaded} {color} />
-		{#if data.user}
+		{#if $user}
 			<Button
 				variant="secondary"
 				class="justify-center2 flex items-center gap-2 px-4 pl-2"
 				on:click={async () => {
 					await fetch('/api/login', { method: 'DELETE' });
+					user.set(null);
 					location.reload();
 				}}
 			>
