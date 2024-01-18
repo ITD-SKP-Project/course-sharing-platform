@@ -8,6 +8,33 @@ export interface User {
 	created_at: string;
 	updated_at: string;
 }
+export interface Project {
+	id: number;
+	title: string;
+	description: string;
+	created_at: string;
+	updated_at: string;
+	project_fork_id: number;
+	project_root_id: number;
+	subjects: string;
+	resources: string;
+	likes: number;
+	authors?: ProjectAuthor[];
+	professions?: ProjectProfession[];
+}
+export interface ProjectAuthor {
+	id: number;
+	project_id: number;
+	user_id: number;
+	authority_level: number;
+	user?: User;
+}
+export interface ProjectProfession {
+	id: number;
+	project_id: number;
+	profession_id: number;
+	skill_level: number;
+}
 
 //vercel posqgressql types
 interface Field {

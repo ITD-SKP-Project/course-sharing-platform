@@ -2,7 +2,6 @@
 	import '../app.pcss';
 
 	import type { LayoutData } from './$types';
-
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
 	import { HamburgerMenu, Person, MagnifyingGlass, Home, FilePlus } from 'radix-icons-svelte';
@@ -12,6 +11,31 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { onMount } from 'svelte';
 	import { user } from '$lib/index';
+
+	import { beforeNavigate, afterNavigate } from '$app/navigation';
+
+	import { gsap } from 'gsap/dist/gsap';
+	import Flip from 'gsap/dist/Flip';
+
+	let state: any;
+
+	gsap.registerPlugin(Flip);
+
+	beforeNavigate(() => {
+		state = Flip.getState('#theme-image, #login-form');
+	});
+
+	afterNavigate(() => {
+		if (state) {
+			Flip.from(state, {
+				duration: 0.5,
+				ease: 'easeInOut',
+				scale: false,
+				targets: '#theme-image, #login-form',
+				simple: true
+			});
+		}
+	});
 
 	export let data: LayoutData;
 	let darkMode = data.darkmode;

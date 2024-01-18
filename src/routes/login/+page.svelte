@@ -62,10 +62,13 @@
 	}
 </script>
 
-<div class="flex h-screen-fix">
-	<div class="flex w-full flex-col items-center justify-center gap-4 lg:w-1/2">
+<div class="flex h-screen-fix lg:!bg-none" id="theme-image">
+	<div
+		data-flip-id="login-form"
+		id="login-form"
+		class=" relative z-0 flex w-full flex-col items-center justify-center gap-4 backdrop-blur-3xl lg:w-1/2"
+	>
 		<!-- title -->
-		<h1 class="text-4xl font-bold">Log ind</h1>
 		{#if error}
 			<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
 				<AlertTriangle class="h-4 w-4 " />
@@ -73,42 +76,54 @@
 				<Alert.Description>{errorMessage}</Alert.Description>
 			</Alert.Root>
 		{/if}
-		<form on:submit={submit} class="flex w-full flex-col items-center justify-center gap-4">
-			<div class="flex w-full max-w-md flex-col gap-1.5">
-				<Label for="email">E-mail</Label>
-				<Input
-					autocomplete="on"
-					bind:value={email}
-					type="email"
-					id="email"
-					placeholder="bruger@example.com"
-				/>
+		<div class="flex w-full max-w-md flex-col gap-4 rounded-2xl bg-background p-8">
+			<form
+				on:submit={submit}
+				class=" flex w-full max-w-md flex-col items-center justify-center gap-4"
+			>
+				<h1 class="text-4xl font-bold">Log ind</h1>
+
+				<div class="flex w-full max-w-md flex-col gap-1.5">
+					<Label for="email">E-mail</Label>
+					<Input
+						autocomplete="on"
+						bind:value={email}
+						type="email"
+						id="email"
+						placeholder="bruger@example.com"
+					/>
+				</div>
+				<div class="flex w-full max-w-md flex-col gap-1.5">
+					<Label for="password">Adgangskode</Label>
+					<Input
+						autocomplete="on"
+						bind:value={password}
+						type="password"
+						id="password"
+						placeholder="Pa@$$w0rd"
+					/>
+				</div>
+				<Button type="submit" class="mx-auto w-full max-w-md">Log ind</Button>
+			</form>
+			<div class="mt-2 flex w-full max-w-md flex-col gap-1.5">
+				<p class="text-center">
+					Har du ikke en konto?
+					<a href="/signup" class="text-primary hover:underline"> Opret en her </a>
+				</p>
 			</div>
+			<!-- glemt kode -->
 			<div class="flex w-full max-w-md flex-col gap-1.5">
-				<Label for="password">Adgangskode</Label>
-				<Input
-					autocomplete="on"
-					bind:value={password}
-					type="password"
-					id="password"
-					placeholder="Pa@$$w0rd"
-				/>
+				<p class="text-center">
+					Glemt din kode?
+					<a href="/reset-password" class="text-primary hover:underline">Nulstil</a>
+				</p>
 			</div>
-			<Button type="submit" class="mx-auto w-full max-w-md">Log ind</Button>
-		</form>
-		<div class="flex w-full max-w-md flex-col gap-1.5">
-			<p class="text-center">
-				Har du ikke en konto?
-				<a href="/signup" class="text-primary hover:underline"> Opret en her </a>
-			</p>
-		</div>
-		<!-- glemt kode -->
-		<div class="flex w-full max-w-md flex-col gap-1.5">
-			<p class="text-center">
-				Glemt din kode?
-				<a href="/reset-password" class="text-red-500 hover:underline">Nulsti</a>
-			</p>
 		</div>
 	</div>
-	<img src={future} alt="city" class="hidden w-1/2 max-w-[60rem] object-cover lg:block" />
+	<div
+		data-flip-id="theme-image"
+		id="theme-image"
+		class="relative z-10 hidden w-1/2 max-w-[60rem] object-cover lg:block"
+	></div>
+	<!-- <img src={future} alt="city" class="hidden w-1/2 max-w-[60rem] object-cover lg:block" /> -->
 </div>
