@@ -8,6 +8,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { AlertTriangle } from 'lucide-svelte';
+	import { goto } from '$app/navigation';
 
 	let password = '';
 	let email = '';
@@ -38,7 +39,13 @@
 			},
 			body: JSON.stringify({ password, email })
 		});
-		console.log(response);
+		if (!response.ok) {
+			error = response.statusText;
+			const data = await response.json();
+			errorMessage = data.message;
+		} else {
+			goto('/signup/opret-bruger');
+		}
 	}
 </script>
 
@@ -54,14 +61,14 @@
 		id="login-form"
 		class="relative z-0 flex w-full flex-col items-center justify-center gap-4 backdrop-blur-3xl lg:w-1/2"
 	>
-		{#if error}
-			<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
-				<AlertTriangle class="h-4 w-4 " />
-				<Alert.Title>Fejl: {error}</Alert.Title>
-				<Alert.Description>{errorMessage}</Alert.Description>
-			</Alert.Root>
-		{/if}
 		<div class="flex w-full max-w-md flex-col gap-4 rounded-2xl bg-background p-8">
+			{#if error}
+				<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
+					<AlertTriangle class="h-4 w-4 " />
+					<Alert.Title>Fejl: {error}</Alert.Title>
+					<Alert.Description>{errorMessage}</Alert.Description>
+				</Alert.Root>
+			{/if}
 			<form on:submit={submit} class="flex w-full flex-col items-center justify-center gap-4">
 				<h1 class="text-4xl font-bold">Opret en konto</h1>
 				<div class="flex w-full max-w-md flex-col gap-1.5">

@@ -4,6 +4,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: user | null;
+			userMissingInfo: boolean;
 		}
 		// interface PageData {}
 		// interface PageState {}

@@ -53,10 +53,8 @@
 		const redirectTo = $page.url.searchParams.get('redirect');
 
 		if (redirectTo) {
-			console.log('redirecting to', '/' + redirectTo.slice(1));
 			goto('/' + redirectTo.slice(1));
 		} else {
-			console.log('redirecting to', '/');
 			goto('/konto');
 		}
 	}
@@ -69,14 +67,14 @@
 		class=" relative z-0 flex w-full flex-col items-center justify-center gap-4 backdrop-blur-3xl lg:w-1/2"
 	>
 		<!-- title -->
-		{#if error}
-			<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
-				<AlertTriangle class="h-4 w-4 " />
-				<Alert.Title>Fejl: {error}</Alert.Title>
-				<Alert.Description>{errorMessage}</Alert.Description>
-			</Alert.Root>
-		{/if}
 		<div class="flex w-full max-w-md flex-col gap-4 rounded-2xl bg-background p-8">
+			{#if error}
+				<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
+					<AlertTriangle class="h-4 w-4 " />
+					<Alert.Title>Fejl: {error}</Alert.Title>
+					<Alert.Description>{errorMessage}</Alert.Description>
+				</Alert.Root>
+			{/if}
 			<form
 				on:submit={submit}
 				class=" flex w-full max-w-md flex-col items-center justify-center gap-4"

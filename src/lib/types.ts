@@ -1,12 +1,14 @@
 export interface User {
 	id: number;
-	firstname: string;
-	lastname: string;
+	firstname?: string;
+	lastname?: string;
 	email: string;
-	authority_level: number;
+	authority_level?: number;
 	password: string;
 	created_at: string;
 	updated_at: string;
+	validated: boolean;
+	email_verified: boolean;
 }
 export interface Project {
 	id: number;

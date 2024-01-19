@@ -5,18 +5,19 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Input } from '$lib/components/ui/input';
 	import { Star, Cross2 } from 'radix-icons-svelte';
-	import * as ContextMenu from '$lib/components/ui/context-menu';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { derived, writable, type Writable } from 'svelte/store';
-	import * as Popover from '$lib/components/ui/popover';
+	import * as Select from '$lib/components/ui/select';
 
 	//functionality
 	import type { Project } from '$lib/types';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;
+
 	import { goto } from '$app/navigation';
 	let titleValue = '';
+	let selectedProfession: string;
 	//url search params
 	const updateSearchParams = (key: string, value: string) => {
 		const searchParams = new URLSearchParams(window.location.search);
@@ -63,9 +64,11 @@
 
 <main class="px-8 pb-8 pt-2">
 	<h1 class="text-3xl font-bold">Projekter</h1>
+
 	<Separator class="my-4" />
-	<div class="mb-4 flex w-full items-center justify-between">
-		<div class="flex w-fit">
+
+	<div class="mb-4 flex w-full flex-col items-start justify-between">
+		<div class="flex w-fit gap-2">
 			<form
 				on:submit|preventDefault={() => {
 					updateSearchParams('title', titleValue);
@@ -86,7 +89,39 @@
 					class="w-full max-w-lg"
 				/>
 			</form>
+
+			{#key $filters.professionName}
+				<Select.Root>
+					<Select.Trigger class="w-[180px]">
+						<Select.Value placeholder={$filters.professionName || 'Udannelse'} />
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item
+							on:click={() => {
+								updateSearchParams('fag', '');
+								updateFilter('professionName', null);
+							}}
+							value={null}>Alle</Select.Item
+						>
+						{#each data.professions as profession}
+							<Select.Item
+								on:click={() => {
+									updateSearchParams('fag', profession.name ?? '');
+									updateFilter('professionName', profession.name ?? '');
+								}}
+								value={profession.id}>{profession.name}</Select.Item
+							>
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			{/key}
 		</div>
+		{#if !Object.values($filters).every((val) => {
+			return val == null || val == '';
+		})}
+			<Separator class="my-4" />
+		{/if}
+
 		<div class="flex gap-2">
 			{#if $filters.title}
 				<div class="flex flex-col gap-1.5">
@@ -142,7 +177,7 @@
 
 	<div class="g grid w-full gap-8">
 		{#each $filteredProjects as project}
-			<Card.Root class="flex  flex-col justify-between">
+			<Card.Root class="flex flex-col justify-between">
 				<Card.Header>
 					<Card.Title>{project.title}</Card.Title>
 					<Card.Description>{project.description}</Card.Description>
@@ -198,7 +233,6 @@
 										<Button
 											class="h-fit justify-start p-0"
 											on:click={() => {
-												console.log(profession.profession_name, 'profession.profession_name');
 												updateSearchParams('fag', profession.profession_name ?? '');
 												updateFilter('professionName', profession.profession_name ?? '');
 											}}
