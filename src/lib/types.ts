@@ -34,6 +34,11 @@ export interface ProjectProfession {
 	project_id: number;
 	profession_id: number;
 	skill_level: number;
+	profession_name?: string;
+}
+export interface Profession {
+	id: number;
+	name: string;
 }
 
 //vercel posqgressql types

@@ -6,10 +6,10 @@
 
 	export let darkMode: boolean;
 	export let loaded: boolean;
-	export let color: string | null;
+	export let color: string | undefined;
 
 	$: changeColor(color);
-	function changeColor(color_: string | null) {
+	function changeColor(color_: string | undefined) {
 		if (!loaded || !color_) return;
 		document.documentElement.setAttribute('theme', color_);
 		document.cookie = `color=${JSON.stringify(color)}; path=/; samesite=strict; secure=true`;
@@ -31,7 +31,12 @@
 <div class="flex gap-2">
 	<Tooltip.Root>
 		<Tooltip.Trigger tabindex={-1}>
-			<Button variant="outline" size="icon" on:click={toggleDatkMode}>
+			<Button
+				aria-label="Tooltip fra skift mellem light and darkmode"
+				variant="outline"
+				size="icon"
+				on:click={toggleDatkMode}
+			>
 				{#if darkMode}
 					<Moon class="h-[1.2rem] w-[1.2rem]" />
 				{:else}
@@ -48,7 +53,12 @@
 		<Tooltip.Trigger tabindex={-1}>
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger asChild let:builder>
-					<Button size="icon" variant="outline" builders={[builder]}>
+					<Button
+						aria-label="Skift mellem light and darkmode"
+						size="icon"
+						variant="outline"
+						builders={[builder]}
+					>
 						<BlendingMode class="h-[1.2rem] w-[1.2rem]" />
 					</Button>
 				</DropdownMenu.Trigger>

@@ -60,11 +60,11 @@
 	}
 </script>
 
-<nav class="sticky top-0 flex justify-between px-4 py-2">
+<nav class="sticky top-0 flex justify-between bg-background px-4 py-2">
 	<div class="flex gap-4">
 		<Sheet.Root>
 			<Sheet.Trigger asChild let:builder>
-				<Button size="icon" builders={[builder]} variant="outline">
+				<Button aria-label="Åben Sidebar knap" size="icon" builders={[builder]} variant="outline">
 					<HamburgerMenu class="h-[1.2rem] w-[1.2rem]" />
 				</Button>
 			</Sheet.Trigger>
@@ -116,7 +116,7 @@
 		<div class="flex gap-2">
 			<Tooltip.Root>
 				<Tooltip.Trigger tabindex={-1}>
-					<Button variant="secondary" size="icon" href="/">
+					<Button aria-label="Link til hjem siden" variant="secondary" size="icon" href="/">
 						<Home class="h-[1.2rem] w-[1.2rem]" />
 					</Button>
 				</Tooltip.Trigger>
@@ -130,6 +130,7 @@
 		<ThemeToggle {darkMode} {loaded} {color} />
 		{#if $user}
 			<Button
+				aria-label="Skift farve tema"
 				variant="secondary"
 				class="justify-center2 flex items-center gap-2 px-4 pl-2"
 				on:click={async () => {

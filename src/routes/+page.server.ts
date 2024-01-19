@@ -14,8 +14,9 @@ export const load = (async () => {
 	//get all users and add them to authors
 	const { rows: users } = (await sql`SELECT * FROM users`) as DatabaseResponse<User>;
 
-	const { rows: professions } =
-		(await sql`SELECT * FROM project_professions`) as DatabaseResponse<ProjectProfession>;
+	const { rows: professions } = (await sql`SELECT pp.*, p.name as profession_name
+		FROM project_professions pp
+		JOIN professions p ON pp.profession_id = p.id; `) as DatabaseResponse<ProjectProfession>;
 
 	//add authors and professions to projects
 	projects.forEach((project) => {
@@ -26,5 +27,5 @@ export const load = (async () => {
 		});
 	});
 
-	return { projects };
+	return { projects: projects };
 }) satisfies PageServerLoad;
