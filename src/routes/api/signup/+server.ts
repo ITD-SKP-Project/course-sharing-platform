@@ -6,11 +6,12 @@ import { error, json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
 import type { DatabaseResponse, User } from '$lib/types';
+
 /*
 ! Resend has a bug where it crashes the server on import
 TODO: fix later
-import { Resend } from 'resend';
 */
+import { Resend } from 'resend';
 
 import * as randombytes from 'randombytes';
 export const POST: RequestHandler = async ({ request, cookies }) => {
@@ -27,10 +28,6 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const salt = bcrypt.genSaltSync(+BCRYPT_SALT_ROUNDS);
 	const hash = bcrypt.hashSync(password, salt);
 
-	//create user
-
-	//TODO: fix later alogn with resend import
-	//! email verification is disabled for now
 	const { rows: users } =
 		await sql`INSERT INTO users (email, password, Email_verified) VALUES (${email}, ${hash}, true) RETURNING * `;
 	if (!users || users.length <= 0)
@@ -52,62 +49,51 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const { rows: verificationTokens } =
 		await sql`INSERT INTO verification_tokens (user_id, token) VALUES (${users[0].id}, ${key}) RETURNING *`;
 
-	const res = await fetch('https://api.resend.com/emails', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${RESEND_API_KEY}`
-		},
-		body: JSON.stringify({
+	try {
+		const resend = new Resend(RESEND_API_KEY);
+		const { data, error: err } = await resend.emails.send({
 			from: 'Acme <onboarding@resend.dev>',
 			to: [users[0].email],
-			subject: 'hello world',
-			html: '<a href="https://course-sharing-platform.vercel.app/signup/bekraeft-email">Verify email</a>'
-		})
-	});
-	console.log(res, 'res');
-	console.log(await res.json(), 'res.json()');
-	//TODO: fix later alogn with resend import
-	//send email
-	// const resend = new Resend(RESEND_API_KEY);
-	// (async function () {
-	// 	const { data, error: err } = await resend.emails.send({
-	// 		from: 'Acme <onboarding@resend.dev>',
-	// 		to: [users[0].email],
-	// 		subject: 'Hello World',
-	// 		html: `
-	// 		<html lang="da">
-	// 			<head>
-	// 				<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-	// 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-	// 				<meta name="x-apple-disable-message-reformatting" />
-	// 				<!--[if !mso]><!-->
-	// 				<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-	// 				<!--<![endif]-->
-	// 				<title>Bekræft email.</title>
-	// 			</head>
-	// 			<body>
-	// 				<a
-	// 					href=https://course-sharing-platform.vercel.app/signup/verify-email?token=${key}
-	// 					target="_blank"
-	// 				>
-	// 					<span>
-	// 						<strong>
-	// 							<span style="line-height: 16.8px">
-	// 								Bekræft e-mail
-	// 							</span>
-	// 						</strong>
-	// 					</span>
-	// 				</a>
-	// 			</body>
-	// 		</html>
-	// 	`
-	// 	});
+			subject: 'Hello World',
+			html: `
+			<html lang="da">
+				<head>
+					<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+					<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+					<meta name="x-apple-disable-message-reformatting" />
+					<!--[if !mso]><!-->
+					<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+					<!--<![endif]-->
+					<title>Bekræft email.</title>
+				</head>
+				<body>
+					<a
+						href=https://course-sharing-platform.vercel.app/signup/verify-email?token=${key}
+						target="_blank"
+					>
+						<span>
+							<strong>
+								<span style="line-height: 16.8px">
+									Bekræft e-mail
+								</span>
+							</strong>
+						</span>
+					</a>
+				</body>
+			</html>
+		`
+		});
 
-	// 	if (err) {
-	// 		throw error(500, `Der skete en fejl ved afsendelse af email. Prøv igen senere. ${err}`);
-	// 	}
-	// })();
+		if (err) {
+			if (process.env.NODE_ENV === 'development') {
+				console.log(err);
+			} else {
+				throw error(500, `Der skete en fejl ved afsendelse af email. Prøv igen senere. ${err}`);
+			}
+		}
+	} catch (err) {
+		throw error(500, `Der skete en fejl ved afsendelse af email. Prøv igen senere. ${err}`);
+	}
 
 	return json({ token, user: users[0] });
 };

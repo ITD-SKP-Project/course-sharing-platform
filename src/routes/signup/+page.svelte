@@ -40,6 +40,7 @@
 			body: JSON.stringify({ password, email })
 		});
 		if (!response.ok) {
+			console.log(await response.json(), response.statusText, 'response');
 			error = response.statusText;
 			const data = await response.json();
 			errorMessage = data.message;
