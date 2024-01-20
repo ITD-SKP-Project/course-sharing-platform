@@ -1,11 +1,12 @@
 import type { RequestHandler } from './$types';
 import bcrypt from 'bcrypt';
-import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import { sql } from '@vercel/postgres';
 import { error, json, redirect } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '$env/static/private';
+import { JWT_SECRET, RESEND_API_KEY, BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import type { DatabaseResponse, User } from '$lib/types';
+// import { Resend } from 'resend';
+// import * as randombytes from 'randombytes';
 
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	const { email, password } = (await request.json()) as { email: string; password: string };
@@ -36,5 +37,52 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		secure: true,
 		sameSite: 'strict'
 	});
+
+	//gereate email verification token
+	const key = '123'; // randombytes.default(64).toString('hex');
+	//save token to database
+	// const { rows: verificationTokens } =
+	// 	await sql`INSERT INTO verification_tokens (user_id, token) VALUES (${users[0].id}, ${key}) RETURNING *`;
+
+	//send email
+	// const resend = new Resend(RESEND_API_KEY);
+	// (async function () {
+	// 	const { data, error: err } = await resend.emails.send({
+	// 		from: 'Acme <onboarding@resend.dev>',
+	// 		to: [users[0].email],
+	// 		subject: 'Hello World',
+	// 		html: `
+	// 			<a
+	// 				href=https://course-sharing-platform.vercel.app/signup/verify-email/${key}
+	// 				target="_blank"
+	// 				class="v-button v-size-width v-font-size"
+	// 				style="
+	// 					box-sizing: border-box;
+	// 					display: inline-block;
+	// 					text-decoration: none;
+	// 					-webkit-text-size-adjust: none;
+	// 					text-align: center;
+	// 					color: #4264f0;
+	// 					background-color: #ecca49;
+	// 					border-radius: 4px;
+	// 					-webkit-border-radius: 4px;
+	// 					-moz-border-radius: 4px;
+	// 					width: 32%;
+	// 					max-width: 100%;
+	// 					overflow-wrap: break-word;
+	// 					word-break: break-word;
+	// 					word-wrap: break-word;
+	// 					mso-border-alt: none;
+	// 					font-size: 14px;
+	// 				"
+	// 			> Verify email </a>
+	// 	`
+	// 	});
+
+	// 	if (err) {
+	// 		throw error(500, `Der skete en fejl ved afsendelse af email. Prøv igen senere. ${err}`);
+	// 	}
+	// })();
+
 	return json({ token, user: users[0] });
 };

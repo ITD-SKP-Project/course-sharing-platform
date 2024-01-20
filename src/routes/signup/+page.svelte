@@ -44,7 +44,7 @@
 			const data = await response.json();
 			errorMessage = data.message;
 		} else {
-			goto('/signup/opret-bruger');
+			goto('/signup/bekraeft-email');
 		}
 	}
 </script>

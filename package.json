@@ -19,6 +19,7 @@
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@types/bcrypt": "^5.0.2",
 		"@types/jsonwebtoken": "^9.0.5",
+		"@types/randombytes": "^2.0.3",
 		"autoprefixer": "^10.4.16",
 		"postcss": "^8.4.32",
 		"postcss-load-config": "^5.0.2",
@@ -45,6 +46,8 @@
 		"lucide-svelte": "^0.309.0",
 		"mode-watcher": "^0.1.2",
 		"radix-icons-svelte": "^1.2.1",
+		"randombytes": "^2.1.0",
+		"resend": "^3.0.0",
 		"tailwind-merge": "^2.2.0",
 		"tailwind-variants": "^0.1.20"
 	}

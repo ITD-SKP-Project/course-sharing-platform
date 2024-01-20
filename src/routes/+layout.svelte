@@ -126,6 +126,7 @@
 			</Tooltip.Root>
 		</div>
 	</div>
+
 	<div class="flex gap-2">
 		<ThemeToggle {darkMode} {loaded} {color} />
 		{#if $user}
