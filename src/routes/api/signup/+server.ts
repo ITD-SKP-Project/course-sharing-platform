@@ -1,13 +1,19 @@
 import type { RequestHandler } from './$types';
 import bcrypt from 'bcrypt';
+import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import { sql } from '@vercel/postgres';
-import { error, json, redirect } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET, RESEND_API_KEY, BCRYPT_SALT_ROUNDS } from '$env/static/private';
+import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
 import type { DatabaseResponse, User } from '$lib/types';
-// import { Resend } from 'resend';
-// import * as randombytes from 'randombytes';
 
+/*
+! Resend has a bug where it crashes the server on import
+TODO: fix later
+import { Resend } from 'resend';
+*/
+
+import * as randombytes from 'randombytes';
 export const POST: RequestHandler = async ({ request, cookies }) => {
 	const { email, password } = (await request.json()) as { email: string; password: string };
 	if (!email || !password) throw error(400, 'Invalid request body');
@@ -23,8 +29,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const hash = bcrypt.hashSync(password, salt);
 
 	//create user
+
+	//TODO: fix later alogn with resend import
+	//! email verification is disabled for now
 	const { rows: users } =
-		await sql`INSERT INTO users (email, password) VALUES (${email}, ${hash}) RETURNING * `;
+		await sql`INSERT INTO users (email, password, Email_verified) VALUES (${email}, ${hash}, true) RETURNING * `;
 	if (!users || users.length <= 0)
 		throw error(500, 'Der skete en fejl ved oprettelse af bruger. Prøv igen senere.');
 
@@ -39,11 +48,12 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	});
 
 	//gereate email verification token
-	const key = '123'; // randombytes.default(64).toString('hex');
+	const key = randombytes.default(64).toString('hex');
 	//save token to database
-	// const { rows: verificationTokens } =
-	// 	await sql`INSERT INTO verification_tokens (user_id, token) VALUES (${users[0].id}, ${key}) RETURNING *`;
+	const { rows: verificationTokens } =
+		await sql`INSERT INTO verification_tokens (user_id, token) VALUES (${users[0].id}, ${key}) RETURNING *`;
 
+	//TODO: fix later alogn with resend import
 	//send email
 	// const resend = new Resend(RESEND_API_KEY);
 	// (async function () {
@@ -52,30 +62,31 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	// 		to: [users[0].email],
 	// 		subject: 'Hello World',
 	// 		html: `
-	// 			<a
-	// 				href=https://course-sharing-platform.vercel.app/signup/verify-email/${key}
-	// 				target="_blank"
-	// 				class="v-button v-size-width v-font-size"
-	// 				style="
-	// 					box-sizing: border-box;
-	// 					display: inline-block;
-	// 					text-decoration: none;
-	// 					-webkit-text-size-adjust: none;
-	// 					text-align: center;
-	// 					color: #4264f0;
-	// 					background-color: #ecca49;
-	// 					border-radius: 4px;
-	// 					-webkit-border-radius: 4px;
-	// 					-moz-border-radius: 4px;
-	// 					width: 32%;
-	// 					max-width: 100%;
-	// 					overflow-wrap: break-word;
-	// 					word-break: break-word;
-	// 					word-wrap: break-word;
-	// 					mso-border-alt: none;
-	// 					font-size: 14px;
-	// 				"
-	// 			> Verify email </a>
+	// 		<html lang="da">
+	// 			<head>
+	// 				<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	// 				<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	// 				<meta name="x-apple-disable-message-reformatting" />
+	// 				<!--[if !mso]><!-->
+	// 				<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	// 				<!--<![endif]-->
+	// 				<title>Bekræft email.</title>
+	// 			</head>
+	// 			<body>
+	// 				<a
+	// 					href=https://course-sharing-platform.vercel.app/signup/verify-email?token=${key}
+	// 					target="_blank"
+	// 				>
+	// 					<span>
+	// 						<strong>
+	// 							<span style="line-height: 16.8px">
+	// 								Bekræft e-mail
+	// 							</span>
+	// 						</strong>
+	// 					</span>
+	// 				</a>
+	// 			</body>
+	// 		</html>
 	// 	`
 	// 	});
 
