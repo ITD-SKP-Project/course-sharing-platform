@@ -6,7 +6,9 @@ import { error, json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
 import type { DatabaseResponse, User } from '$lib/types';
-
+export const config = {
+	runtime: 'edge'
+};
 /*
 ! Resend has a bug where it crashes the server on import
 TODO: fix later
@@ -53,6 +55,21 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const { rows: verificationTokens } =
 		await sql`INSERT INTO verification_tokens (user_id, token) VALUES (${users[0].id}, ${key}) RETURNING *`;
 
+	const res = await fetch('https://api.resend.com/emails', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bearer ${RESEND_API_KEY}`
+		},
+		body: JSON.stringify({
+			from: 'Acme <onboarding@resend.dev>',
+			to: [users[0].email],
+			subject: 'hello world',
+			html: '<a href="https://course-sharing-platform.vercel.app/signup/bekraeft-email">Verify email</a>'
+		})
+	});
+	console.log(res, 'res');
+	console.log(await res.json(), 'res.json()');
 	//TODO: fix later alogn with resend import
 	//send email
 	// const resend = new Resend(RESEND_API_KEY);
