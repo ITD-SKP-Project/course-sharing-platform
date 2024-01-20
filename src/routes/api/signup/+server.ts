@@ -6,9 +6,6 @@ import { error, json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
 import type { DatabaseResponse, User } from '$lib/types';
-export const config = {
-	runtime: 'edge'
-};
 /*
 ! Resend has a bug where it crashes the server on import
 TODO: fix later
