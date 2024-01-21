@@ -6,7 +6,7 @@
 
 	export let darkMode: boolean;
 	export let loaded: boolean;
-	export let color: string | undefined;
+	export let color: string = '';
 
 	$: changeColor(color);
 	function changeColor(color_: string | undefined) {
