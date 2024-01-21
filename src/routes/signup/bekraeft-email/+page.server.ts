@@ -20,5 +20,6 @@ export const load = (async ({ locals, url }) => {
 	if (users.length === 0) {
 		return {};
 	}
-	return { verified: true };
+	await sql`DELETE FROM verification_tokens WHERE token = ${token}`;
+	throw redirect(301, '/signup/bruger-info');
 }) satisfies PageServerLoad;

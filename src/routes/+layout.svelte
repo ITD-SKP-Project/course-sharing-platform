@@ -39,8 +39,9 @@
 
 	export let data: LayoutData;
 	let darkMode = data.darkmode;
-	let color: string | null = data.color ?? null;
+	let color: string = data.color ?? '';
 	user.set(data.user);
+	$: console.log($user, 'user');
 
 	let loaded = false;
 	onMount(() => {
@@ -71,8 +72,17 @@
 			<Sheet.Content side="left">
 				<Sheet.Header>
 					<Sheet.Title>Find det du leder efter...</Sheet.Title>
-					<Sheet.Description>
-						<div class="relative mt-2">
+					<Sheet.Description class="flex flex-col gap-2">
+						<Button variant="outline">Forside</Button>
+
+						<Button variant="outline" href="/konto">Din konto</Button>
+						{#if data.user?.authority_level >= 2 || ($user?.authority_level && $user?.authority_level >= 2)}
+							<Button variant="outline" href="/admin/projekter">Administrer projekter</Button>
+						{/if}
+						{#if data.user?.authority_level >= 3 || ($user?.authority_level && $user?.authority_level >= 3)}
+							<Button variant="outline" href="/admin/brugere">Administrer brugere</Button>
+						{/if}
+						<!-- <div class="relative mt-2">
 							<MagnifyingGlass
 								class="color-foreground absolute left-2 top-1/2 h-[1.2rem] w-[1.2rem] -translate-y-1/2 fill-foreground"
 							/>
@@ -85,7 +95,7 @@
 								tabindex={2}
 							/>
 						</div>
-						<p>Søg efter ord fra alle projekter.</p>
+						<p>Søg efter ord fra alle projekter.</p> -->
 						<!-- <ul class="flex flex-col gap-2">
 							<li>
 								<Button

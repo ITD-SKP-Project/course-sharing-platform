@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import jwt from 'jsonwebtoken';
-import { error, json } from '@sveltejs/kit';
+import { error, json, redirect } from '@sveltejs/kit';
 import { JWT_SECRET } from '$env/static/private';
 import { sql } from '@vercel/postgres';
 import bcrypt from 'bcrypt';
@@ -34,7 +34,19 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		sameSite: 'strict'
 	});
 
-	return json({ token, user });
+	let redirectTo: null | string = null;
+
+	if (!user.email_verified) {
+		redirectTo = '/signup/bekraeft-email';
+	}
+	if (!user.firstname || !user.lastname) {
+		redirectTo = '/signup/bruger-info';
+	}
+	if (!user.validated) {
+		redirectTo = '/signup/afventer-godkendelse';
+	}
+
+	return json({ redirectTo, user });
 };
 
 // delete method to logout

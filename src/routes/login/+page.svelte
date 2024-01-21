@@ -27,11 +27,14 @@
 	async function submit() {
 		error = '';
 		errorMessage = '';
+
+		//validate email
 		if (!validateEmail(email)) {
 			error = 'invalid email';
 			return;
 		}
 
+		//send request to server
 		const response = await fetch('/api/login', {
 			method: 'POST',
 			headers: {
@@ -39,19 +42,27 @@
 			},
 			body: JSON.stringify({ password, email })
 		});
+
+		//if response is not ok, set error and errorMessage
 		if (!response.ok) {
 			error = response.statusText;
 			const data = JSON.parse(await response.text());
 			errorMessage = data.message;
 			return;
 		}
-		const data = (await response.json()) as { user: UserType; token: string };
-		user.set(data.user);
-		redirect();
-	}
-	function redirect() {
-		const redirectTo = $page.url.searchParams.get('redirect');
 
+		//if response is ok, set user and redirect
+		const { user: user_, redirectTo } = (await response.json()) as {
+			user: UserType;
+			redirectTo: string | null; //the server may specify a redirect url
+		};
+		//set user store to update the ui
+		user.set(user_);
+		//redirect
+		redirect(redirectTo);
+	}
+	function redirect(location: string | null = null) {
+		const redirectTo = location ?? $page.url.searchParams.get('redirect');
 		if (redirectTo) {
 			goto('/' + redirectTo.slice(1));
 		} else {

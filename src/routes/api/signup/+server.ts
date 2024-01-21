@@ -7,14 +7,11 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
 import type { DatabaseResponse, User } from '$lib/types';
 
-/*
-! Resend has a bug where it crashes the server on import
-TODO: fix later
-*/
+//TODO: fix later when we get an email
 import { Resend } from 'resend';
 
 import * as randombytes from 'randombytes';
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ request, cookies, url }) => {
 	const { email, password } = (await request.json()) as { email: string; password: string };
 	if (!email || !password) throw error(400, 'Invalid request body');
 
@@ -28,8 +25,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 	const salt = bcrypt.genSaltSync(+BCRYPT_SALT_ROUNDS);
 	const hash = bcrypt.hashSync(password, salt);
 
+	//TODO: fix later when we get an email and remove email_verified from users table
 	const { rows: users } =
-		await sql`INSERT INTO users (email, password, Email_verified) VALUES (${email}, ${hash}, true) RETURNING * `;
+		await sql`INSERT INTO users (email, password, Email_verified) VALUES (${email}, ${hash}, false) RETURNING * `;
 	if (!users || users.length <= 0)
 		throw error(500, 'Der skete en fejl ved oprettelse af bruger. Prøv igen senere.');
 
@@ -43,18 +41,26 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		sameSite: 'strict'
 	});
 
+	//TODO: fix later when we get an email
 	//gereate email verification token
 	const key = randombytes.default(64).toString('hex');
 	//save token to database
 	const { rows: verificationTokens } =
 		await sql`INSERT INTO verification_tokens (user_id, token) VALUES (${users[0].id}, ${key}) RETURNING *`;
 
+	//if in development, use localhost, else use domain
+	let domain;
+	if (process.env.NODE_ENV === 'development') {
+		domain = 'http://localhost:3000';
+	} else {
+		domain = 'https://course-sharing-platform.vercel.app';
+	}
 	try {
 		const resend = new Resend(RESEND_API_KEY);
 		const { data, error: err } = await resend.emails.send({
-			from: 'Acme <onboarding@resend.dev>',
+			from: 'info@kennik.dk',
 			to: [users[0].email],
-			subject: 'Hello World',
+			subject: 'Bekræft din email',
 			html: `
 			<html lang="da">
 				<head>
@@ -67,9 +73,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 					<title>Bekræft email.</title>
 				</head>
 				<body>
+					<h1>
+						<span style="line-height: 16.8px">
+							Hej ${users[0].email}.
+						</span>
+					</h1>
+					<p>
+						<span style="line-height: 16.8px">
+							Tak for din tilmelding til course-sharing-platform. For at kunne logge ind, skal du bekræfte din email.
+						</span>
+					</p>
 					<a
-						href=https://course-sharing-platform.vercel.app/signup/verify-email?token=${key}
+						href=${domain}/signup/bekraeft-email?token=${key}
 						target="_blank"
+						
 					>
 						<span>
 							<strong>
@@ -85,13 +102,11 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		});
 
 		if (err) {
-			if (process.env.NODE_ENV === 'development') {
-				console.log(err);
-			} else {
-				throw error(500, `Der skete en fejl ved afsendelse af email. Prøv igen senere. ${err}`);
-			}
+			console.error(err);
+			throw error(500, `Der skete en fejl ved afsendelse af email. Prøv igen senere. ${err}`);
 		}
 	} catch (err) {
+		console.error(err);
 		throw error(500, `Der skete en fejl ved afsendelse af email. Prøv igen senere. ${err}`);
 	}
 
