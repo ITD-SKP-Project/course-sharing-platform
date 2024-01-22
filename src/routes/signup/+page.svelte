@@ -9,6 +9,8 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { AlertTriangle } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
+	import { user } from '$lib/index';
+	import type { User } from '$lib/types';
 
 	let password = '';
 	let email = '';
@@ -40,11 +42,12 @@
 			body: JSON.stringify({ password, email })
 		});
 		if (!response.ok) {
-			console.log(await response.json(), response.statusText, 'response');
 			error = response.statusText;
 			const data = await response.json();
 			errorMessage = data.message;
 		} else {
+			const { user: user_ } = (await response.json()) as { user: User; token: string };
+			user.set(user_);
 			goto('/signup/bekraeft-email');
 		}
 	}
@@ -81,7 +84,7 @@
 					<Input bind:value={password} type="password" id="password" placeholder="Pa@$$w0rd" />
 				</div>
 
-				<Button type="submit" class="mx-auto w-full max-w-md">Log ind</Button>
+				<Button type="submit" class="mx-auto w-full max-w-md">Opret dig</Button>
 			</form>
 			<div class="flex w-full max-w-md flex-col gap-1.5">
 				<p class="text-center">

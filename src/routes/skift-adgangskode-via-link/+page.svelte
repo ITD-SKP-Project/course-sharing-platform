@@ -3,72 +3,21 @@
 
 	export let data: PageData;
 
-	import { page } from '$app/stores';
-
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { AlertTriangle, User } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
-	import { user } from '$lib/index';
-	import type { User as UserType } from '$lib/types';
 
-	let password = '';
-	let email = '';
 	let error = '';
 	let errorMessage = '';
 
-	function validateEmail(email: string) {
-		const re = /\S+@\S+\.\S+/;
-		return re.test(email);
-	}
+	let newPassword1 = '';
+	let newPassword2 = '';
+	1;
 
-	async function submit() {
-		error = '';
-		errorMessage = '';
-
-		//validate email
-		if (!validateEmail(email)) {
-			error = 'invalid email';
-			return;
-		}
-
-		//send request to server
-		const response = await fetch('/api/login', {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json'
-			},
-			body: JSON.stringify({ password, email })
-		});
-
-		//if response is not ok, set error and errorMessage
-		if (!response.ok) {
-			error = response.statusText;
-			const data = await response.json();
-			errorMessage = data.message;
-			return;
-		}
-
-		//if response is ok, set user and redirect
-		const { user: user_, redirectTo } = (await response.json()) as {
-			user: UserType;
-			redirectTo: string | null; //the server may specify a redirect url
-		};
-		//set user store to update the ui
-		user.set(user_);
-		//redirect
-		redirect(redirectTo);
-	}
-	function redirect(location: string | null = null) {
-		const redirectTo = location ?? $page.url.searchParams.get('redirect');
-		if (redirectTo) {
-			goto('/' + redirectTo.slice(1));
-		} else {
-			goto('/konto');
-		}
-	}
+	async function resetPassword() {}
 </script>
 
 <div class="flex h-screen-fix lg:!bg-none" id="theme-image">
@@ -87,28 +36,28 @@
 				</Alert.Root>
 			{/if}
 			<form
-				on:submit={submit}
+				on:submit={resetPassword}
 				class=" flex w-full max-w-md flex-col items-center justify-center gap-4"
 			>
-				<h1 class="text-4xl font-bold">Log ind</h1>
+				<h1 class="text-4xl font-bold">Nulstil adgangskode</h1>
 
 				<div class="flex w-full max-w-md flex-col gap-1.5">
-					<Label for="email">E-mail</Label>
+					<Label for="password1">Ny adgangskode</Label>
 					<Input
 						autocomplete="on"
-						bind:value={email}
-						type="email"
-						id="email"
-						placeholder="bruger@example.com"
+						bind:value={newPassword1}
+						type="password1"
+						id="password1"
+						placeholder="Pa@$$w0rd"
 					/>
 				</div>
 				<div class="flex w-full max-w-md flex-col gap-1.5">
-					<Label for="password">Adgangskode</Label>
+					<Label for="password2">Gentag adgangskode</Label>
 					<Input
 						autocomplete="on"
-						bind:value={password}
-						type="password"
-						id="password"
+						bind:value={newPassword1}
+						type="password2"
+						id="password2"
 						placeholder="Pa@$$w0rd"
 					/>
 				</div>
@@ -124,7 +73,7 @@
 			<div class="flex w-full max-w-md flex-col gap-1.5">
 				<p class="text-center">
 					Glemt din kode?
-					<a href="/nulstil-adgangskode" class="text-primary hover:underline">Nulstil</a>
+					<a href="/reset-password" class="text-primary hover:underline">Nulstil</a>
 				</p>
 			</div>
 		</div>

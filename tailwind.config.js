@@ -18,6 +18,10 @@ const config = {
 				// screen - 14
 				'screen-fix': 'calc(100vh - 3.5rem)'
 			},
+			maxHeight: {
+				// screen - 14
+				'screen-fix': 'calc(100vh - 3.5rem)'
+			},
 			colors: {
 				border: 'hsl(var(--border) / <alpha-value>)',
 				input: 'hsl(var(--input) / <alpha-value>)',
