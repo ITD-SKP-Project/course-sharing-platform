@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-
 	export let data: PageData;
 
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
-	import { AlertTriangle, User } from 'lucide-svelte';
+	import { AlertTriangle } from 'lucide-svelte';
 	import { goto } from '$app/navigation';
 
 	let error = '';
@@ -15,9 +14,32 @@
 
 	let newPassword1 = '';
 	let newPassword2 = '';
-	1;
 
-	async function resetPassword() {}
+	async function resetPassword() {
+		if (newPassword1 !== newPassword2) {
+			error = 'Ops!';
+			errorMessage = 'De to adgangskoder skal være ens';
+			return;
+		}
+
+		error = '';
+		errorMessage = '';
+
+		const response = await fetch('/api/password/reset-password', {
+			method: 'POST',
+			headers: {
+				'content-type': 'application/json'
+			},
+			body: JSON.stringify({ password: newPassword1, token: data.token })
+		});
+		if (!response.ok) {
+			error = response.statusText;
+			const data = await response.json();
+			errorMessage = data.message;
+			return;
+		}
+		goto('/skift-adgangskode-via-link/succes?token=' + data.token);
+	}
 </script>
 
 <div class="flex h-screen-fix lg:!bg-none" id="theme-image">
@@ -36,7 +58,7 @@
 				</Alert.Root>
 			{/if}
 			<form
-				on:submit={resetPassword}
+				on:submit|preventDefault={resetPassword}
 				class=" flex w-full max-w-md flex-col items-center justify-center gap-4"
 			>
 				<h1 class="text-4xl font-bold">Nulstil adgangskode</h1>
@@ -55,27 +77,14 @@
 					<Label for="password2">Gentag adgangskode</Label>
 					<Input
 						autocomplete="on"
-						bind:value={newPassword1}
+						bind:value={newPassword2}
 						type="password2"
 						id="password2"
 						placeholder="Pa@$$w0rd"
 					/>
 				</div>
-				<Button type="submit" class="mx-auto w-full max-w-md">Log ind</Button>
+				<Button type="submit" class="mx-auto w-full max-w-md">Opdater adgangskode</Button>
 			</form>
-			<div class="mt-2 flex w-full max-w-md flex-col gap-1.5">
-				<p class="text-center">
-					Har du ikke en konto?
-					<a href="/signup" class="text-primary hover:underline"> Opret en her </a>
-				</p>
-			</div>
-			<!-- glemt kode -->
-			<div class="flex w-full max-w-md flex-col gap-1.5">
-				<p class="text-center">
-					Glemt din kode?
-					<a href="/reset-password" class="text-primary hover:underline">Nulstil</a>
-				</p>
-			</div>
 		</div>
 	</div>
 	<div

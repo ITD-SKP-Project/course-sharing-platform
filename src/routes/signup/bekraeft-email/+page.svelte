@@ -67,12 +67,14 @@
 			>
 		</Card.Header>
 		<Card.Content>
-			<p class="text-center">Du kan sende en ny email om {secondsLeft} sekunder</p>
-
-			<Button disabled={secondsLeft > 0} on:click={sendEmail}>Send ny email</Button>
+			{#if secondsLeft > 0}
+				<p class="text-center">
+					Hvis du ikke har modtaget en mail, <br /> kan du sende en ny email om {secondsLeft} sekunder
+				</p>
+			{/if}
 		</Card.Content>
 		<Card.Footer>
-			<p>Card Footer</p>
+			<Button disabled={secondsLeft > 0} on:click={sendEmail}>Send ny email</Button>
 		</Card.Footer>
 	</Card.Root>
 </main>

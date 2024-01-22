@@ -10,12 +10,18 @@ export const POST: RequestHandler = async ({ request }) => {
 	const { email } = (await request.json()) as { email: string };
 	const { rows: users } =
 		(await sql`SELECT * FROM users where email = ${email} LIMIT 1`) as DatabaseResponse<User>;
+	if (users.length === 0) {
+		throw error(404, 'Der er ingen bruger med den email.');
+	}
 
 	//gereate email verification token
 	const key = randombytes.default(64).toString('hex');
 	//save token to database
 	const { rows: verificationTokens } =
-		await sql`INSERT INTO verification_tokens (user_id, token, type) VALUES (${users[0].id}, ${key}, 'reset-password') RETURNING *`;
+		await sql`INSERT INTO verification_tokens (user_id, token, type) VALUES (${users[0].id}, ${key}, 'reset_password') RETURNING *`;
+	if (verificationTokens.length === 0) {
+		throw error(500, 'Der skete en fejl ved oprettelse af token.');
+	}
 
 	//if in development, use localhost, else use domain
 	let domain;

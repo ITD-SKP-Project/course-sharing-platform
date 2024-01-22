@@ -14,5 +14,8 @@ export const load = (async ({ url }) => {
 		throw redirect(301, '/login');
 	}
 
-	return { token };
+	//delete token
+	await sql`DELETE FROM verification_tokens WHERE token = ${token}`;
+
+	return {};
 }) satisfies PageServerLoad;
