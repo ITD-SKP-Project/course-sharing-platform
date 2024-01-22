@@ -12,7 +12,7 @@ export const load = (async ({ locals, url }) => {
 		return {};
 	}
 	const { rows: tokens } = await sql`SELECT * FROM verification_tokens WHERE token = ${token}`;
-	if (tokens.length === 0) {
+	if (tokens.length === 0 || tokens[0].type !== 'email_verification') {
 		return {};
 	}
 	const { rows: users } =

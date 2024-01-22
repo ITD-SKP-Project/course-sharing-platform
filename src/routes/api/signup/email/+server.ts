@@ -1,43 +1,21 @@
 import type { RequestHandler } from './$types';
-import bcrypt from 'bcrypt';
-import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import { sql } from '@vercel/postgres';
 import { error, json } from '@sveltejs/kit';
-import jwt from 'jsonwebtoken';
-import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
 import type { DatabaseResponse, User } from '$lib/types';
+import { RESEND_API_KEY } from '$env/static/private';
 import { Resend } from 'resend';
 import * as randombytes from 'randombytes';
 
-export const POST: RequestHandler = async ({ request, cookies, url }) => {
-	const { email, password } = (await request.json()) as { email: string; password: string };
-	if (!email || !password) throw error(400, 'Invalid request body');
-
-	//check if user exists
-	const data =
-		(await sql`SELECT * FROM users where email = ${email} LIMIT 1`) as DatabaseResponse<User>;
-	const userExists = data.rows[0] ?? null;
-	if (userExists) throw error(400, 'Brugeren eksisterer allerede');
-
-	//hash password
-	const salt = bcrypt.genSaltSync(+BCRYPT_SALT_ROUNDS);
-	const hash = bcrypt.hashSync(password, salt);
-
-	//TODO: fix later when we get an email and remove email_verified from users table
+export const POST: RequestHandler = async ({ request }) => {
+	const { email } = (await request.json()) as { email: string };
 	const { rows: users } =
-		await sql`INSERT INTO users (email, password, Email_verified, last_send_email) VALUES (${email}, ${hash}, false, NOW()) RETURNING * `;
-	if (!users || users.length <= 0)
-		throw error(500, 'Der skete en fejl ved oprettelse af bruger. Prøv igen senere.');
+		(await sql`SELECT * FROM users where email = ${email} LIMIT 1`) as DatabaseResponse<User>;
+	const then = new Date(users[0].last_send_email);
+	const now = new Date();
 
-	//make token
-	const token = jwt.sign(users[0], JWT_SECRET, { expiresIn: '1h' });
-
-	cookies.set('token', token, {
-		path: '/',
-		httpOnly: true,
-		secure: true,
-		sameSite: 'strict'
-	});
+	if (users[0].last_send_email && then.getTime() > now.getTime() - 1000 * 60) {
+		return error(429, 'Du kan kun sende en email hvert minut.');
+	}
 
 	//gereate email verification token
 	const key = randombytes.default(64).toString('hex');
@@ -110,5 +88,5 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
 		);
 	}
 
-	return json({ token, user: users[0] });
+	return new Response();
 };

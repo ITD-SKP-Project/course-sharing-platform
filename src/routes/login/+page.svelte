@@ -4,7 +4,7 @@
 	export let data: PageData;
 
 	import { page } from '$app/stores';
-	import future from '$lib/img/future.webp';
+
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
@@ -46,7 +46,7 @@
 		//if response is not ok, set error and errorMessage
 		if (!response.ok) {
 			error = response.statusText;
-			const data = JSON.parse(await response.text());
+			const data = await response.json();
 			errorMessage = data.message;
 			return;
 		}
@@ -124,7 +124,7 @@
 			<div class="flex w-full max-w-md flex-col gap-1.5">
 				<p class="text-center">
 					Glemt din kode?
-					<a href="/reset-password" class="text-primary hover:underline">Nulstil</a>
+					<a href="/nulstil-adgangskode" class="text-primary hover:underline">Nulstil</a>
 				</p>
 			</div>
 		</div>

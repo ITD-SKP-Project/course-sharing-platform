@@ -9,6 +9,7 @@ export interface User {
 	updated_at: string;
 	validated: boolean;
 	email_verified: boolean;
+	last_send_email?: Date;
 }
 export interface Project {
 	id: number;
