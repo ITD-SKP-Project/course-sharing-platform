@@ -11,33 +11,40 @@ export interface User {
 	email_verified: boolean;
 	last_send_email?: Date;
 }
-export interface Project {
+export interface Project extends ProjectCreation {
 	id: number;
-	title: string;
-	description: string;
 	created_at: string;
 	updated_at: string;
-	project_fork_id: number;
-	project_root_id: number;
-	subjects: string;
-	resources: string;
+	project_fork_id?: number;
+	project_root_id?: number;
 	likes: number;
 	authors?: ProjectAuthor[];
 	professions?: ProjectProfession[];
+	live: boolean;
 }
-export interface ProjectAuthor {
+export interface ProjectCreation {
+	title: string;
+	description: string;
+	subjects: string;
+	resources: string;
+}
+export interface ProjectAuthor extends ProjectAuthorCreation {
 	id: number;
-	project_id: number;
-	user_id: number;
-	authority_level: number;
 	user?: User;
 }
-export interface ProjectProfession {
+export interface ProjectAuthorCreation {
+	project_id: number | null;
+	user_id: number;
+	authority_level: number;
+}
+export interface ProjectProfession extends ProjectProfessionCreation {
 	id: number;
-	project_id: number;
-	profession_id: number;
-	skill_level: number;
 	profession_name?: string;
+}
+export interface ProjectProfessionCreation {
+	project_id: number | null;
+	profession_id: number;
+	skill_level: string;
 }
 export interface Profession {
 	id: number;

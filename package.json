@@ -11,7 +11,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest",
 		"lint": "prettier --check .",
-		"format": "prettier --write ."
+		"format": "prettier --write .",
+		"dump-psql": "pg_dump -h ep-polished-morning-87867470.us-east-1.postgres.vercel-storage.com -p 5432 -U default -W -F p -b -v -f \"/Users/kennikollemorten/Desktop/backup_file_name.sql\" verceldb"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.0.0",
