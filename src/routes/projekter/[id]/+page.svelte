@@ -22,7 +22,8 @@
 			</Card.Header>
 			<Card.Content>
 				<div
-					class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/75 text-primary-foreground"
+					id="authors"
+					class="p.2 mt-2 flex w-full flex-col flex-wrap gap-x-8 gap-y-4 rounded-md bg-secondary p-2"
 				>
 					{#if project.authors && project.authors.length > 0}
 						{#each project.authors as author}

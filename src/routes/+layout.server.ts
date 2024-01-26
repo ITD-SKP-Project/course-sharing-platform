@@ -1,3 +1,4 @@
+import type { User } from '$lib/types';
 import type { LayoutServerLoad } from './$types';
 
 export const load = (async ({ cookies, locals }) => {
@@ -7,7 +8,7 @@ export const load = (async ({ cookies, locals }) => {
 		return {
 			darkmode: darkmode ? JSON.parse(darkmode) : null,
 			color: color ? color : null,
-			user: locals.user
+			user: locals.user as User
 		};
 	}
 }) satisfies LayoutServerLoad;

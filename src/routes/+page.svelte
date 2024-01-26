@@ -11,10 +11,12 @@
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	//functionality
-	import type { Project } from '$lib/types';
+	import type { Project, User } from '$lib/types';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;
+	import { user as userStore } from '$lib/index';
+	const user: User | null = data.user || $userStore;
 
 	import { goto } from '$app/navigation';
 	let titleValue = '';
@@ -82,7 +84,12 @@
 </svelte:head>
 
 <main class="px-8 pb-8 pt-2">
-	<h1 class="text-3xl font-bold">Projekter</h1>
+	<div class="flex justify-between">
+		<h1 class="text-3xl font-bold">Projekter</h1>
+		{#if user?.authority_level && user.authority_level > 0}
+			<Button href="/projekter/ny">Opret nyt projekt</Button>
+		{/if}
+	</div>
 
 	<Separator class="my-4" />
 

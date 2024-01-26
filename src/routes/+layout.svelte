@@ -4,7 +4,7 @@
 	import type { LayoutData } from './$types';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
-	import { HamburgerMenu, Person, MagnifyingGlass, Home, FilePlus } from 'radix-icons-svelte';
+	import { HamburgerMenu, Person, MagnifyingGlass, Home } from 'radix-icons-svelte';
 	import { Input } from '$lib/components/ui/input';
 	import * as Card from '$lib/components/ui/card';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
@@ -41,7 +41,6 @@
 	let darkMode = data.darkmode;
 	let color: string = data.color ?? '';
 	user.set(data.user);
-	$: console.log($user, 'user');
 
 	let loaded = false;
 	onMount(() => {
