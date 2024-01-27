@@ -1,5 +1,12 @@
 import type { PageServerLoad } from './$types';
-import { sql } from '@vercel/postgres';
+
+import pkg from 'pg';
+// import { POSTGRES_URL } from '$env/static/private'; //?: locally
+const { Pool } = pkg;
+const pool = new Pool({
+	connectionString: process.env.DATABASE_URL,
+	ssl: true
+});
 import type {
 	DatabaseResponse,
 	Profession,
@@ -11,20 +18,26 @@ import { error, json } from '@sveltejs/kit';
 import type { User } from '$lib/types';
 
 export const load = (async () => {
-	const { rows: projects } = (await sql`SELECT * FROM projects`) as DatabaseResponse<Project>;
+	const client = await pool.connect();
+
+	const { rows: projects } = (await client.query(
+		'SELECT * FROM projects'
+	)) as DatabaseResponse<Project>;
 	if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
 	//for each project, get authors and professions
-	const { rows: authors } =
-		(await sql`SELECT * FROM project_authors`) as DatabaseResponse<ProjectAuthor>;
+	const { rows: authors } = (await client.query(
+		'SELECT * FROM project_authors'
+	)) as DatabaseResponse<ProjectAuthor>;
 
 	//get all users and add them to authors
-	const { rows: users } = (await sql`SELECT * FROM users`) as DatabaseResponse<User>;
+	const { rows: users } = (await client.query('SELECT * FROM users')) as DatabaseResponse<User>;
 
-	const { rows: projectProfessions } = (await sql`SELECT pp.*, p.name as profession_name
+	const { rows: projectProfessions } = (await client.query(`SELECT pp.*, p.name as profession_name
 		FROM project_professions pp
-		JOIN professions p ON pp.profession_id = p.id; `) as DatabaseResponse<ProjectProfession>;
-	const { rows: professions } =
-		(await sql`SELECT * FROM professions; `) as DatabaseResponse<Profession>;
+		JOIN professions p ON pp.profession_id = p.id;`)) as DatabaseResponse<ProjectProfession>;
+	const { rows: professions } = (await client.query(
+		`SELECT * FROM professions; `
+	)) as DatabaseResponse<Profession>;
 
 	//add authors and professions to projects
 	projects.forEach((project) => {
