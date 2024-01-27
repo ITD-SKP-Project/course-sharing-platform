@@ -20,8 +20,6 @@
 			document.getElementById(triggerId)?.focus();
 		});
 	}
-	$: console.log('🚀 ~ projectAuthors:', projectAuthors);
-	$: console.log('🚀 ~ users:', users);
 
 	const permissions = [
 		{ value: 0, label: 'Læse' },

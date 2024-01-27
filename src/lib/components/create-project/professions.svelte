@@ -20,7 +20,8 @@
 		profession_id: 6
 	};
 	export let projectProfessions: ProjectProfessionCreation[] = [];
-	$: console.log('🚀 ~ projectProfessions:', projectProfessions);
+
+	// todo: save to localstorage
 </script>
 
 <div>

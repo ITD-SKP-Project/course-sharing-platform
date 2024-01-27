@@ -12,6 +12,10 @@
 	import AuthorForm from '$lib/components/create-project/authors.svelte';
 	import ProfessionForm from '$lib/components/create-project/professions.svelte';
 
+	import { z } from 'zod';
+
+	// { username: string }
+
 	import type {
 		Project,
 		ProjectAuthor,
@@ -23,8 +27,22 @@
 	import { onMount } from 'svelte';
 
 	let projectAuthors: ProjectAuthorCreation[];
-	let projectProfessions: ProjectProfessionCreation[];
+	const ProjectAuthors = z.array(
+		z.object({
+			user_id: z.number().gt(0), //greater than 0
+			authority_level: z.number().gte(0), //greater than 0
+			project_id: z.number().optional()
+		})
+	);
 
+	let projectProfessions: ProjectProfessionCreation[];
+	const ProjectProfessions = z.array(
+		z.object({
+			skill_level: z.string().min(2, { message: 'Niveau' }), //greater than 0
+			profession_id: z.number().gt(0), //greater than 0
+			project_id: z.number().optional()
+		})
+	);
 	let projektInfo = {
 		title: '',
 		description: '',
@@ -81,6 +99,15 @@
 	let subjectInputValue = '';
 	let resourceInputValue = '';
 	let error = '';
+
+	const upload = async () => {
+		try {
+			ProjectAuthors.parse(projectAuthors);
+			ProjectProfessions.parse(projectProfessions);
+		} catch (error) {
+			console.log(error);
+		}
+	};
 </script>
 
 <main class="mb-16 flex flex-col gap-8 p-2 sm:p-8">
@@ -226,7 +253,7 @@
 					</Card.Root>
 				{/if}
 			</div>
-			<Button on:click={() => {}}>Udgiv projekt</Button>
+			<Button on:click={upload}>Udgiv projekt</Button>
 		</form>
 	</div>
 </main>
