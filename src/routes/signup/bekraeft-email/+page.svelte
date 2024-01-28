@@ -9,10 +9,8 @@
 
 	import * as Card from '$lib/components/ui/card';
 
-	console.log(data, 'data');
-	console.log($user, '$user');
 	//the last time the user send an email
-	const lastSendEmail: Date = data.user?.last_send_email ?? $user?.last_send_email;
+	const lastSendEmail: Date = data.user?.last_send_email ?? $user?.last_send_email ?? new Date();
 	const now = new Date();
 	const then = new Date(lastSendEmail);
 
@@ -32,7 +30,7 @@
 		error = '';
 		errorMessage = '';
 
-		const response = await fetch('/api/signup/email', {
+		const response = await fetch('/api/send-email-verification-link', {
 			method: 'POST',
 			headers: {
 				'content-type': 'application/json'

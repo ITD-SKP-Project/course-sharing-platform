@@ -10,83 +10,100 @@
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 
-	let error = '';
-	let errorMessage = '';
+	export let form;
 
-	let email = '';
-	let currentPage = 'beforeSend';
+	// let email = '';
+	// let currentPage = 'beforeSend';
 
-	function validateEmail(email: string) {
-		const re = /\S+@\S+\.\S+/;
-		return re.test(email);
-	}
+	// function validateEmail(email: string) {
+	// 	const re = /\S+@\S+\.\S+/;
+	// 	return re.test(email);
+	// }
 
-	async function sendResetEmail() {
-		error = '';
-		errorMessage = '';
+	// async function sendResetEmail() {
+	// 	error = '';
+	// 	errorMessage = '';
 
-		const response = await fetch('/api/password/send-reset-link', {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json'
-			},
-			body: JSON.stringify({ email: email })
-		});
-		if (!response.ok) {
-			error = response.statusText;
-			const data = await response.json();
-			errorMessage = data.message;
-			return;
-		}
-		currentPage = 'afterSend';
-	}
+	// 	const response = await fetch('/api/password/send-reset-link', {
+	// 		method: 'POST',
+	// 		headers: {
+	// 			'content-type': 'application/json'
+	// 		},
+	// 		body: JSON.stringify({ email: email })
+	// 	});
+	// 	if (!response.ok) {
+	// 		error = response.statusText;
+	// 		const data = await response.json();
+	// 		errorMessage = data.message;
+	// 		return;
+	// 	}
+	// 	currentPage = 'afterSend';
+	// }
+
+	let pages = ['beforeSend', 'afterSend'];
+
+	//if there are validation errors, set the current page to the first page with errors
+	let currentPage =
+		form?.validationErrors?.firstname || form?.validationErrors?.lastname
+			? pages[0]
+			: form?.success
+				? pages[1]
+				: pages[0];
 </script>
 
 <main class="flex flex-col items-center justify-center px-4">
 	<h1 class="text-primar mb-2 text-4xl font-bold">Nulstil din adgangskode</h1>
 	<!--
 	<h2>Før du kan begynde at oprette projekter, skal vi lige vide lidt mere om dig.</h2> -->
-	{#if error}
+	{#if form?.serverError}
 		<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
 			<AlertTriangle class="h-4 w-4 " />
-			<Alert.Title>Fejl: {error}</Alert.Title>
-			<Alert.Description>{errorMessage}</Alert.Description>
+			<Alert.Title>Fejl:</Alert.Title>
+			<Alert.Description>{form?.serverError}</Alert.Description>
 		</Alert.Root>
 	{/if}
 	<Tabs.Root value={currentPage} class="mt-8 w-[400px]">
 		<Tabs.List class="grid w-full grid-cols-2">
-			<Tabs.Trigger value="beforeSend">Nulstil kode</Tabs.Trigger>
-			<Tabs.Trigger disabled={true} value="afterSend">bekræftelse</Tabs.Trigger>
+			<Tabs.Trigger disabled={form?.success} value="beforeSend">Nulstil kode</Tabs.Trigger>
+			<Tabs.Trigger disabled={!form?.success} value="afterSend">Bekræftelse</Tabs.Trigger>
 		</Tabs.List>
 
 		<Tabs.Content value="beforeSend">
-			<Card.Root>
-				<Card.Header>
-					<Card.Title>Skriv din e-mail</Card.Title>
-					<Card.Description>
-						Vi sender dig en e-mail med et link til at nulstille din adgangskode.
-					</Card.Description>
-				</Card.Header>
-				<Card.Content class="space-y-2">
-					<div class="space-y-1">
-						<Label for="firstname">Fornavn</Label>
-						<Input id="firstname" placeholder="example@gmail.com" bind:value={email} />
-					</div>
-				</Card.Content>
-				<Card.Footer class="justify-end">
-					<Button disabled={!email || !validateEmail(email)} on:click={sendResetEmail}
-						>Send nulstil link</Button
-					>
-				</Card.Footer>
-			</Card.Root>
+			<form method="POST">
+				<Card.Root>
+					<Card.Header>
+						<Card.Title>Skriv din e-mail</Card.Title>
+						<Card.Description>
+							Vi sender dig en e-mail med et link til at nulstille din adgangskode.
+						</Card.Description>
+					</Card.Header>
+					<Card.Content class="space-y-2">
+						<div class="space-y-1">
+							<Label for="email">E-mail</Label>
+							<Input
+								name="email"
+								id="email"
+								placeholder="example@gmail.com"
+								value={form?.formData?.email}
+							/>
+							{#if form?.validationErrors?.email}
+								<span class="label-text-alt text-red-500">{form?.validationErrors?.email[0]}</span>
+							{/if}
+						</div>
+					</Card.Content>
+					<Card.Footer class="justify-end">
+						<Button type="submit">Send nulstil link</Button>
+					</Card.Footer>
+				</Card.Root>
+			</form>
 		</Tabs.Content>
 		<Tabs.Content value="afterSend">
 			<Card.Root>
 				<Card.Header>
 					<Card.Title>E-mail send!</Card.Title>
 					<Card.Description>
-						Vi har sendt en e-mail til {email} med et link til at nulstille din adgangskode. Husk at
-						tjekke din spam folder.
+						Vi har sendt en e-mail til {form?.formData?.email} med et link til at nulstille din adgangskode.
+						Husk at tjekke din spam folder.
 					</Card.Description>
 				</Card.Header>
 

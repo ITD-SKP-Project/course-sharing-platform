@@ -2,73 +2,13 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
-
-	import { page } from '$app/stores';
+	export let form;
 
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
-	import { AlertTriangle, User } from 'lucide-svelte';
-	import { goto } from '$app/navigation';
-	import { user } from '$lib/index';
-	import type { User as UserType } from '$lib/types';
-
-	let password = '';
-	let email = '';
-	let error = '';
-	let errorMessage = '';
-
-	function validateEmail(email: string) {
-		const re = /\S+@\S+\.\S+/;
-		return re.test(email);
-	}
-
-	async function submit() {
-		error = '';
-		errorMessage = '';
-
-		//validate email
-		if (!validateEmail(email)) {
-			error = 'invalid email';
-			return;
-		}
-
-		//send request to server
-		const response = await fetch('/api/login', {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json'
-			},
-			body: JSON.stringify({ password, email })
-		});
-
-		//if response is not ok, set error and errorMessage
-		if (!response.ok) {
-			error = response.statusText;
-			const data = await response.json();
-			errorMessage = data.message;
-			return;
-		}
-
-		//if response is ok, set user and redirect
-		const { user: user_, redirectTo } = (await response.json()) as {
-			user: UserType;
-			redirectTo: string | null; //the server may specify a redirect url
-		};
-		//set user store to update the ui
-		user.set(user_);
-		//redirect
-		redirect(redirectTo);
-	}
-	function redirect(location: string | null = null) {
-		const redirectTo = location ?? $page.url.searchParams.get('redirect');
-		if (redirectTo) {
-			goto('/' + redirectTo.slice(1));
-		} else {
-			goto('/konto');
-		}
-	}
+	import { AlertTriangle } from 'lucide-svelte';
 </script>
 
 <div class="flex h-screen-fix lg:!bg-none" id="theme-image">
@@ -79,38 +19,42 @@
 	>
 		<!-- title -->
 		<div class="flex w-full max-w-md flex-col gap-4 rounded-2xl bg-background p-8">
-			{#if error}
+			{#if form?.serverError}
 				<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
 					<AlertTriangle class="h-4 w-4 " />
-					<Alert.Title>Fejl: {error}</Alert.Title>
-					<Alert.Description>{errorMessage}</Alert.Description>
+					<Alert.Title>Fejl:</Alert.Title>
+					<Alert.Description>{form?.serverError}</Alert.Description>
 				</Alert.Root>
 			{/if}
-			<form
-				on:submit={submit}
-				class=" flex w-full max-w-md flex-col items-center justify-center gap-4"
-			>
+			<form method="POST" class="flex w-full max-w-md flex-col items-center justify-center gap-4">
 				<h1 class="text-4xl font-bold">Log ind</h1>
 
 				<div class="flex w-full max-w-md flex-col gap-1.5">
 					<Label for="email">E-mail</Label>
 					<Input
+						name="email"
 						autocomplete="on"
-						bind:value={email}
+						value={form?.formData?.email}
 						type="email"
 						id="email"
 						placeholder="bruger@example.com"
 					/>
+					{#if form?.validationErrors?.email}
+						<span class="label-text-alt text-red-500">{form?.validationErrors?.email[0]}</span>
+					{/if}
 				</div>
 				<div class="flex w-full max-w-md flex-col gap-1.5">
 					<Label for="password">Adgangskode</Label>
 					<Input
+						name="password"
 						autocomplete="on"
-						bind:value={password}
 						type="password"
 						id="password"
 						placeholder="Pa@$$w0rd"
 					/>
+					{#if form?.validationErrors?.password}
+						<span class="label-text-alt text-red-500">{form?.validationErrors?.password[0]}</span>
+					{/if}
 				</div>
 				<Button type="submit" class="mx-auto w-full max-w-md">Log ind</Button>
 			</form>

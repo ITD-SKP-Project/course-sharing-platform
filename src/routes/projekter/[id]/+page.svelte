@@ -2,7 +2,6 @@
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
-	console.log('🚀 ~ data:', data);
 
 	import * as Card from '$lib/components/ui/card';
 

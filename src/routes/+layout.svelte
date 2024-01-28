@@ -144,7 +144,7 @@
 				variant="secondary"
 				class="justify-center2 flex items-center gap-2 px-4 pl-2"
 				on:click={async () => {
-					await fetch('/api/login', { method: 'DELETE' });
+					await fetch('/api/signout', { method: 'DELETE' });
 					user.set(null);
 					location.reload();
 				}}

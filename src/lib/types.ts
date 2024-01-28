@@ -50,6 +50,12 @@ export interface Profession {
 	id: number;
 	name: string;
 }
+export interface VerificationToken {
+	id: number;
+	user_id: number;
+	token: string;
+	type: string;
+}
 
 //vercel posqgressql types
 interface Field {
