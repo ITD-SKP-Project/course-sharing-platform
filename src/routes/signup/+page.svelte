@@ -2,55 +2,13 @@
 	import type { PageData } from './$types';
 
 	export let data: PageData;
+	export let form;
 
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { AlertTriangle } from 'lucide-svelte';
-	import { goto } from '$app/navigation';
-	import { user } from '$lib/index';
-	import type { User } from '$lib/types';
-
-	let password = '';
-	let email = '';
-	let error = '';
-	let errorMessage = '';
-
-	function validateEmail(email: string) {
-		const re = /\S+@\S+\.\S+/;
-		return re.test(email);
-	}
-
-	async function submit() {
-		error = '';
-		errorMessage = '';
-		if (!validateEmail(email)) {
-			error = 'Skriv venligst en gyldig email.';
-			return;
-		}
-		if (password.length < 8) {
-			error = 'Adgangskoden skal være mindst 8 tegn.';
-			return;
-		}
-
-		const response = await fetch('/api/signup', {
-			method: 'POST',
-			headers: {
-				'content-type': 'application/json'
-			},
-			body: JSON.stringify({ password, email })
-		});
-		if (!response.ok) {
-			error = response.statusText;
-			const data = await response.json();
-			errorMessage = data.message;
-		} else {
-			const { user: user_ } = (await response.json()) as { user: User; token: string };
-			user.set(user_);
-			goto('/signup/bekraeft-email');
-		}
-	}
 </script>
 
 <div class="flex h-screen-fix lg:!bg-none" id="theme-image">
@@ -66,22 +24,40 @@
 		class="relative z-0 flex w-full flex-col items-center justify-center gap-4 backdrop-blur-3xl lg:w-1/2"
 	>
 		<div class="flex w-full max-w-md flex-col gap-4 rounded-2xl bg-background p-8">
-			{#if error}
+			{#if form?.error}
 				<Alert.Root variant="destructive" class="w-full max-w-md border-red-500 text-red-500">
 					<AlertTriangle class="h-4 w-4 " />
-					<Alert.Title>Fejl: {error}</Alert.Title>
-					<Alert.Description>{errorMessage}</Alert.Description>
+					<Alert.Title>Fejl: {form?.error}</Alert.Title>
 				</Alert.Root>
 			{/if}
-			<form on:submit={submit} class="flex w-full flex-col items-center justify-center gap-4">
+			<form method="POST" class="flex w-full flex-col items-center justify-center gap-4">
 				<h1 class="text-4xl font-bold">Opret en konto</h1>
 				<div class="flex w-full max-w-md flex-col gap-1.5">
 					<Label for="email">E-mail</Label>
-					<Input bind:value={email} type="email" id="email" placeholder="bruger@example.com" />
+					<Input
+						name="email"
+						value={form?.data?.email ?? ''}
+						type="email"
+						id="email"
+						placeholder="bruger@example.com"
+						class={form?.errors?.email ? 'border-destructive' : ''}
+					/>
+					{#if form?.errors?.email}
+						<span class="label-text-alt text-red-500">{form?.errors?.email[0]}</span>
+					{/if}
 				</div>
 				<div class="flex w-full max-w-md flex-col gap-1.5">
 					<Label for="password">Adgangskode</Label>
-					<Input bind:value={password} type="password" id="password" placeholder="Pa@$$w0rd" />
+					<Input
+						name="password"
+						class={form?.errors?.password ? 'border-destructive' : ''}
+						type="password"
+						id="password"
+						placeholder="Pa@$$w0rd"
+					/>
+					{#if form?.errors?.password}
+						<span class="label-text-alt text-red-500">{form?.errors?.password[0]}</span>
+					{/if}
 				</div>
 
 				<Button type="submit" class="mx-auto w-full max-w-md">Opret dig</Button>

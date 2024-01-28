@@ -8,16 +8,21 @@
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { derived, writable, type Writable } from 'svelte/store';
 	import * as Select from '$lib/components/ui/select';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	//functionality
-	import type { Project } from '$lib/types';
+	import type { Project, User } from '$lib/types';
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;
+	import { user as userStore } from '$lib/index';
+	const user: User | null = data.user || $userStore;
 
 	import { goto } from '$app/navigation';
 	let titleValue = '';
-	let selectedProfession: string;
+	$: itSupport = ($filters.itSupport as boolean) || false;
+	$: programmer = ($filters.programmer as boolean) || false;
+	$: infrastructure = ($filters.infrastructure as boolean) || false;
 	//url search params
 	const updateSearchParams = (key: string, value: string) => {
 		const searchParams = new URLSearchParams(window.location.search);
@@ -31,7 +36,9 @@
 		authorName: ($page.url.searchParams.get('forfatter') as string) ?? (null as null),
 		title: null as string | null,
 		likes: null as number | null,
-		professionName: $page.url.searchParams.get('fag') as string | null
+		itSupport: $page.url.searchParams.get('its') as boolean | null,
+		programmer: $page.url.searchParams.get('dtp') as boolean | null,
+		infrastructure: $page.url.searchParams.get('dti') as boolean | null
 	});
 	// Derived store for filtered projects
 	const filteredProjects = derived([projects, filters], ([$projects, $filters]) =>
@@ -45,14 +52,28 @@
 				//filter title
 				(!$filters.title ||
 					project.title.toLocaleLowerCase().includes($filters.title?.toLocaleLowerCase())) &&
-				//filter profession.professionName
-				//if any of the projects profession.profession matches with the $filters.professionName
-				(!$filters.professionName ||
-					project.professions?.some((prjct) => prjct?.profession_name == $filters.professionName))
+				//filter profession.itSupport
+				//if itSupport is true, filter projects with profession_name = IT-Support
+				(!$filters.itSupport ||
+					project.professions?.some(
+						(profession) => profession.profession_name == 'It-supporter'
+					)) &&
+				//filter profession.programmer
+				//if programmer is true, filter projects with profession_name = Datatekniker programmering
+				(!$filters.programmer ||
+					project.professions?.some(
+						(profession) => profession.profession_name == 'Datatekniker programmering'
+					)) &&
+				//filter profession.infrastructure
+				//if infrastructure is true, filter projects with profession_name = Datatekniker infrastruktur
+				(!$filters.infrastructure ||
+					project.professions?.some(
+						(profession) => profession.profession_name == 'Datatekniker infrastruktur'
+					))
 			);
 		})
 	);
-	function updateFilter(field: string, value: number | null | string) {
+	function updateFilter(field: string, value: number | null | string | boolean) {
 		filters.update((currentFilters) => ({ ...currentFilters, [field]: value }));
 	}
 </script>
@@ -63,7 +84,12 @@
 </svelte:head>
 
 <main class="px-8 pb-8 pt-2">
-	<h1 class="text-3xl font-bold">Projekter</h1>
+	<div class="flex justify-between">
+		<h1 class="text-3xl font-bold">Projekter</h1>
+		{#if user?.authority_level && user.authority_level > 0}
+			<Button href="/projekter/ny">Opret nyt projekt</Button>
+		{/if}
+	</div>
 
 	<Separator class="my-4" />
 
@@ -90,31 +116,41 @@
 				/>
 			</form>
 
-			{#key $filters.professionName}
-				<Select.Root>
-					<Select.Trigger class="w-[180px]">
-						<Select.Value placeholder={$filters.professionName || 'Udannelse'} />
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Item
-							on:click={() => {
-								updateSearchParams('fag', '');
-								updateFilter('professionName', null);
-							}}
-							value={null}>Alle</Select.Item
-						>
-						{#each data.professions as profession}
-							<Select.Item
-								on:click={() => {
-									updateSearchParams('fag', profession.name ?? '');
-									updateFilter('professionName', profession.name ?? '');
-								}}
-								value={profession.id}>{profession.name}</Select.Item
-							>
-						{/each}
-					</Select.Content>
-				</Select.Root>
-			{/key}
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger asChild let:builder>
+					<Button variant="outline" builders={[builder]}>Uddannelser</Button>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content class="w-56">
+					<DropdownMenu.Label>Appearance</DropdownMenu.Label>
+					<DropdownMenu.Separator />
+
+					<DropdownMenu.CheckboxItem
+						bind:checked={itSupport}
+						on:click={() => {
+							updateSearchParams('its', itSupport ? '' : 'true');
+							updateFilter('itSupport', itSupport ? null : true);
+						}}
+					>
+						It-Supporter
+					</DropdownMenu.CheckboxItem>
+
+					<DropdownMenu.CheckboxItem
+						on:click={() => {
+							updateSearchParams('dtp', programmer ? '' : 'true');
+							updateFilter('programmer', programmer ? null : true);
+						}}
+						bind:checked={programmer}>Datatekniker programmering</DropdownMenu.CheckboxItem
+					>
+
+					<DropdownMenu.CheckboxItem
+						on:click={() => {
+							updateSearchParams('dti', infrastructure ? '' : 'true');
+							updateFilter('infrastructure', infrastructure ? null : true);
+						}}
+						bind:checked={infrastructure}>Datatekniker infrastruktur</DropdownMenu.CheckboxItem
+					>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 		</div>
 		{#if !Object.values($filters).every((val) => {
 			return val == null || val == '';
@@ -156,18 +192,50 @@
 					</Button>
 				</div>
 			{/if}
-			{#if $filters.professionName}
+			{#if $filters.itSupport}
 				<div class="flex flex-col gap-1.5">
 					<Label for="email">Uddannelse</Label>
 					<Button
 						variant="outline"
 						class="flex h-fit items-center gap-4"
 						on:click={() => {
-							updateSearchParams('fag', '');
-							updateFilter('professionName', null);
+							updateSearchParams('its', '');
+							updateFilter('itSupport', null);
 						}}
 					>
-						{$filters.professionName}
+						It-Support
+						<Cross2 class="h-4 w-4" />
+					</Button>
+				</div>
+			{/if}
+			{#if $filters.programmer}
+				<div class="flex flex-col gap-1.5">
+					<Label for="email">Uddannelse</Label>
+					<Button
+						variant="outline"
+						class="flex h-fit items-center gap-4"
+						on:click={() => {
+							updateSearchParams('dtp', '');
+							updateFilter('programmer', null);
+						}}
+					>
+						Datatekniker programmering
+						<Cross2 class="h-4 w-4" />
+					</Button>
+				</div>
+			{/if}
+			{#if $filters.infrastructure}
+				<div class="flex flex-col gap-1.5">
+					<Label for="email">Uddannelse</Label>
+					<Button
+						variant="outline"
+						class="flex h-fit items-center gap-4"
+						on:click={() => {
+							updateSearchParams('dti', '');
+							updateFilter('infrastructure', null);
+						}}
+					>
+						Datatekniker infrastruktur
 						<Cross2 class="h-4 w-4" />
 					</Button>
 				</div>
@@ -233,8 +301,20 @@
 										<Button
 											class="h-fit justify-start p-0"
 											on:click={() => {
-												updateSearchParams('fag', profession.profession_name ?? '');
-												updateFilter('professionName', profession.profession_name ?? '');
+												switch (profession.profession_name) {
+													case 'It-supporter':
+														updateSearchParams('its', 'true');
+														updateFilter('itSupport', true);
+														break;
+													case 'Datatekniker programmering':
+														updateSearchParams('dtp', 'true');
+														updateFilter('programmer', true);
+														break;
+													case 'Datatekniker infrastruktur':
+														updateSearchParams('dti', 'true');
+														updateFilter('infrastructure', true);
+														break;
+												}
 											}}
 											variant="ghost"
 											><div class="flex items-center gap-2">
