@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import jwt from 'jsonwebtoken';
 import { error, json, redirect } from '@sveltejs/kit';
 import { JWT_SECRET } from '$env/static/private';
-import type { User, DatabaseResponse } from '$lib/types';
+import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import pkg from 'pg';

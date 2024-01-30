@@ -1,113 +1,23 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { PageData, ActionData } from './$types';
+	import type { User } from '$lib/types';
 
 	export let data: PageData;
+	let users = data.users as User[];
+	export let form: ActionData;
+	$: console.log(form);
 
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { XIcon } from 'lucide-svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Button } from '$lib/components/ui/button';
-	import * as Card from '$lib/components/ui/card';
-	import AuthorForm from '$lib/components/create-project/authors.svelte';
-	import ProfessionForm from '$lib/components/create-project/professions.svelte';
+	import { enhance } from '$app/forms';
+	import * as Form from '$lib/components/ui/form';
 
-	import { z } from 'zod';
-
-	// { username: string }
-
-	import type {
-		Project,
-		ProjectAuthor,
-		Profession,
-		User,
-		ProjectAuthorCreation,
-		ProjectProfessionCreation
-	} from '$lib/types';
-	import { onMount } from 'svelte';
-
-	let projectAuthors: ProjectAuthorCreation[];
-	const ProjectAuthors = z.array(
-		z.object({
-			user_id: z.number().gt(0), //greater than 0
-			authority_level: z.number().gte(0), //greater than 0
-			project_id: z.number().optional()
-		})
-	);
-
-	let projectProfessions: ProjectProfessionCreation[];
-	const ProjectProfessions = z.array(
-		z.object({
-			skill_level: z.string().min(2, { message: 'Niveau' }), //greater than 0
-			profession_id: z.number().gt(0), //greater than 0
-			project_id: z.number().optional()
-		})
-	);
-	let projektInfo = {
-		title: '',
-		description: '',
-		subjects: [] as string[],
-		resources: [] as string[],
-
-		professions: {
-			'It-supporter': {
-				active: false,
-				skill_level: ''
-			},
-			'Datatekniker programmering': {
-				active: false,
-				skill_level: ''
-			},
-			'Datatekniker infrastruktur': {
-				active: false,
-				skill_level: ''
-			}
-		},
-		live: false
-	};
-
-	//save the project to localstorage so the user can continue later
-	let loaded = false;
-	let users = (data.users as User[]) || undefined;
-
-	onMount(() => {
-		loaded = true;
-		if (localStorage.getItem('projectInfo')) {
-			const raw = localStorage.getItem('projectInfo');
-			if (!raw) return;
-			const json = JSON.parse(raw);
-			projektInfo = json;
-			//remove users that are already in projektInfo.authors
-			if (users) {
-				users = users.filter((user) => {
-					let found = false;
-					projectAuthors.forEach((author) => {
-						if (author.user_id === user.id) {
-							found = true;
-						}
-					});
-					return !found;
-				});
-			}
-			users = users || [];
-		}
-	});
-	$: if (loaded) {
-		localStorage.setItem('projectInfo', JSON.stringify(projektInfo));
-	}
-
-	let subjectInputValue = '';
-	let resourceInputValue = '';
-	let error = '';
-
-	const upload = async () => {
-		try {
-			ProjectAuthors.parse(projectAuthors);
-			ProjectProfessions.parse(projectProfessions);
-		} catch (error) {
-			console.log(error);
-		}
-	};
+	let itSupoter = false;
+	let programmering = false;
+	let infrastruktur = false;
 </script>
 
 <main class="mb-16 flex flex-col gap-8 p-2 sm:p-8">
@@ -115,145 +25,207 @@
 		<h1 class="text-4xl font-semibold">Opret et nyt projekt.</h1>
 		<p class="text mt-2">Udfyld alle felterne, og tryk på offentliggør for at lægge det op.</p>
 
-		<form class=" mt-8 flex w-full max-w-lg flex-col gap-12">
+		<form method="POST" use:enhance class="mt-8 flex w-full max-w-lg flex-col gap-12">
 			<!-- ? title -->
 			<div class="flex w-full flex-col gap-1.5">
 				<Label for="title" class="text-lg">Title</Label>
-				<Input bind:value={projektInfo.title} type="title" id="title" placeholder="Title" />
+				<Input
+					name="title"
+					value={form?.formData?.title}
+					type="test"
+					id="title"
+					placeholder="Title"
+				/>
 				<p class="text-sm text-muted-foreground">Titlen på projektets.</p>
+				{#if form?.validationErrors?.title}
+					<p class="text-red-500">{form?.validationErrors?.title}</p>
+				{/if}
 			</div>
 			<!-- ? description -->
 			<div class="flex w-full flex-col gap-1.5">
 				<Label class="text-lg" for="description">Description</Label>
-				<Textarea bind:value={projektInfo.description} id="description" placeholder="Description" />
+				<Textarea
+					name="description"
+					value={form?.formData?.description}
+					id="description"
+					placeholder="Description"
+				/>
 				<p class="text-sm text-muted-foreground">
 					En kort forklaring af projektet. Hvad handler det om?
 				</p>
+				{#if form?.validationErrors?.description}
+					<p class="text-red-500">{form?.validationErrors?.description}</p>
+				{/if}
 			</div>
 			<!-- ? professions -->
-			<ProfessionForm bind:projectProfessions />
-			<!-- ? authors -->
-			<AuthorForm bind:projectAuthors bind:users />
-			<!-- ? subjects -->
-			<div class="flex flex-col gap-4">
-				<form
-					on:submit|preventDefault={() => {
-						error = '';
-						if (subjectInputValue === '') return;
-						if (projektInfo.subjects.includes(subjectInputValue)) {
-							error = `${subjectInputValue} er allerede tilføjet.`;
-							return;
-						}
-						projektInfo.subjects.push(subjectInputValue);
-						subjectInputValue = '';
-						projektInfo = projektInfo;
-					}}
-				>
-					<div class="flex w-full flex-col gap-1.5">
-						<Label class="text-lg" for="resurse">Fag</Label>
-						<div class="flex gap-1">
-							<Input bind:value={subjectInputValue} type="fag" id="fag" placeholder="Cisco ITN" />
-							<Button
-								on:click={() => {
-									error = '';
-									if (subjectInputValue === '') return;
-									if (projektInfo.subjects.includes(subjectInputValue)) {
-										error = `${subjectInputValue} er allerede tilføjet.`;
-										return;
-									}
-									projektInfo.subjects.push(subjectInputValue);
-									subjectInputValue = '';
-									projektInfo = projektInfo;
+			<div>
+				<Label class="text-lg" for="profession-section">Uddannelser</Label>
+				<div class="flex flex-col gap-4 sm:gap-2">
+					<div
+						id="profession-section"
+						class="flex flex-col items-start justify-between space-x-2 sm:flex-row sm:items-center"
+					>
+						<div>
+							<input
+								on:input={(e) => {
+									itSupoter = e.target?.checked || '';
 								}}
-								variant="secondary">Tilføj</Button
-							>
-						</div>
-						{#if error}
-							<p class="text-destructive">{error}</p>
-						{/if}
-					</div>
-				</form>
-				{#if projektInfo.subjects && projektInfo.subjects.length > 0}
-					<Card.Root class="bg-secondary p-0">
-						<Card.Content class="flex flex-wrap gap-2 p-2">
-							{#each projektInfo.subjects as subject (subject)}
-								<Button
-									class="items-center shadow-md"
-									on:click={() => {
-										projektInfo.subjects.splice(projektInfo.subjects.indexOf(subject), 1);
-										projektInfo = projektInfo;
-									}}
-									>{subject}
-									<XIcon class="h-4 w-4 translate-x-2"></XIcon>
-								</Button>
-							{/each}
-						</Card.Content>
-					</Card.Root>
-				{/if}
-			</div>
-			<!-- ? resources -->
-			<div class="flex flex-col gap-4">
-				<form
-					on:submit|preventDefault={() => {
-						error = '';
-						if (resourceInputValue === '') return;
-						if (projektInfo.resources.includes(resourceInputValue)) {
-							error = `${resourceInputValue} er allerede tilføjet.`;
-							return;
-						}
-						projektInfo.resources.push(resourceInputValue);
-						resourceInputValue = '';
-						projektInfo = projektInfo;
-					}}
-				>
-					<div class="flex w-full flex-col gap-1.5">
-						<Label class="text-lg" for="resource">Resurser</Label>
-						<div class="flex gap-1">
-							<Input
-								bind:value={resourceInputValue}
-								type="resource"
-								id="resource"
-								placeholder="Raspberry pi"
+								type="checkbox"
+								name="it_supporter"
+								checked={form?.formData?.it_supporter}
+								id="it_supporter"
+								aria-labelledby="it_supporter_label"
 							/>
-							<Button
-								on:click={() => {
-									error = '';
-									if (resourceInputValue === '') return;
-									if (projektInfo.resources.includes(resourceInputValue)) {
-										error = `${resourceInputValue} er allerede tilføjet.`;
-										return;
-									}
-									projektInfo.resources.push(resourceInputValue);
-									resourceInputValue = '';
-									projektInfo = projektInfo;
-								}}
-								variant="secondary">Tilføj</Button
+							<Label
+								id="it_supporter_label"
+								for="it_supporter"
+								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 							>
+								It-supporter
+							</Label>
+							{#if form?.validationErrors?.it_supporter}
+								<p class="text-red-500">{form?.validationErrors?.it_supporter}</p>
+							{/if}
 						</div>
-						{#if error}
-							<p class="text-destructive">{error}</p>
-						{/if}
+
+						<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
+							<Label for="it-supporter_niveau">Niveau</Label>
+							<Input
+								disabled={!itSupoter}
+								required={itSupoter}
+								name="it_supporter_skill_level"
+								value={form?.formData?.it_supporter_skill_level}
+								type="text"
+								id="it_supporter_niveau"
+								placeholder="H2 eller GF1"
+							/>
+							{#if form?.validationErrors?.it_supporter_skill_level}
+								<p class="text-red-500">{form?.validationErrors?.it_supporter_skill_level}</p>
+							{/if}
+						</div>
 					</div>
-				</form>
-				{#if projektInfo.resources && projektInfo.resources.length > 0}
-					<Card.Root class="bg-secondary p-0">
-						<Card.Content class="flex flex-wrap gap-2 p-2">
-							{#each projektInfo.resources as resource (resource)}
-								<Button
-									class="items-center shadow-md"
-									on:click={() => {
-										projektInfo.resources.splice(projektInfo.resources.indexOf(resource), 1);
-										projektInfo = projektInfo;
-									}}
-									>{resource}
-									<XIcon class="h-4 w-4 translate-x-2"></XIcon>
-								</Button>
-							{/each}
-						</Card.Content>
-					</Card.Root>
+					<div
+						id="profession-section"
+						class="flex flex-col items-start justify-between space-x-2 sm:flex-row sm:items-center"
+					>
+						<div>
+							<input
+								on:input={(e) => {
+									programmering = e.target?.checked || '';
+								}}
+								type="checkbox"
+								name="programmering"
+								checked={form?.formData?.programmering}
+								id="programmering"
+								aria-labelledby="programmering_label"
+							/>
+							{#if form?.validationErrors?.programmering}
+								<p class="text-red-500">{form?.validationErrors?.programmering}</p>
+							{/if}
+							<Label
+								id="programmering_label"
+								for="programmering"
+								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							>
+								Datatekniker med speciale i programmering
+							</Label>
+						</div>
+						<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
+							<Label for="programmering_niveau">Niveau</Label>
+							<Input
+								value={form?.formData?.programmering_skill_level}
+								type="test"
+								id="programmering_niveau"
+								placeholder="H2 eller GF1"
+								name="programmering_skill_level"
+							/>
+							{#if form?.validationErrors?.programmering_skill_level}
+								<p class="text-red-500">{form?.validationErrors?.programmering_skill_level}</p>
+							{/if}
+						</div>
+					</div>
+					<div
+						id="profession-section"
+						class="flex flex-col items-start justify-between space-x-2 sm:flex-row sm:items-center"
+					>
+						<div>
+							<input
+								on:input={(e) => {
+									infrastruktur = e.target?.checked || '';
+								}}
+								type="checkbox"
+								checked={form?.formData?.infrastruktur}
+								name="infrastruktur"
+								id="infrastruktur"
+								aria-labelledby="infrastruktur-label"
+							/>
+
+							<Label
+								id="infrastruktur-label"
+								for="infrastruktur"
+								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							>
+								Datatekniker med speciale i infrastruktur
+							</Label>
+							{#if form?.validationErrors?.infrastruktur}
+								<p class="text-red-500">{form?.validationErrors?.infrastruktur}</p>
+							{/if}
+						</div>
+						<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
+							<Label for="infrastruktur_niveau">Niveau</Label>
+							<Input
+								value={form?.formData?.infrastruktur_skill_level}
+								type="test"
+								id="infrastruktur_niveau"
+								placeholder="H2 eller GF1"
+								name="infrastruktur_skill_level"
+							/>
+							{#if form?.validationErrors?.infrastruktur_skill_level}
+								<p class="text-red-500">{form?.validationErrors?.infrastruktur_skill_level}</p>
+							{/if}
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- ? subjects -->
+			<div class="flex w-full flex-col gap-1.5">
+				<Label for="subjects" class="text-lg">Fag</Label>
+				<Input
+					name="subjects"
+					value={form?.formData?.subjects}
+					type="test"
+					id="subjects"
+					placeholder="subjects"
+				/>
+				<p class="text-sm text-muted-foreground">Hvilke fag bliver indravet i projektet.</p>
+				{#if form?.validationErrors?.subjects}
+					<p class="text-red-500">{form?.validationErrors?.subjects}</p>
 				{/if}
 			</div>
-			<Button on:click={upload}>Udgiv projekt</Button>
+
+			<div class="flex w-full flex-col gap-1.5">
+				<Label for="resources" class="text-lg">Ressourcer</Label>
+				<Input
+					name="resources"
+					value={form?.formData?.resources}
+					type="test"
+					id="resources"
+					placeholder="resources"
+				/>
+				<p class="text-sm text-muted-foreground">Hvilke fag bliver indravet i projektet.</p>
+				{#if form?.validationErrors?.resources}
+					<p class="text-red-500">{form?.validationErrors?.resources}</p>
+				{/if}
+			</div>
+
+			<!-- <ProfessionForm {form} /> -->
+			<!-- ? authors -->
+			<!-- <AuthorForm bind:projectAuthors bind:users /> -->
+
+			<Button type="submit">Udgiv projekt</Button>
 		</form>
 	</div>
 </main>
+
+<style>
+</style>

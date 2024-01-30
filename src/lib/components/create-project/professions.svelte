@@ -2,26 +2,10 @@
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import type { ProjectProfessionCreation } from '$lib/types';
-
-	let itSupporter = {
-		active: false,
-		skill_level: '',
-		profession_id: 4
-	};
-	let programmering = {
-		active: false,
-		skill_level: '',
-		profession_id: 5
-	};
-	let infrastruktur = {
-		active: false,
-		skill_level: '',
-		profession_id: 6
-	};
-	export let projectProfessions: ProjectProfessionCreation[] = [];
+	import type { ActionData } from '../../../routes/$types';
 
 	// todo: save to localstorage
+	export let form: ActionData;
 </script>
 
 <div>
@@ -33,27 +17,8 @@
 		>
 			<div>
 				<Checkbox
-					on:click={() => {
-						if (!itSupporter.active) {
-							/* its reversed because the bind:checked will change active*/ projectProfessions.push(
-								{
-									profession_id: itSupporter.profession_id,
-									skill_level: itSupporter.skill_level,
-									project_id: null
-								}
-							);
-							projectProfessions = projectProfessions;
-						} else {
-							projectProfessions.splice(
-								projectProfessions.findIndex((p) => {
-									return p.profession_id === itSupporter.profession_id;
-								}),
-								1
-							);
-							projectProfessions = projectProfessions;
-						}
-					}}
-					bind:checked={itSupporter.active}
+					name="it_supporter"
+					checked={form?.formData?.infrastruktur_skill_level}
 					id="it-supporter"
 					aria-labelledby="It-supporter-label"
 				/>
@@ -68,24 +33,8 @@
 			<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
 				<Label for="it-supporter-niveau">Niveau</Label>
 				<Input
-					on:input={() => {
-						if (itSupporter.active) {
-							projectProfessions.splice(
-								projectProfessions.findIndex((p) => {
-									return p.profession_id === itSupporter.profession_id;
-								}),
-								1
-							);
-							projectProfessions.push({
-								profession_id: itSupporter.profession_id,
-								skill_level: itSupporter.skill_level,
-								project_id: null
-							});
-							projectProfessions = projectProfessions;
-						}
-					}}
-					bind:value={itSupporter.skill_level}
-					disabled={!itSupporter.active}
+					name="it_supporter_skill_level"
+					value={form?.formData?.it_supporter_skill_level}
 					type="text"
 					id="it-supporter-niveau"
 					placeholder="H2 eller GF1"
@@ -98,27 +47,8 @@
 		>
 			<div>
 				<Checkbox
-					on:click={() => {
-						if (!programmering.active) {
-							/* its reversed because the bind:checked will change active*/ projectProfessions.push(
-								{
-									profession_id: programmering.profession_id,
-									skill_level: programmering.skill_level,
-									project_id: null
-								}
-							);
-							projectProfessions = projectProfessions;
-						} else {
-							projectProfessions.splice(
-								projectProfessions.findIndex((p) => {
-									return p.profession_id === programmering.profession_id;
-								}),
-								1
-							);
-							projectProfessions = projectProfessions;
-						}
-					}}
-					bind:checked={programmering.active}
+					name="datatekniker"
+					checked={form?.formData?.programmering_skill_level}
 					id="programmering"
 					aria-labelledby="programmering-label"
 				/>
@@ -133,24 +63,7 @@
 			<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
 				<Label for="niveau">Niveau</Label>
 				<Input
-					on:input={() => {
-						if (programmering.active) {
-							projectProfessions.splice(
-								projectProfessions.findIndex((p) => {
-									return p.profession_id === programmering.profession_id;
-								}),
-								1
-							);
-							projectProfessions.push({
-								profession_id: programmering.profession_id,
-								skill_level: programmering.skill_level,
-								project_id: null
-							});
-							projectProfessions = projectProfessions;
-						}
-					}}
-					bind:value={programmering.skill_level}
-					disabled={!programmering.active}
+					value={form?.formData?.programmering_skill_level}
 					type="programmering-niveau"
 					id="programmering-niveau"
 					placeholder="H2 eller GF1"
@@ -163,27 +76,8 @@
 		>
 			<div>
 				<Checkbox
-					on:click={() => {
-						if (!infrastruktur.active) {
-							/* its reversed because the bind:checked will change active*/ projectProfessions.push(
-								{
-									profession_id: infrastruktur.profession_id,
-									skill_level: infrastruktur.skill_level,
-									project_id: null
-								}
-							);
-							projectProfessions = projectProfessions;
-						} else {
-							projectProfessions.splice(
-								projectProfessions.findIndex((p) => {
-									return p.profession_id === infrastruktur.profession_id;
-								}),
-								1
-							);
-							projectProfessions = projectProfessions;
-						}
-					}}
-					bind:checked={infrastruktur.active}
+					name="datatekniker"
+					checked={form?.formData?.infrastruktur_skill_level}
 					id="infrastruktur"
 					aria-labelledby="infrastruktur-label"
 				/>
@@ -198,24 +92,7 @@
 			<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
 				<Label for="infrastruktur-niveau">Niveau</Label>
 				<Input
-					on:input={() => {
-						if (infrastruktur.active) {
-							projectProfessions.splice(
-								projectProfessions.findIndex((p) => {
-									return p.profession_id === infrastruktur.profession_id;
-								}),
-								1
-							);
-							projectProfessions.push({
-								profession_id: infrastruktur.profession_id,
-								skill_level: infrastruktur.skill_level,
-								project_id: null
-							});
-							projectProfessions = projectProfessions;
-						}
-					}}
-					bind:value={infrastruktur.skill_level}
-					disabled={!infrastruktur.active}
+					value={form?.formData?.infrastruktur_skill_level}
 					type="niveau"
 					id="infrastruktur-niveau"
 					placeholder="H2 eller GF1"
