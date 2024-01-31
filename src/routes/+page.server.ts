@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 
 import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
+import { POSTGRES_URL } from '$env/dynamic/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,

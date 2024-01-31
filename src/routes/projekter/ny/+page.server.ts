@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import type { Project } from '$lib/types';
 import { error, fail } from '@sveltejs/kit';
 import pkg, { Pool } from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
+import { POSTGRES_URL } from '$env/dynamic/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,

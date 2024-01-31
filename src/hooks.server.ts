@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { sql } from '@vercel/postgres';
-import { JWT_SECRET } from '$env/static/private';
+import { JWT_SECRET } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';
 import type { User, DatabaseResponse } from '$lib/types';
 import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
+import { POSTGRES_URL } from '$env/dynamic/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,
