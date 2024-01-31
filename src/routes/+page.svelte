@@ -73,6 +73,7 @@
 			);
 		})
 	);
+
 	function updateFilter(field: string, value: number | null | string | boolean) {
 		filters.update((currentFilters) => ({ ...currentFilters, [field]: value }));
 	}

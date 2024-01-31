@@ -1,0 +1,30 @@
+{
+    "sqltools.connections": [
+        {
+            "pgOptions": {
+                "ssl": true
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "driver": "PostgreSQL",
+            "connectString": "postgres://default:vqwIkp9g8hmT@ep-polished-morning-87867470-pooler.us-east-1.postgres.vercel-storage.com/verceldb",
+            "name": "Course sharing platform"
+        },
+        {
+            "pgOptions": {
+                "ssl": {
+                    "requestCert": false,
+                    "rejectUnauthorized": false
+                }
+            },
+            "previewLimit": 50,
+            "server": "192.168.8.200",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "sop sørens system",
+            "database": "opgbank",
+            "username": "opgbank",
+            "password": "Opgpassbank1!"
+        }
+    ]
+}

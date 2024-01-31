@@ -13,6 +13,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Button } from '$lib/components/ui/button';
 	import { enhance } from '$app/forms';
+	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import * as Form from '$lib/components/ui/form';
 
 	let itSupoter = false;
@@ -218,9 +219,32 @@
 				{/if}
 			</div>
 
-			<!-- <ProfessionForm {form} /> -->
-			<!-- ? authors -->
-			<!-- <AuthorForm bind:projectAuthors bind:users /> -->
+			<div class="flex w-full flex-col gap-1.5">
+				<Label for="subjects" class="text-lg">Fag</Label>
+				<Input
+					name="subjects"
+					value={form?.formData?.subjects}
+					type="test"
+					id="subjects"
+					placeholder="subjects"
+				/>
+				<p class="text-sm text-muted-foreground">Hvilke fag bliver indravet i projektet.</p>
+				{#if form?.validationErrors?.subjects}
+					<p class="text-red-500">{form?.validationErrors?.subjects}</p>
+				{/if}
+			</div>
+
+			<div class="flex w-full flex-col gap-1.5">
+				<Label for="subjects" class="text-lg">Udgivelsestidpunkt</Label>
+				<div>
+					<input checked={true} type="radio" name="live" value="yes" />
+					<Label for="subjects">Udgiv nu</Label>
+				</div>
+				<div>
+					<input type="radio" name="live" value="no" />
+					<Label for="subjects">Gem klade og udgiv senere</Label>
+				</div>
+			</div>
 
 			<Button type="submit">Udgiv projekt</Button>
 		</form>

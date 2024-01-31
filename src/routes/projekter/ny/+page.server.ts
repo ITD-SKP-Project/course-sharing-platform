@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import type { Project } from '$lib/types';
 import { error, fail } from '@sveltejs/kit';
-import pkg from 'pg';
+import pkg, { Pool } from 'pg';
 import { POSTGRES_URL } from '$env/static/private';
 const { Pool } = pkg;
 const pool = new Pool({
@@ -11,6 +11,7 @@ const pool = new Pool({
 import { ProjectSchema } from '$lib/zodSchemas';
 import { z } from 'zod';
 import { it } from 'node:test';
+import type { User } from 'lucide-svelte';
 
 //load
 // export const load = (async () => {
@@ -89,19 +90,18 @@ export const actions = {
 			}
 
 			const client = await pool.connect();
-			const queryText =
-				'INSERT INTO projects (title, description, it_supporter, it_supporter_skill_level, programmering, programmering_skill_level, infrastruktur, infrastruktur_skill_level) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *';
-			const values = [
-				result.title,
-				result.description,
-				result.it_supporter,
-				result.it_supporter_skill_level,
-				result.programmering,
-				result.programmering_skill_level,
-				result.infrastruktur,
-				result.infrastruktur_skill_level
-			];
-			const { rows: projects } = await client.query<Project>(queryText, values);
+			const projectQueryText =
+				'INSERT INTO projects (title, description, resources, subjects) VALUES ($1, $2, $3, $4) RETURNING *';
+			const projectValues = [result.title, result.description, result.resources, result.subjects];
+			const { rows: projects } = await client.query<Project>(projectQueryText, projectValues);
+
+			const projectAuthorQueryText =
+				'INSERT INTO project_authors (project_id, user_id, Authority_level) VALUES ($1, $2, $3) RETURNING *';
+			const projectAuthorValues = [projects[0].id, userId, 3];
+			const { rows: projectAuthors } = await client.query<Project>(
+				projectAuthorQueryText,
+				projectAuthorValues
+			);
 		} catch (err: any) {
 			if (err instanceof z.ZodError) {
 				const { fieldErrors: errors } = err.flatten();
@@ -117,3 +117,22 @@ export const actions = {
 		}
 	}
 };
+
+async function createProject(Project: ProjectSchemaType, pool: pkg.Pool, user: User) {
+	const client = await pool.connect();
+	try {
+		const client = await pool.connect();
+		const projectQueryText =
+			'INSERT INTO projects (title, description, resources, subjects) VALUES ($1, $2, $3, $4) RETURNING *';
+		const projectValues = [Project.title, Project.description, Project.resources, Project.subjects];
+		const { rows: projects } = await client.query<Project>(projectQueryText, projectValues);
+
+		const projectAuthorQueryText =
+			'INSERT INTO project_authors (project_id, user_id, Authority_level) VALUES ($1, $2, $3) RETURNING *';
+		const projectAuthorValues = [projects[0].id, user.id, 3];
+		const { rows: projectAuthors } = await client.query<Project>(
+			projectAuthorQueryText,
+			projectAuthorValues
+		);
+	} catch (error) {}
+}
