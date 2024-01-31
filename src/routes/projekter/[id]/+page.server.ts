@@ -6,7 +6,7 @@ const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
-import type { DatabaseResponse, Project, ProjectAuthor, User } from '$lib/types';
+import type { Project, ProjectAuthor, User } from '$lib/types';
 import { error } from '@sveltejs/kit';
 
 export const load = (async ({ url }) => {
@@ -17,24 +17,24 @@ export const load = (async ({ url }) => {
 	if (typeof +id != 'number') throw error(404, 'Der blev ikke fundet nogle projekter.');
 
 	//get project
-	const { rows: projects } = (await client.query(
+	const { rows: projects } = await client.query<Project>(
 		`SELECT * FROM projects WHERE id = ${id} LIMIT 1;`
-	)) as DatabaseResponse<Project>;
+	);
 	if (!projects || projects.length == 0) throw error(404, 'Der blev ikke fundet nogle projekter.');
 
 	//get authors
-	const { rows: authors } = (await client.query(
+	const { rows: authors } = await client.query<ProjectAuthor>(
 		`SELECT * FROM project_authors WHERE project_id = ${id}`
-	)) as DatabaseResponse<ProjectAuthor>;
+	);
 
 	//attach authors to project
 	projects[0].authors = authors;
 
 	//for every author in project, attach user to author
 	for (const author of projects[0].authors) {
-		const { rows: users } = (await client.query(
+		const { rows: users } = await client.query<User>(
 			`SELECT * FROM users WHERE id = ${author.user_id} LIMIT 1;`
-		)) as DatabaseResponse<User>;
+		);
 		author.user = users[0];
 	}
 	client.release();

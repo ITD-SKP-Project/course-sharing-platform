@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { PageData } from './$types';
+	import type { ActionData } from './$types';
 
-	export let data: PageData;
-	export let form;
+	export let form: ActionData;
+
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Card from '$lib/components/ui/card';
 	import { Button } from '$lib/components/ui/button';

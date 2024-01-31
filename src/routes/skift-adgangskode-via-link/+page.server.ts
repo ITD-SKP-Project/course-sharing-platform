@@ -4,7 +4,7 @@ import { POSTGRES_URL } from '$env/static/private';
 import bcrypt from 'bcrypt';
 import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import { z } from 'zod';
-import type { DatabaseResponse, User, VerificationToken } from '$lib/types';
+import type { User, VerificationToken } from '$lib/types';
 import pkg from 'pg';
 const { Pool } = pkg;
 const pool = new Pool({

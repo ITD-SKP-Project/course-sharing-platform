@@ -4,7 +4,7 @@ import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import { error, json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
-import type { DatabaseResponse, User } from '$lib/types';
+import type { User } from '$lib/types';
 import { Resend } from 'resend';
 import * as randombytes from 'randombytes';
 import { redirect } from '@sveltejs/kit';
@@ -100,7 +100,7 @@ export const actions = {
 		const { rows: verificationTokens } = await client.query(queryText1, [users[0].id, key]);
 
 		const queryText2 = 'SELECT * FROM users WHERE email = $1 LIMIT 1';
-		(await client.query(queryText2, [result.email])) as DatabaseResponse<User>;
+		await client.query<User>(queryText2, [result.email]);
 
 		//if in development, use localhost, else use domain
 		let domain;

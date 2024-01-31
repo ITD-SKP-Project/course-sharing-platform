@@ -20,24 +20,19 @@ import type { User } from '$lib/types';
 export const load = (async () => {
 	const client = await pool.connect();
 	try {
-		const { rows: projects } = (await client.query(
-			'SELECT * FROM projects'
-		)) as DatabaseResponse<Project>;
+		const { rows: projects } = await client.query<Project>('SELECT * FROM projects');
 		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
 		//for each project, get authors and professions
-		const { rows: authors } = (await client.query(
-			'SELECT * FROM project_authors'
-		)) as DatabaseResponse<ProjectAuthor>;
+		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
 
 		//get all users and add them to authors
-		const { rows: users } = (await client.query('SELECT * FROM users')) as DatabaseResponse<User>;
+		const { rows: users } = await client.query<User>('SELECT * FROM users');
 
-		const { rows: projectProfessions } = (await client.query(`SELECT pp.*, p.name as profession_name
+		const { rows: projectProfessions } =
+			await client.query<ProjectProfession>(`SELECT pp.*, p.name as profession_name
 		FROM project_professions pp
-		JOIN professions p ON pp.profession_id = p.id;`)) as DatabaseResponse<ProjectProfession>;
-		const { rows: professions } = (await client.query(
-			`SELECT * FROM professions; `
-		)) as DatabaseResponse<Profession>;
+		JOIN professions p ON pp.profession_id = p.id;`);
+		const { rows: professions } = await client.query<Profession>(`SELECT * FROM professions; `);
 
 		//add authors and professions to projects
 		projects.forEach((project) => {
