@@ -1,12 +1,12 @@
 import type { PageServerLoad } from './$types';
 import jwt from 'jsonwebtoken';
 import { error, json, redirect } from '@sveltejs/kit';
-import { JWT_SECRET } from '$env/dynamic/private';
+import { JWT_SECRET } from '$env/static/private';
 import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import pkg from 'pg';
-import { POSTGRES_URL } from '$env/dynamic/private';
+import { POSTGRES_URL } from '$env/static/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,
