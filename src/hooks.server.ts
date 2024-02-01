@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import { sql } from '@vercel/postgres';
 import { JWT_SECRET } from '$env/static/private';
 import type { Handle } from '@sveltejs/kit';
-import type { User, DatabaseResponse } from '$lib/types';
+import type { User } from '$lib/types';
 import pkg from 'pg';
 import { POSTGRES_URL } from '$env/static/private';
 const { Pool } = pkg;
@@ -39,9 +39,7 @@ export const handle = (async ({ event, resolve }) => {
 	const client = await pool.connect();
 	try {
 		const queryText = 'SELECT * from users where id = $1 LIMIT 1';
-		const { rows: users } = (await client.query(queryText, [
-			decodedUser.id
-		])) as DatabaseResponse<User>;
+		const { rows: users } = await client.query<User>(queryText, [decodedUser.id]);
 		client.release();
 
 		if (!users || users.length <= 0) {

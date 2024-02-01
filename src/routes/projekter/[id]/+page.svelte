@@ -13,6 +13,8 @@
 	import { months } from '$lib/index';
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
+
+	console.log(project);
 </script>
 
 <main class="flex flex-col gap-4 p-2 sm:p-8 lg:px-32">
@@ -38,7 +40,7 @@
 			</p>
 		</div>
 
-		<Card.Root class="min-w-72">
+		<Card.Root class="min-w-72 border-primary">
 			<Card.Header class="pb-4">
 				<Card.Title>Info</Card.Title>
 			</Card.Header>
@@ -94,18 +96,18 @@
 					{/if}
 				</div>
 			</Card.Content>
-			<Card.Header class="pb-4">
-				<Card.Title>Noter</Card.Title>
-			</Card.Header>
-			<Card.Content>
-				<Alert.Root class=" w-fit border-primary">
-					<BadgeInfo class="h-4 w-4" />
-					<Alert.Title>Note til vejledere.</Alert.Title>
-					<Alert.Description class="max-w-72"
-						>You can add components to your app using the cli.</Alert.Description
-					>
-				</Alert.Root>
-			</Card.Content>
+			{#if project.notes}
+				<Card.Header class="pb-4">
+					<Card.Title>Noter</Card.Title>
+				</Card.Header>
+				<Card.Content>
+					<Alert.Root class=" w-fit ">
+						<BadgeInfo class="h-4 w-4" />
+						<Alert.Title>Note til vejledere.</Alert.Title>
+						<Alert.Description class="max-w-72">{project.notes}</Alert.Description>
+					</Alert.Root>
+				</Card.Content>
+			{/if}
 		</Card.Root>
 	</div>
 </main>

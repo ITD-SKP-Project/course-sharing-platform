@@ -9,7 +9,7 @@ const pool = new Pool({
 import type { Project, ProjectAuthor, User } from '$lib/types';
 import { error } from '@sveltejs/kit';
 
-export const load = (async ({ url }) => {
+export const load = (async ({ url, locals }) => {
 	const client = await pool.connect();
 
 	const id = url.pathname.split('/')[2];
@@ -19,7 +19,21 @@ export const load = (async ({ url }) => {
 	//get project
 	try {
 		const { rows: projects } = await client.query<Project>(
-			`SELECT * FROM projects WHERE id = ${id} LIMIT 1;`
+			locals.user
+				? `SELECT * FROM projects WHERE id = ${id} LIMIT 1;`
+				: `SELECT 
+					 id,
+					title,
+					description,
+					project_fork_id,
+					fork_root_id,
+					created_at,
+					updated_at,
+					subjects,
+					resources,
+					likes,
+					live
+			FROM projects WHERE id = ${id} LIMIT 1;`
 		);
 		if (!projects || projects.length == 0)
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
@@ -43,6 +57,7 @@ export const load = (async ({ url }) => {
 			project: projects[0]
 		};
 	} catch (err) {
+		console.log(err);
 		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();

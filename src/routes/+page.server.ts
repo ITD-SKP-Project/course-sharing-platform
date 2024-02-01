@@ -52,5 +52,7 @@ export const load = (async () => {
 		throw new Error(
 			'Error processing your request. Please try again later. ' + JSON.stringify(error)
 		);
+	} finally {
+		client.release();
 	}
 }) satisfies PageServerLoad;
