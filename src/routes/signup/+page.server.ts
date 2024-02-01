@@ -1,16 +1,16 @@
 import type { PageServerLoad } from './$types';
 import bcrypt from 'bcrypt';
-import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
+import { BCRYPT_SALT_ROUNDS } from '$env/dynamic/private';
 import { error, json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET, RESEND_API_KEY } from '$env/static/private';
+import { JWT_SECRET, RESEND_API_KEY } from '$env/dynamic/private';
 import type { User } from '$lib/types';
 import { Resend } from 'resend';
 import * as randombytes from 'randombytes';
 import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
+import { POSTGRES_URL } from '$env/dynamic/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,

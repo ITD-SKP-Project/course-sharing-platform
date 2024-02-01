@@ -1,7 +1,7 @@
 import type { VerificationToken } from '$lib/types';
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
-import { POSTGRES_URL } from '$env/static/private';
+import { POSTGRES_URL } from '$env/dynamic/private';
 import pkg from 'pg';
 const { Pool } = pkg;
 const pool = new Pool({
