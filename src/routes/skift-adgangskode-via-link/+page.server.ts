@@ -1,8 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
-import { POSTGRES_URL } from '$env/dynamic/private';
+import { POSTGRES_URL } from '$env/static/private';
 import bcrypt from 'bcrypt';
-import { BCRYPT_SALT_ROUNDS } from '$env/dynamic/private';
+import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import { z } from 'zod';
 import type { User, VerificationToken } from '$lib/types';
 import pkg from 'pg';

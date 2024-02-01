@@ -1,10 +1,10 @@
 import jwt from 'jsonwebtoken';
 import { sql } from '@vercel/postgres';
-import { JWT_SECRET } from '$env/dynamic/private';
+import { JWT_SECRET } from '$env/static/private';
 import type { Handle } from '@sveltejs/kit';
 import type { User, DatabaseResponse } from '$lib/types';
 import pkg from 'pg';
-import { POSTGRES_URL } from '$env/dynamic/private';
+import { POSTGRES_URL } from '$env/static/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,
@@ -37,19 +37,19 @@ export const handle = (async ({ event, resolve }) => {
 	}
 
 	const client = await pool.connect();
-	const queryText = 'SELECT * from users where id = $1 LIMIT 1';
-	const { rows: users } = (await client.query(queryText, [
-		decodedUser.id
-	])) as DatabaseResponse<User>;
-	client.release();
-
-	if (!users || users.length <= 0) {
-		event.locals.onboardingStatus = 'none';
-		event.locals.onboardingRedirectLocation = '/login';
-		return resolve(event);
-	}
-
 	try {
+		const queryText = 'SELECT * from users where id = $1 LIMIT 1';
+		const { rows: users } = (await client.query(queryText, [
+			decodedUser.id
+		])) as DatabaseResponse<User>;
+		client.release();
+
+		if (!users || users.length <= 0) {
+			event.locals.onboardingStatus = 'none';
+			event.locals.onboardingRedirectLocation = '/login';
+			return resolve(event);
+		}
+
 		const user = users[0] as User;
 		event.locals.user = user;
 
@@ -71,10 +71,11 @@ export const handle = (async ({ event, resolve }) => {
 
 		event.locals.onboardingStatus = 'validated';
 		event.locals.onboardingRedirectLocation = '/konto';
-	} catch (e) {
+	} catch (error) {
 		event.cookies.delete('token', {
 			path: '/'
 		});
 	}
+
 	return resolve(event);
 }) satisfies Handle;

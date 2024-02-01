@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import pkg, { type PoolClient } from 'pg';
-import { POSTGRES_URL } from '$env/dynamic/private';
+import { POSTGRES_URL } from '$env/static/private';
 import type { User, VerificationToken } from '$lib/types';
 import * as randombytes from 'randombytes';
-import { RESEND_API_KEY } from '$env/dynamic/private';
+import { RESEND_API_KEY } from '$env/static/private';
 import { Resend } from 'resend';
 const { Pool } = pkg;
 const pool = new Pool({

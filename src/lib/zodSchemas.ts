@@ -95,7 +95,7 @@ export const ProjectSchema = z.object({
 	// authors: ProjectAuthorsSchema,
 	project_root_id: z.number().optional(),
 	project_fork_id: z.number().optional(),
-	live: z.enum(['on', 'off']),
+	live: z.enum(['yes', 'no']),
 
 	it_supporter: z.enum(['on']).optional(),
 	it_supporter_skill_level: z.string().optional(),

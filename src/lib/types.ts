@@ -27,6 +27,7 @@ export interface ProjectCreation {
 	description: string;
 	subjects: string;
 	resources: string;
+	notes: string;
 }
 export interface ProjectAuthor extends ProjectAuthorCreation {
 	id: number;

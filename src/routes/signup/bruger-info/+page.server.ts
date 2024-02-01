@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
 import pkg from 'pg';
-import { POSTGRES_URL } from '$env/dynamic/private';
+import { POSTGRES_URL } from '$env/static/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,

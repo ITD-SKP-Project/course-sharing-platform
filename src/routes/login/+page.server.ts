@@ -1,19 +1,19 @@
 import type { PageServerLoad } from './$types';
 import jwt from 'jsonwebtoken';
 import { error, json, redirect } from '@sveltejs/kit';
-import { JWT_SECRET } from '$env/dynamic/private';
+import { JWT_SECRET } from '$env/static/private';
 import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import pkg from 'pg';
-import { POSTGRES_URL } from '$env/dynamic/private';
+import { POSTGRES_URL } from '$env/static/private';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	if (locals.onboardingStatus !== 'none') {
 		throw redirect(301, locals.onboardingRedirectLocation);
 	}
@@ -33,7 +33,8 @@ const registerSchema = z.object({
 export const actions = {
 	default: async ({
 		request,
-		cookies
+		cookies,
+		url
 	}): Promise<{ formData: any; validationErrors?: any; serverError?: string } | void> => {
 		const formData = Object.fromEntries(await request.formData());
 
@@ -95,10 +96,10 @@ export const actions = {
 		} finally {
 			client.release();
 		}
-		determineRedirect(user);
+		onboardingRedirect(user, url);
 	}
 };
-function determineRedirect(user: User): void {
+function onboardingRedirect(user: User, url: URL): void {
 	if (!user.email_verified) {
 		throw redirect(303, '/signup/bekraeft-email');
 	}
@@ -108,5 +109,10 @@ function determineRedirect(user: User): void {
 	if (!user.validated) {
 		throw redirect(303, '/signup/afventer-godkendelse');
 	}
-	return;
+
+	const redirectUrl = url.searchParams.get('redirect');
+	if (redirectUrl) {
+		throw redirect(301, '/' + redirectUrl.slice(1));
+	}
+	throw redirect(301, '/konto');
 }

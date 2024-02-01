@@ -1,20 +1,19 @@
 <script lang="ts">
-	import type { PageData, ActionData } from './$types';
-	import type { User } from '$lib/types';
+	import type { ActionData } from './$types';
 
-	export let data: PageData;
-	let users = data.users as User[];
 	export let form: ActionData;
+
 	$: console.log(form);
+	$: if (form?.projectId) {
+		goto(`/projekter/${form.projectId}`);
+	}
 
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Textarea } from '$lib/components/ui/textarea';
-	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Button } from '$lib/components/ui/button';
 	import { enhance } from '$app/forms';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
-	import * as Form from '$lib/components/ui/form';
+	import { goto } from '$app/navigation';
 
 	let itSupoter = false;
 	let programmering = false;
@@ -69,7 +68,7 @@
 						<div>
 							<input
 								on:input={(e) => {
-									itSupoter = e.target?.checked || '';
+									itSupoter = e.target?.checked || false;
 								}}
 								type="checkbox"
 								name="it_supporter"
@@ -112,7 +111,7 @@
 						<div>
 							<input
 								on:input={(e) => {
-									programmering = e.target?.checked || '';
+									programmering = e.target?.checked || false;
 								}}
 								type="checkbox"
 								name="programmering"
@@ -152,7 +151,7 @@
 						<div>
 							<input
 								on:input={(e) => {
-									infrastruktur = e.target?.checked || '';
+									infrastruktur = e.target?.checked || false;
 								}}
 								type="checkbox"
 								checked={form?.formData?.infrastruktur}
