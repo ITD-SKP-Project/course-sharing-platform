@@ -38,7 +38,7 @@ jobs:
     
     - run: npm i
     - run: npm run build
-    - run: ls -lah
+    - run: ls -lah .svelte-kit
     
     - name: Stop running deployment
       continue-on-error: true
@@ -69,9 +69,9 @@ jobs:
         username: ${{ secrets.PRODUCTION_SERVER_USER }}
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
-        source: "adapter-node/*" # Update this with the path to your build directory
+        source: ".svelte-kit/adapter-node/*" # Update this with the path to your build directory
         target: "/home/opgbank/adapter-node" # Update this with the target path on your server
-        strip_components: 1
+        strip_components: 2
             
     - name: Copy env file
       uses: appleboy/ssh-action@master
