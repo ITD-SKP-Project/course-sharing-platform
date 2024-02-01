@@ -73,7 +73,40 @@ jobs:
         source: "build/*" # Update this with the path to your build directory
         target: "/home/opgbank/build" # Update this with the target path on your server
         strip_components: 1
+
+    - name: Deploy to server part 2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        source: "node_modules/*" # Update this with the path to your build directory
+        target: "/home/opgbank/build" # Update this with the target path on your server
+        strip_components: 0
             
+    - name: Deploy to server part 3
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        source: "package.json" # Update this with the path to your build directory
+        target: "/home/opgbank/build" # Update this with the target path on your server
+        strip_components: 0
+
+    - name: Deploy to server part 3
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        source: "package-lock.json" # Update this with the path to your build directory
+        target: "/home/opgbank/build" # Update this with the target path on your server
+        strip_components: 0
+
     - name: Copy env file
       uses: appleboy/ssh-action@master
       with:
