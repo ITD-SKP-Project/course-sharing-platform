@@ -38,6 +38,7 @@ jobs:
     
     - run: npm i
     - run: npm run build
+    - run: ls -lah
     
     - name: Stop running deployment
       continue-on-error: true
