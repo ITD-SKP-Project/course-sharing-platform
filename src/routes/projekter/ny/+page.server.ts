@@ -17,18 +17,6 @@ export const load = (async ({ locals }) => {
 	if (!locals.user) {
 		throw redirect(307, '/login?redirect=/projekter/ny');
 	}
-	// const client = await pool.connect();
-	// try {
-	// 	const { rows: users } = await client.query<User>('SELECT * FROM users');
-	// 	return { users: users };
-	// } catch (err) {
-	// 	// Handle or throw the error as per your application's error handling policy
-	// 	throw error(
-	// 		500,
-	// 		'Der skete en uventet felj da vi prøvede at hente brugere fra databasen. ' +
-	// 			JSON.stringify(err)
-	// 	);
-	// }
 }) as PageServerLoad;
 
 type ProjectSchemaType = z.infer<typeof ProjectSchema>;
@@ -140,6 +128,40 @@ async function createProject(
 			'INSERT INTO project_authors (project_id, user_id, authority_level) VALUES ($1, $2, $3)';
 		const projectAuthorValues = [projects[0].id, user.id, 3]; // Assuming authority_level is the correct column name
 		await client.query(projectAuthorQueryText, projectAuthorValues);
+
+		// let profressions = ['it_supporter', 'programmering', 'infrastruktur'];
+
+		// for (let profession of profressions) {
+		// 	if (Project[profession as keyof typeof Project]) {
+		// 		const queryText = `INSERT INTO project__professions (project_id, skill_level) VALUES ($1, $2)`;
+		// 		const values = [
+		// 			projects[0].id,
+		// 			Project[`${profession}_skill_level` as keyof typeof Project]
+		// 		];
+		// 		await client.query(queryText, values);
+		// 	}
+		// }
+
+		if (Project.it_supporter) {
+			const itSupporterQueryText =
+				'INSERT INTO project_professions (project_id, skill_level, profession_id) VALUES ($1, $2, 4)';
+			const itSupporterValues = [projects[0].id, Project.it_supporter_skill_level];
+			await client.query(itSupporterQueryText, itSupporterValues);
+		}
+
+		if (Project.programmering) {
+			const programmeringQueryText =
+				'INSERT INTO project_professions (project_id, skill_level, profession_id) VALUES ($1, $2, 5)';
+			const programmeringValues = [projects[0].id, Project.programmering_skill_level];
+			await client.query(programmeringQueryText, programmeringValues);
+		}
+
+		if (Project.infrastruktur) {
+			const infrastrukturQueryText =
+				'INSERT INTO project_professions (project_id, skill_level, profession_id) VALUES ($1, $2, 6)';
+			const infrastrukturValues = [projects[0].id, Project.infrastruktur_skill_level];
+			await client.query(infrastrukturQueryText, infrastrukturValues);
+		}
 
 		await client.query('COMMIT'); // Commit the transaction
 

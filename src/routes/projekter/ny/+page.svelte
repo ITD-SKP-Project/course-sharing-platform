@@ -133,6 +133,8 @@
 						<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
 							<Label for="programmering_niveau">Niveau</Label>
 							<Input
+								disabled={!programmering}
+								required={programmering}
 								value={form?.formData?.programmering_skill_level}
 								type="test"
 								id="programmering_niveau"
@@ -174,6 +176,8 @@
 						<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
 							<Label for="infrastruktur_niveau">Niveau</Label>
 							<Input
+								disabled={!infrastruktur}
+								required={infrastruktur}
 								value={form?.formData?.infrastruktur_skill_level}
 								type="test"
 								id="infrastruktur_niveau"

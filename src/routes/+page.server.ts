@@ -7,20 +7,16 @@ const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
-import type {
-	DatabaseResponse,
-	Profession,
-	Project,
-	ProjectAuthor,
-	ProjectProfession
-} from '$lib/types';
+import type { Profession, Project, ProjectAuthor, ProjectProfession } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 import type { User } from '$lib/types';
 
 export const load = (async () => {
 	const client = await pool.connect();
 	try {
-		const { rows: projects } = await client.query<Project>('SELECT * FROM projects');
+		const { rows: projects } = await client.query<Project>(
+			'SELECT * FROM projects WHERE live = true'
+		);
 		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
 		//for each project, get authors and professions
 		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');

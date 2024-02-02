@@ -11,6 +11,7 @@
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { onMount } from 'svelte';
 	import { user } from '$lib/index';
+	import Footer from '$lib/components/Footer.svelte';
 
 	import { beforeNavigate, afterNavigate } from '$app/navigation';
 
@@ -165,3 +166,4 @@
 	</div>
 </nav>
 <slot />
+<Footer />
