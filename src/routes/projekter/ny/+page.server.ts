@@ -21,7 +21,17 @@ export const load = (async ({ locals }) => {
 
 type ProjectSchemaType = z.infer<typeof ProjectSchema>;
 
-function validate(project: any): { success: boolean; errors?: any } {
+function validateCustomArray(array: any): { success: boolean; errors?: any } {
+	let errors: any = {};
+	for (let [key, value] of array) {
+		if (value == '') {
+			errors[key] = 'Dette felt skal udfyldes';
+		}
+	}
+	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
+	return { success: true };
+}
+function validateCustomObject(project: any): { success: boolean; errors?: any } {
 	let errors: any = {};
 	console.log(project);
 
@@ -65,41 +75,50 @@ export const actions = {
 	} | void> => {
 		const formData = Object.fromEntries(await request.formData());
 
-		//validate form
+		//this is a dynamic list genereted from fields where the key starts with "array-"
+		const array = Object.entries(formData).filter(([key, value]) => key.startsWith('subjects-'));
+
 		let result: ProjectSchemaType;
+		const { file, ...rest } = formData;
+		const userId = locals.user.id;
+		if (!userId) {
+			return {
+				formData: rest,
+				serverError: 'Du skal være logget ind for at oprette et projekt'
+			};
+		}
 
+		//start validation and upload
 		try {
-			result = ProjectSchema.parse(formData);
-			const { success, errors } = validate(result);
-			if (!success && errors) {
+			//generate results
+			result = ProjectSchema.parse({ ...formData });
+			const { success: objSuccess, errors: objErrors } = validateCustomObject(result);
+			const { success: arraySuccess, errors: arrayErrors } = validateCustomArray(array);
+			if ((!objSuccess && objErrors) || (!arraySuccess && arrayErrors)) {
+				//if the zod validation was successful but not the custom ones
 				return {
-					formData: formData,
-					validationErrors: errors
-				};
-			}
-
-			const userId = locals.user.id;
-			if (!userId) {
-				return {
-					formData: formData,
-					serverError: 'Du skal være logget ind for at oprette et projekt'
+					formData: rest,
+					validationErrors: { ...objErrors, ...arrayErrors }
 				};
 			}
 
 			const project = await createProject(result, pool, locals.user);
+			//Everything is working and the project was created
 			return {
-				formData: formData,
+				formData: rest,
 				projectId: project.id
 			};
 		} catch (err: any) {
 			if (err instanceof z.ZodError) {
-				const { fieldErrors: errors } = err.flatten();
+				const { fieldErrors: errors } = err.flatten(); //errors from the failed zod validation will be returned to the user
 
-				const customErrors = validate(formData);
+				//but we still have to also validate to see if out custom validation fail too, so we can provide all error messages at once
+				const { errors: objErrors } = validateCustomObject(formData);
+				const { errors: arrayErrors } = validateCustomArray(array);
 
 				return {
-					formData: formData,
-					validationErrors: { ...errors, ...customErrors }
+					formData: rest,
+					validationErrors: { ...errors, ...objErrors, ...arrayErrors }
 				};
 			}
 		}

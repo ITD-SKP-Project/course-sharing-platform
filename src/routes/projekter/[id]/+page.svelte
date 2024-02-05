@@ -2,23 +2,29 @@
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
-
-	import * as Card from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
-	import * as Alert from '$lib/components/ui/alert';
-	import { Heart, BadgeInfo } from 'lucide-svelte';
-
+	export let form;
+	$: console.log(form, 'form');
+	$: console.log(data, 'data');
 	const project = data.project as Project;
-
-	import { months } from '$lib/index';
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
 
-	console.log(project);
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import * as Card from '$lib/components/ui/card';
+	import { Badge } from '$lib/components/ui/badge';
+	import * as Table from '$lib/components/ui/table';
+	import * as Alert from '$lib/components/ui/alert';
+	import { Heart, BadgeInfo, UserRoundPlus } from 'lucide-svelte';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { months } from '$lib/index';
+	import { Button } from '$lib/components/ui/button';
+	import UserSelector from '$lib/components/userSelector.svelte';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import Input from '$lib/components/ui/input/input.svelte';
 </script>
 
 <main class="flex flex-col gap-4 p-2 sm:p-8 lg:px-32">
-	<div class="flex flex-wrap justify-between gap-4">
+	<div class="relative flex flex-wrap justify-between gap-4">
 		<div>
 			{#if project.likes > 0}
 				<Badge variant="secondary" class="text-md mb-4 gap-2">
@@ -38,10 +44,59 @@
 				animi illum numquam aut, nam quisquam labore nihil placeat sint. Perspiciatis quibusdam, nobis
 				obcaecati illo expedita in.
 			</p>
+
+			{#if project.professions && project.professions.length > 0}
+				<div class="mt-16">
+					<h2 class="mb-1 text-xl font-bold">Uddannelser</h2>
+					<Table.Root>
+						<Table.Header>
+							<Table.Row>
+								<Table.Head>Udd.</Table.Head>
+								<Table.Head>Niveau</Table.Head>
+							</Table.Row>
+						</Table.Header>
+						<Table.Body>
+							{#each project.professions as profession}
+								<Table.Row>
+									<Table.Cell>{profession.profession_name}</Table.Cell>
+									<Table.Cell>{profession.skill_level}</Table.Cell>
+								</Table.Row>
+							{/each}
+						</Table.Body>
+					</Table.Root>
+				</div>
+			{/if}
+			{#if project.subjects}
+				<div class="mt-16">
+					<h2 class="mb-1 text-xl font-bold">Fag som indrages i projektet</h2>
+
+					<Input
+						type="text"
+						disabled={true}
+						class="w-fit hover:cursor-default disabled:cursor-default disabled:opacity-100 disabled:hover:cursor-default"
+						value={project.subjects}
+					/>
+				</div>
+			{/if}
+			{#if project.resources}
+				<div class="mt-16">
+					<h2 class="mb-1 text-xl font-bold">Nødvendig recurser</h2>
+
+					<Input
+						type="text"
+						disabled={true}
+						class="w-fit hover:cursor-default disabled:cursor-default disabled:opacity-100 disabled:hover:cursor-default"
+						value={project.resources}
+					/>
+				</div>
+			{/if}
 		</div>
 
-		<Card.Root class="min-w-72 border-primary">
+		<Card.Root class="sticky top-24 h-fit min-w-72 border-primary">
 			<Card.Header class="pb-4">
+				{#if project?.authors?.some((author) => author.user_id === data.user?.id)}
+					<Button class="mb-2" size="lg">Rediger projekt</Button>
+				{/if}
 				<Card.Title>Info</Card.Title>
 			</Card.Header>
 			<Card.Content>
@@ -65,7 +120,33 @@
 				</div>
 			</Card.Content>
 			<Card.Header class="pb-4">
-				<Card.Title>Forfattere</Card.Title>
+				<Card.Title class="flex items-center gap-2">
+					Forfattere <form method="POST" action="?/getUsers">
+						<Tooltip.Root>
+							<Tooltip.Trigger asChild let:builder>
+								<Button builders={[builder]} type="submit" size="icon" variant="ghost">
+									<input type="text" value="users" class="absolute hidden" />
+									<UserRoundPlus class="h-4 w-4" />
+								</Button>
+							</Tooltip.Trigger>
+							<Tooltip.Content>
+								<p>Tilføj medforfattere til dette projekt</p>
+							</Tooltip.Content>
+						</Tooltip.Root>
+					</form>
+				</Card.Title>
+				{#if form?.users}
+					<Dialog.Root open={true}>
+						<Dialog.Content>
+							<Dialog.Header>
+								<Dialog.Title>Tilføj forfattere til dette projekt</Dialog.Title>
+								<Dialog.Description>
+									<UserSelector users={form?.users} />
+								</Dialog.Description>
+							</Dialog.Header>
+						</Dialog.Content>
+					</Dialog.Root>
+				{/if}
 			</Card.Header>
 			<Card.Content>
 				<span class="text-sm text-muted-foreground">Dette project er lavet af</span>
@@ -108,6 +189,16 @@
 					</Alert.Root>
 				</Card.Content>
 			{/if}
+			<Card.Header class="pb-4">
+				<Card.Title>Projekt links</Card.Title>
+			</Card.Header>
+			<Card.Content>
+				{#if project.files}
+					{#each project.files as file}
+						<a download={file.pathname} href={'/src/files/' + file.pathname}>{file.filename}</a>
+					{/each}
+				{/if}
+			</Card.Content>
 		</Card.Root>
 	</div>
 </main>

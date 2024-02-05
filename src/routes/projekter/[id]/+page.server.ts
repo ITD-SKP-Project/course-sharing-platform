@@ -6,8 +6,8 @@ const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
-import type { Project, ProjectAuthor, User } from '$lib/types';
-import { error } from '@sveltejs/kit';
+import type { Project, ProjectAuthor, ProjectProfession, User } from '$lib/types';
+import { error, json } from '@sveltejs/kit';
 
 export const load = (async ({ url, locals }) => {
 	const client = await pool.connect();
@@ -35,27 +35,39 @@ export const load = (async ({ url, locals }) => {
 					live
 			FROM projects WHERE id = ${id} LIMIT 1;`
 		);
-		if (!projects || projects.length == 0)
-			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		console.log(projects);
 
-		//get authors
-		const { rows: authors } = await client.query<ProjectAuthor>(
-			`SELECT * FROM project_authors WHERE project_id = ${id}`
+		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
+		//for each project, get authors and professions
+		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
+		console.log(authors);
+
+		//get all users and add them to authors
+		const { rows: users } = await client.query<User>('SELECT * FROM users');
+		console.log(users);
+
+		const { rows: projectProfessions } =
+			await client.query<ProjectProfession>(`SELECT pp.*, p.name as profession_name
+		FROM project_professions pp
+		JOIN professions p ON pp.profession_id = p.id;`);
+		console.log(projectProfessions);
+
+		const { rows: projectFiles } = await client.query(
+			`SELECT * FROM project_files WHERE project_id = ${id};`
 		);
 
-		//attach authors to project
-		projects[0].authors = authors;
+		//add authors and professions to projects
+		const project = projects[0];
+		project.authors = authors.filter((author) => author.project_id === project.id);
+		project.professions = projectProfessions.filter(
+			(projectProfession) => projectProfession.project_id === project.id
+		);
+		project.authors.forEach((author) => {
+			author.user = users.find((user) => user.id === author.user_id);
+		});
+		project.files = projectFiles;
 
-		//for every author in project, attach user to author
-		for (const author of projects[0].authors) {
-			const { rows: users } = await client.query<User>(
-				`SELECT * FROM users WHERE id = ${author.user_id} LIMIT 1;`
-			);
-			author.user = users[0];
-		}
-		return {
-			project: projects[0]
-		};
+		return { project: project };
 	} catch (err) {
 		console.log(err);
 		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
@@ -63,3 +75,21 @@ export const load = (async ({ url, locals }) => {
 		client.release();
 	}
 }) satisfies PageServerLoad;
+
+export const actions = {
+	getUsers: async ({}): Promise<{
+		users?: User[];
+	} | void> => {
+		const client = await pool.connect();
+		try {
+			const { rows: users } = await client.query(
+				'SELECT id, firstname, lastname, email FROM users WHERE validated = true'
+			);
+			return { users: users };
+		} catch (err) {
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} finally {
+			client.release();
+		}
+	}
+};

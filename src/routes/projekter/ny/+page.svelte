@@ -14,10 +14,14 @@
 	import { Button } from '$lib/components/ui/button';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { Plus, X } from 'lucide-svelte';
 
 	let itSupoter = false;
 	let programmering = false;
 	let infrastruktur = false;
+
+	let testArray: string[] = [''];
+	let reRender = false;
 </script>
 
 <main class="mb-16 flex flex-col gap-8 p-2 sm:p-8">
@@ -25,14 +29,19 @@
 		<h1 class="text-4xl font-semibold">Opret et nyt projekt.</h1>
 		<p class="text mt-2">Udfyld alle felterne, og tryk på offentliggør for at lægge det op.</p>
 
-		<form method="POST" use:enhance class="mt-8 flex w-full max-w-lg flex-col gap-12">
+		<form
+			method="POST"
+			use:enhance
+			class="mt-8 flex w-full max-w-lg flex-col gap-12"
+			enctype="multipart/form-data"
+		>
 			<!-- ? title -->
 			<div class="flex w-full flex-col gap-1.5">
 				<Label for="title" class="text-lg">Title</Label>
 				<Input
 					name="title"
 					value={form?.formData?.title}
-					type="test"
+					type="text"
 					id="title"
 					placeholder="Title"
 				/>
@@ -136,7 +145,7 @@
 								disabled={!programmering}
 								required={programmering}
 								value={form?.formData?.programmering_skill_level}
-								type="test"
+								type="text"
 								id="programmering_niveau"
 								placeholder="H2 eller GF1"
 								name="programmering_skill_level"
@@ -179,7 +188,7 @@
 								disabled={!infrastruktur}
 								required={infrastruktur}
 								value={form?.formData?.infrastruktur_skill_level}
-								type="test"
+								type="text"
 								id="infrastruktur_niveau"
 								placeholder="H2 eller GF1"
 								name="infrastruktur_skill_level"
@@ -192,12 +201,57 @@
 				</div>
 			</div>
 			<!-- ? subjects -->
+			<div>
+				<Label for="subjects" class="text-lg">Fag</Label>
+				{#key form || reRender}
+					{#each testArray as item, index}
+						<div class="flex gap-2">
+							<Input
+								on:input={(e) => {
+									testArray[index] = e.target?.value;
+								}}
+								type="text"
+								name="subjects-{index}"
+								value={testArray[index] ?? form?.formData[`subjects-${index}`] ?? ''}
+								placeholder="Cisco"
+							/>
+							<Button
+								size="icon"
+								class="aspect-square"
+								variant="destructive"
+								on:click={() => {
+									testArray = testArray.toSpliced(index, 1); // Remove the item at the specified index
+									testArray = testArray;
+									reRender = !reRender;
+								}}
+							>
+								<X class=" h-4 w-4" />
+							</Button>
+						</div>
+
+						{#if form?.validationErrors?.[`subjects-${index}`]}
+							<p class="text-red-500">{form?.validationErrors?.[`subjects-${index}`]}</p>
+						{/if}
+					{/each}
+				{/key}
+				<Button
+					class="mt-2 items-center justify-start"
+					type="button"
+					on:click={() => {
+						testArray.push('');
+						testArray = [...testArray];
+					}}
+				>
+					<Plus class="mr-1.5 h-4 w-4" />
+					Tilføj
+				</Button>
+			</div>
 			<div class="flex w-full flex-col gap-1.5">
 				<Label for="subjects" class="text-lg">Fag</Label>
 				<Input
 					name="subjects"
 					value={form?.formData?.subjects}
-					type="test"
+					type="text"
 					id="subjects"
 					placeholder="subjects"
 				/>
@@ -212,7 +266,7 @@
 				<Input
 					name="resources"
 					value={form?.formData?.resources}
-					type="test"
+					type="text"
 					id="resources"
 					placeholder="resources"
 				/>
@@ -222,30 +276,24 @@
 				{/if}
 			</div>
 
-			<div class="flex w-full flex-col gap-1.5">
-				<Label for="subjects" class="text-lg">Fag</Label>
-				<Input
-					name="subjects"
-					value={form?.formData?.subjects}
-					type="test"
-					id="subjects"
-					placeholder="subjects"
-				/>
+			<div>
+				<Label for="file" class="text-lg">Filer</Label>
+				<Input name="file" value={form?.formData?.file} type="file" id="file" placeholder="file" />
 				<p class="text-sm text-muted-foreground">Hvilke fag bliver indravet i projektet.</p>
 				{#if form?.validationErrors?.subjects}
-					<p class="text-red-500">{form?.validationErrors?.subjects}</p>
+					<p class="text-red-500">{form?.validationErrors?.file}</p>
 				{/if}
 			</div>
 
 			<div class="flex w-full flex-col gap-1.5">
-				<Label for="subjects" class="text-lg">Udgivelsestidpunkt</Label>
+				<Label for="livemode" class="text-lg">Udgivelsestidpunkt</Label>
 				<div>
 					<input checked={true} type="radio" name="live" value="yes" />
-					<Label for="subjects">Udgiv nu</Label>
+					<Label for="livemode">Udgiv nu</Label>
 				</div>
 				<div>
 					<input type="radio" name="live" value="no" />
-					<Label for="subjects">Gem klade og udgiv senere</Label>
+					<Label for="livemode">Gem klade og udgiv senere</Label>
 				</div>
 			</div>
 

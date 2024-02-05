@@ -76,7 +76,7 @@ export const actions = {
 				};
 
 			// Make token
-			const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1h' });
+			const token = jwt.sign(user, JWT_SECRET, { expiresIn: '10h' });
 
 			// Set cookie
 			cookies.set('token', token, {

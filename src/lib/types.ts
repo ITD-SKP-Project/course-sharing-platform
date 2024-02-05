@@ -18,9 +18,10 @@ export interface Project extends ProjectCreation {
 	project_fork_id?: number;
 	project_root_id?: number;
 	likes: number;
+	live: boolean;
 	authors?: ProjectAuthor[];
 	professions?: ProjectProfession[];
-	live: boolean;
+	files?: ProjectFiles[];
 }
 export interface ProjectCreation {
 	title: string;
@@ -32,6 +33,13 @@ export interface ProjectCreation {
 export interface ProjectAuthor extends ProjectAuthorCreation {
 	id: number;
 	user?: User;
+}
+export interface ProjectFiles {
+	id: number;
+	project_id: number;
+	filename: string;
+	pathname: string;
+	file_type: string;
 }
 export interface ProjectAuthorCreation {
 	project_id: number | null;
