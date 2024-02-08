@@ -34,6 +34,7 @@ jobs:
         envkey_JWT_SECRET: ${{ secrets.JWT_SECRET }}
         envkey_BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
         envkey_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        envkey_BODY_SIZE_LIMIT: ${{ secrets.BODY_SIZE_LIMIT }}
     
     - run: npm i
     - run: npm run build
@@ -94,7 +95,7 @@ jobs:
         target: "/home/opgbank/build" # Update this with the target path on your server
         strip_components: 0
 
-    - name: Deploy to server part 3
+    - name: Deploy to server part 4
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
