@@ -107,6 +107,16 @@ jobs:
         target: "/home/opgbank/build" # Update this with the target path on your server
         strip_components: 0
 
+    - name: symlink data folder
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        script: |
+          ln -s /home/opgbank/data/ /home/opgbank/build/client/files
+
     - name: Copy env file
       uses: appleboy/ssh-action@master
       with:

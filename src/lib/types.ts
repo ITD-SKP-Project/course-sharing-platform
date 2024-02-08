@@ -11,6 +11,13 @@ export interface User {
 	email_verified: boolean;
 	last_send_email?: Date;
 }
+export interface UserEssentials {
+	id: number;
+	firstname?: string;
+	lastname?: string;
+	email: string;
+	validated: boolean;
+}
 export interface Project extends ProjectCreation {
 	id: number;
 	created_at: string;
@@ -21,7 +28,7 @@ export interface Project extends ProjectCreation {
 	live: boolean;
 	authors?: ProjectAuthor[];
 	professions?: ProjectProfession[];
-	files?: ProjectFiles[];
+	files?: ProjectFile[];
 }
 export interface ProjectCreation {
 	title: string;
@@ -34,11 +41,13 @@ export interface ProjectAuthor extends ProjectAuthorCreation {
 	id: number;
 	user?: User;
 }
-export interface ProjectFiles {
+export interface ProjectFile extends ProjectFileCreation {
 	id: number;
 	project_id: number;
-	filename: string;
-	pathname: string;
+}
+export interface ProjectFileCreation {
+	name: string;
+	project_id: number;
 	file_type: string;
 }
 export interface ProjectAuthorCreation {

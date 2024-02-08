@@ -78,14 +78,14 @@ export const ProjectAuthorsSchema = z.array(
 		.optional()
 );
 export const ProjectSchema = z.object({
-	subjects: z
-		.string({ required_error: 'Fag er påkrævet.' })
-		.min(1, 'Fag er påkrævet.')
-		.max(500, 'Emner må ikke være mere end 500 tegn.'),
-	resources: z
-		.string({ required_error: 'Resurcer er påkrævet.' })
-		.min(1, 'Resurcer er påkrævet.')
-		.max(500, 'Ressourcer må ikke være mere end 500 tegn.'),
+	// subjects: z
+	// 	.string({ required_error: 'Fag er påkrævet.' })
+	// 	.min(1, 'Fag er påkrævet.')
+	// 	.max(500, 'Emner må ikke være mere end 500 tegn.'),
+	// resources: z
+	// 	.string({ required_error: 'Resurcer er påkrævet.' })
+	// 	.min(1, 'Resurcer er påkrævet.')
+	// 	.max(500, 'Ressourcer må ikke være mere end 500 tegn.'),
 	title: z.string().min(1, 'Title er påkrævet.'),
 	description: z
 		.string({ required_error: 'Beskrivelsen er påkrævet.' })
