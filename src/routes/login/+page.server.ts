@@ -13,7 +13,7 @@ const pool = new Pool({
 	ssl: true
 });
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	if (locals.onboardingStatus !== 'none') {
 		throw redirect(301, locals.onboardingRedirectLocation);
 	}
@@ -33,7 +33,8 @@ const registerSchema = z.object({
 export const actions = {
 	default: async ({
 		request,
-		cookies
+		cookies,
+		url
 	}): Promise<{ formData: any; validationErrors?: any; serverError?: string } | void> => {
 		const formData = Object.fromEntries(await request.formData());
 
@@ -75,7 +76,7 @@ export const actions = {
 				};
 
 			// Make token
-			const token = jwt.sign(user, JWT_SECRET, { expiresIn: '1h' });
+			const token = jwt.sign(user, JWT_SECRET, { expiresIn: '10h' });
 
 			// Set cookie
 			cookies.set('token', token, {
@@ -95,10 +96,10 @@ export const actions = {
 		} finally {
 			client.release();
 		}
-		determineRedirect(user);
+		onboardingRedirect(user, url);
 	}
 };
-function determineRedirect(user: User): void {
+function onboardingRedirect(user: User, url: URL): void {
 	if (!user.email_verified) {
 		throw redirect(303, '/signup/bekraeft-email');
 	}
@@ -108,5 +109,10 @@ function determineRedirect(user: User): void {
 	if (!user.validated) {
 		throw redirect(303, '/signup/afventer-godkendelse');
 	}
-	return;
+
+	const redirectUrl = url.searchParams.get('redirect');
+	if (redirectUrl) {
+		throw redirect(301, '/' + redirectUrl.slice(1));
+	}
+	throw redirect(301, '/konto');
 }

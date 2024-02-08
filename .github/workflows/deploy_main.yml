@@ -3,6 +3,8 @@ name: CI/CD
 on:
   push:
     branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -20,8 +22,24 @@ jobs:
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm run i
+
+    - name: Make envfile
+      uses: SpicyPizza/create-envfile@v2.0
+      with:
+        #This actually even though its thinks it wont
+        envkey_POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
+        envkey_POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
+        envkey_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+        envkey_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        envkey_POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+        envkey_POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
+        envkey_JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        envkey_BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
+        envkey_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+    
+    - run: npm i
     - run: npm run build
+    - run: ls -lah .svelte-kit
     
     - name: Stop running deployment
       continue-on-error: true
@@ -32,7 +50,7 @@ jobs:
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
-          cd /home/opgbank/adapter-node
+          cd /home/opgbank/build
           pm2 delete index.js
 
     - name: Delete old deployment
@@ -43,7 +61,7 @@ jobs:
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
-          rm -rf /home/opgbank/adapter-node
+          rm -rf /home/opgbank/build
 
     - name: Deploy to server
       uses: appleboy/scp-action@master
@@ -52,10 +70,53 @@ jobs:
         username: ${{ secrets.PRODUCTION_SERVER_USER }}
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
-        source: "adapter-node/*" # Update this with the path to your build directory
-        target: "/home/opgbank/adapter-node" # Update this with the target path on your server
+        source: "build/*" # Update this with the path to your build directory
+        target: "/home/opgbank/build" # Update this with the target path on your server
         strip_components: 1
+
+    - name: Deploy to server part 2
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        source: "node_modules/*" # Update this with the path to your build directory
+        target: "/home/opgbank/build" # Update this with the target path on your server
+        strip_components: 0
             
+    - name: Deploy to server part 3
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        source: "package.json" # Update this with the path to your build directory
+        target: "/home/opgbank/build" # Update this with the target path on your server
+        strip_components: 0
+
+    - name: Deploy to server part 3
+      uses: appleboy/scp-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        source: "package-lock.json" # Update this with the path to your build directory
+        target: "/home/opgbank/build" # Update this with the target path on your server
+        strip_components: 0
+
+    - name: symlink data folder
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+        username: ${{ secrets.PRODUCTION_SERVER_USER }}
+        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+        script: |
+          ln -s /home/opgbank/data/ /home/opgbank/build/client/files
+
     - name: Copy env file
       uses: appleboy/ssh-action@master
       with:
@@ -65,7 +126,7 @@ jobs:
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
           cd /home/opgbank
-          cp .env /home/opgbank/adapter-node/.env
+          cp .env /home/opgbank/build/.env
 
     - name: Start deployment
       uses: appleboy/ssh-action@master
@@ -75,6 +136,6 @@ jobs:
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
-          cd /home/opgbank/adapter-node
+          cd /home/opgbank/build
           pm2 start index.js
   

@@ -4,10 +4,11 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Input } from '$lib/components/ui/input';
-	import { Star, Cross2 } from 'radix-icons-svelte';
+	import { Cross2 } from 'radix-icons-svelte';
+	import { Heart } from 'lucide-svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { derived, writable, type Writable } from 'svelte/store';
-	import * as Select from '$lib/components/ui/select';
+	import { Badge } from '$lib/components/ui/badge';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 
 	//functionality
@@ -15,6 +16,7 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;
+	console.log(data);
 	import { user as userStore } from '$lib/index';
 	const user: User | null = data.user || $userStore;
 
@@ -329,10 +331,12 @@
 					{/if}
 				</Card.Content>
 				<Card.Footer class="flex  justify-between">
-					<div class="flex items-center gap-2">
-						<Star class="h-5 w-5 text-secondary-foreground" />
-						<span>{project.likes}</span>
-					</div>
+					{#if project.likes > 0}
+						<Badge variant="secondary" class="text-md mb-4 gap-2">
+							<Heart class="h-4 w-4" />
+							{project.likes}
+						</Badge>
+					{/if}
 					<Button href="/projekter/{project.id}">Se mere</Button>
 				</Card.Footer>
 			</Card.Root>
