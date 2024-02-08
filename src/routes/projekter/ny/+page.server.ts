@@ -213,10 +213,10 @@ const uploadFile = async (file: File, projectId: number): Promise<ProjectFileCre
 	// Make sure the file doesn't already exist
 	// Make a loop that adds a number to the end of the file name until it doesn't exist
 
-	const folderLocation = process.env.NODE_ENV === 'development' ? 'static/files' : '/client/files';
+	const folderLocation = process.env.NODE_ENV === 'development' ? 'static/files' : 'client/files';
 	console.log('Folder location:', folderLocation);
 	let i = 0;
-	while (existsSync(`${folderLocation}/${projectId}/${pathName}`)) {
+	while (existsSync(`static/files/${projectId}/${pathName}`)) {
 		i++;
 		pathName = `${file.name.split('.')[0]}-${i}.${file.name.split('.')[1]}`;
 	}
