@@ -61,7 +61,7 @@
 	}
 </script>
 
-<nav class="sticky top-0 flex justify-between bg-background px-4 py-2">
+<nav class="sticky top-0 z-50 flex justify-between bg-background px-4 py-2">
 	<div class="flex gap-4">
 		<Sheet.Root>
 			<Sheet.Trigger asChild let:builder>

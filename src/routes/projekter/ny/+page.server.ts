@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import type { Project, ProjectFile, ProjectFileCreation, UserEssentials, User } from '$lib/types';
-import { writeFileSync, existsSync, mkdirSync } from 'fs';
-import { error, fail, redirect } from '@sveltejs/kit';
+// import { writeFileSync, existsSync, mkdirSync } from 'fs';
+import { error, redirect } from '@sveltejs/kit';
 import pkg from 'pg';
 import { POSTGRES_URL } from '$env/static/private';
 const { Pool } = pkg;
@@ -11,7 +11,7 @@ const pool = new Pool({
 });
 import { ProjectSchema } from '$lib/zodSchemas';
 import { z } from 'zod';
-import type { File } from 'buffer';
+import { postFile } from '$lib/server/files';
 
 //load
 export const load = (async ({ locals }) => {
@@ -23,6 +23,9 @@ export const load = (async ({ locals }) => {
 		const { rows: users } = await client.query<UserEssentials>(
 			'SELECT id, firstname, lastname, email FROM users WHERE validated = true'
 		);
+		//remove the current user from the list of users
+		const index = users.findIndex((user) => user.id === locals.user.id);
+		users.splice(index, 1);
 		return { users: users };
 	} catch (err) {
 		// Handle or throw the error as per your application's error handling policy
@@ -205,38 +208,6 @@ export const actions = {
 	}
 };
 
-const uploadFile = async (file: File, projectId: number): Promise<ProjectFileCreation | void> => {
-	// Make sure the file is not empty
-	if (!file || file.size == 0) return;
-
-	let pathName = file.name;
-	// Make sure the file doesn't already exist
-	// Make a loop that adds a number to the end of the file name until it doesn't exist
-
-	const folderLocation = process.env.NODE_ENV === 'development' ? 'static/files' : 'client/files';
-	console.log('Folder location:', folderLocation);
-	let i = 0;
-	while (existsSync(`${folderLocation}/${projectId}/${pathName}`)) {
-		i++;
-		pathName = `${file.name.split('.')[0]}-${i}.${file.name.split('.')[1]}`;
-	}
-
-	// Check if the folder exists, else create it
-	const folderPath = `static/files/${projectId}`;
-	if (!existsSync(folderPath)) {
-		mkdirSync(folderPath, { recursive: true });
-	}
-
-	writeFileSync(`${folderPath}/${pathName}`, Buffer.from(await file.arrayBuffer()));
-
-	const projectFile: ProjectFileCreation = {
-		name: pathName,
-		project_id: 1,
-		file_type: file.type
-	};
-	return projectFile;
-};
-
 async function createProject(
 	Project: ProjectSchemaType,
 	pool: pkg.Pool,
@@ -245,18 +216,19 @@ async function createProject(
 	authors: number[],
 	subjects: string[],
 	resources: string[]
-): Promise<Project | null> {
+): Promise<Project> {
 	const client = await pool.connect();
 	try {
 		await client.query('BEGIN'); // Start transaction
 
 		const projectQueryText =
-			'INSERT INTO projects (title, description, resources, subjects) VALUES ($1, $2, $3, $4) RETURNING *';
+			'INSERT INTO projects (title, description, resources, subjects, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *';
 		const projectValues = [
 			Project.title,
 			Project.description,
 			resources.join('[ENTER]'),
-			subjects.join('[ENTER]')
+			subjects.join('[ENTER]'),
+			Project.notes
 		];
 		const { rows: projects } = await client.query<Project>(projectQueryText, projectValues);
 
@@ -308,7 +280,7 @@ async function createProject(
 			];
 			await client.query(fileQueryText, fileValues);
 
-			await uploadFile(file, projects[0].id);
+			await postFile(file, projects[0].id.toString());
 		});
 
 		await client.query('COMMIT'); // Commit the transaction
@@ -318,8 +290,6 @@ async function createProject(
 		return projects[0];
 	} catch (err) {
 		await client.query('ROLLBACK'); // Rollback the transaction on error
-		return null;
-		// Return or throw the error
 		throw error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {
 		client.release(); // Release the client back to the pool

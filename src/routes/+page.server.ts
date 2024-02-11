@@ -7,22 +7,51 @@ const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
-import type { Profession, Project, ProjectAuthor, ProjectProfession } from '$lib/types';
+import type {
+	Profession,
+	Project,
+	ProjectAuthor,
+	ProjectProfession,
+	UserEssentials
+} from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 import type { User } from '$lib/types';
 
-export const load = (async () => {
+export const load = (async ({ locals }) => {
 	const client = await pool.connect();
 	try {
 		const { rows: projects } = await client.query<Project>(
-			'SELECT * FROM projects WHERE live = true'
+			`SELECT 
+				projects.*,
+				CAST(COUNT(project_likes.id) AS INTEGER) AS likes
+			FROM 
+				projects
+			LEFT JOIN 
+				project_likes ON projects.id = project_likes.project_id
+			WHERE 
+				projects.live = true
+			GROUP BY 
+				projects.id;
+			`
 		);
 		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
+		//try to find project_like from locals.user
+		if (locals.user) {
+			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
+				locals.user.id
+			]);
+			projects.forEach((project) => {
+				project.likedByUser = likes.some((like) => like.project_id === project.id);
+			});
+		}
+
 		//for each project, get authors and professions
 		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
 
 		//get all users and add them to authors
-		const { rows: users } = await client.query<User>('SELECT * FROM users');
+		const { rows: users } = await client.query<UserEssentials>(
+			'SELECT  id, firstname, lastname, email, validated FROM users'
+		);
 
 		const { rows: projectProfessions } =
 			await client.query<ProjectProfession>(`SELECT pp.*, p.name as profession_name

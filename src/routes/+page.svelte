@@ -5,7 +5,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Input } from '$lib/components/ui/input';
 	import { Cross2 } from 'radix-icons-svelte';
-	import { Heart } from 'lucide-svelte';
+	import { Heart, Star } from 'lucide-svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { derived, writable, type Writable } from 'svelte/store';
 	import { Badge } from '$lib/components/ui/badge';
@@ -36,7 +36,7 @@
 	const filters = writable({
 		//apply search params on load
 		authorName: ($page.url.searchParams.get('forfatter') as string) ?? (null as null),
-		title: null as string | null,
+		title: $page.url.searchParams.get('title') as string | null,
 		likes: null as number | null,
 		itSupport: $page.url.searchParams.get('its') as boolean | null,
 		programmer: $page.url.searchParams.get('dtp') as boolean | null,
@@ -250,7 +250,18 @@
 		{#each $filteredProjects as project}
 			<Card.Root class="flex flex-col justify-between">
 				<Card.Header>
-					<Card.Title>{project.title}</Card.Title>
+					<div class="flex justify-between">
+						<Card.Title>{project.title}</Card.Title>
+
+						<Badge variant="outline" class="text-md mb-4 gap-2">
+							<div class="flex items-center gap-2">
+								<Star
+									class="h-5 w-5 {project.likedByUser ? 'fill-yellow-500 text-yellow-500' : ''}"
+								/>
+								<span>{project.likes}</span>
+							</div>
+						</Badge>
+					</div>
 					<Card.Description>{project.description}</Card.Description>
 				</Card.Header>
 				<Card.Content class="flex flex-col gap-8">
@@ -330,13 +341,7 @@
 						</div>
 					{/if}
 				</Card.Content>
-				<Card.Footer class="flex  justify-between">
-					{#if project.likes > 0}
-						<Badge variant="secondary" class="text-md mb-4 gap-2">
-							<Heart class="h-4 w-4" />
-							{project.likes}
-						</Badge>
-					{/if}
+				<Card.Footer class="justify-end">
 					<Button href="/projekter/{project.id}">Se mere</Button>
 				</Card.Footer>
 			</Card.Root>

@@ -29,6 +29,7 @@ export interface Project extends ProjectCreation {
 	authors?: ProjectAuthor[];
 	professions?: ProjectProfession[];
 	files?: ProjectFile[];
+	likedByUser?: boolean;
 }
 export interface ProjectCreation {
 	title: string;
@@ -39,7 +40,7 @@ export interface ProjectCreation {
 }
 export interface ProjectAuthor extends ProjectAuthorCreation {
 	id: number;
-	user?: User;
+	user?: UserEssentials;
 }
 export interface ProjectFile extends ProjectFileCreation {
 	id: number;

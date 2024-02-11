@@ -69,13 +69,14 @@
 			>
 				<!-- ? title -->
 				<div class="flex w-full flex-col gap-1.5">
-					<Label for="title" class="text-lg">Title</Label>
+					<Label for="title" class="text-lg">Titel</Label>
 					<Input
 						name="title"
 						value={form?.formData?.title}
 						type="text"
 						id="title"
-						placeholder="Title"
+						required={true}
+						placeholder="Snake spil i Python"
 					/>
 					<p class="text-sm text-muted-foreground">Titlen på projektets.</p>
 					{#if form?.validationErrors?.title}
@@ -84,18 +85,34 @@
 				</div>
 				<!-- ? description -->
 				<div class="flex w-full flex-col gap-1.5">
-					<Label class="text-lg" for="description">Description</Label>
+					<Label class="text-lg" for="description">Beskrivelse</Label>
 					<Textarea
 						name="description"
 						value={form?.formData?.description}
 						id="description"
-						placeholder="Description"
+						required={true}
+						placeholder="Dette projekt handler om..."
 					/>
 					<p class="text-sm text-muted-foreground">
 						En kort forklaring af projektet. Hvad handler det om?
 					</p>
 					{#if form?.validationErrors?.description}
 						<p class="text-red-500">{form?.validationErrors?.description}</p>
+					{/if}
+				</div>
+				<!-- ? notes -->
+				<div class="flex w-full flex-col gap-1.5">
+					<Label for="notes" class="text-lg">Underviser notater</Label>
+					<Input
+						name="notes"
+						value={form?.formData?.notes}
+						type="text"
+						id="notes"
+						placeholder="Godt til nye elever..."
+					/>
+					<p class="text-sm text-muted-foreground">Notater som kun vejledere og lærere kan se.</p>
+					{#if form?.validationErrors?.notes}
+						<p class="text-red-500">{form?.validationErrors?.notes}</p>
 					{/if}
 				</div>
 				<!-- ? professions -->
@@ -109,7 +126,8 @@
 							<div>
 								<input
 									on:input={(e) => {
-										itSupoter = e.target?.checked || false;
+										itSupoter = e.target?.checked ? true : false;
+										console.log(itSupoter);
 									}}
 									type="checkbox"
 									name="it_supporter"
@@ -246,6 +264,7 @@
 									name="subjects-{index}"
 									value={subjectsArray[index] ?? form?.formData[`subjects-${index}`] ?? ''}
 									placeholder="Cisco"
+									required={index == 0}
 								/>
 								{#if index != 0}
 									<Button
@@ -294,6 +313,7 @@
 									name="resources-{index}"
 									value={resourcesArray[index] ?? form?.formData[`resources-${index}`] ?? ''}
 									placeholder="Router 2901"
+									required={index == 0}
 								/>
 								{#if index != 0}
 									<Button
@@ -330,11 +350,11 @@
 				</div>
 				<!-- ? files -->
 				<div class="flex flex-col gap-2">
-					<Label for="file" class="text-lg">Fag</Label>
+					<Label for="file" class="text-lg">Projektfiler</Label>
 
 					{#each numberOfFiles as index}
 						<div class="flex gap-2" id="files-{index}">
-							<Input type="file" name={`files-${index}`} />
+							<Input type="file" name={`files-${index}`} required={index == 0} />
 							{#if index != 0}
 								<Button
 									size="icon"
@@ -349,7 +369,10 @@
 								</Button>
 							{/if}
 						</div>
-
+						<p class="text-sm text-muted-foreground">
+							Upload filer som er relateret til projektet. F.eks. kodefiler, billeder og dokumenter.
+							<br />Tip: Giv filerne et beskrivende navn før upload.
+						</p>
 						{#if form?.validationErrors?.[`files-${index}`]}
 							<p class="text-red-500">{form?.validationErrors?.[`files-${index}`]}</p>
 						{/if}
@@ -381,7 +404,7 @@
 				</div>
 
 				<div class="flex flex-col gap-1.5">
-					<Label for="users" class="text-lg">Udgivelsestidpunkt</Label>
+					<Label for="users" class="text-lg">Medforfattere</Label>
 					<Popover.Root bind:open let:ids>
 						<Popover.Trigger asChild let:builder>
 							<Button

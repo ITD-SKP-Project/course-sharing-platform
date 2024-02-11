@@ -5,33 +5,67 @@
 	export let form;
 	$: console.log(form, 'form');
 	$: console.log(data, 'data');
-	const project = data.project as Project;
+	let project = data.project as Project;
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
+	import * as Collapsible from '$lib/components/ui/collapsible';
 
-	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { ChevronDown, ChevronUp, Loader2, Star } from 'lucide-svelte';
+
 	import * as Card from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
+
 	import * as Table from '$lib/components/ui/table';
 	import * as Alert from '$lib/components/ui/alert';
-	import { Heart, BadgeInfo, UserRoundPlus } from 'lucide-svelte';
-	import * as Dialog from '$lib/components/ui/dialog';
+	import { Heart, BadgeInfo } from 'lucide-svelte';
+
 	import { months } from '$lib/index';
 	import { Button } from '$lib/components/ui/button';
-	import UserSelector from '$lib/components/userSelector.svelte';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import Input from '$lib/components/ui/input/input.svelte';
+
+	import DowdloadLink from '$lib/components/DowdloadLink.svelte';
+
+	let loadingLike = false;
+	const likeProject = async () => {
+		loadingLike = true;
+		const response = await fetch(`/api/projects/${project.id}/like`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		loadingLike = false;
+
+		if (response.ok) {
+			const data = await response.json();
+			console.log('🚀 ~ likeProject ~ data:', data);
+			project.likedByUser = data.liked;
+			project.likes = data.likes ?? 0;
+		}
+	};
+
+	const formatter = new Intl.NumberFormat('da-DK', {
+		notation: 'compact'
+	});
 </script>
 
 <main class="flex flex-col gap-4 p-2 sm:p-8 lg:px-32">
 	<div class="relative flex flex-wrap justify-between gap-4">
 		<div>
-			{#if project.likes > 0}
-				<Badge variant="secondary" class="text-md mb-4 gap-2">
-					<Heart class="h-4 w-4" />
-					{project.likes}
-				</Badge>
-			{/if}
+			<div class="mb-8 flex items-center gap-2">
+				{#key project.likedByUser && project.likes}
+					<Button on:click={likeProject} variant="ghost" size="icon" class="text-md gap-2">
+						{#if loadingLike}
+							<Loader2 class="h-5 w-5 animate-spin" />
+						{:else}
+							<Star
+								class="h-5 w-5 {project.likedByUser ? 'fill-yellow-500 text-yellow-500' : ''}"
+							/>
+						{/if}
+					</Button>
+				{/key}
+				<strong class="text-3xl">
+					{formatter.format(project.likes)}
+				</strong>
+			</div>
 			<h1 class="mb-8 text-4xl font-semibold">{project.title}</h1>
 			<p class="text max-w-[40rem] font-light leading-7">
 				{project.description} Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos expedita
@@ -44,7 +78,14 @@
 				animi illum numquam aut, nam quisquam labore nihil placeat sint. Perspiciatis quibusdam, nobis
 				obcaecati illo expedita in.
 			</p>
-
+			{#if project.notes}
+				<h2 class="mb-2 mt-16 text-xl font-bold">Underviser Notater</h2>
+				<Alert.Root class=" w-fit ">
+					<BadgeInfo class="h-4 w-4" />
+					<Alert.Title>Note til vejledere.</Alert.Title>
+					<Alert.Description class="max-w-[40rem]">{project.notes}</Alert.Description>
+				</Alert.Root>
+			{/if}
 			{#if project.professions && project.professions.length > 0}
 				<div class="mt-16">
 					<h2 class="mb-1 text-xl font-bold">Uddannelser</h2>
@@ -66,32 +107,66 @@
 					</Table.Root>
 				</div>
 			{/if}
+
 			{#if project.subjects}
-				<div class="mt-16">
-					<h2 class="mb-1 text-xl font-bold">Fag som indrages i projektet</h2>
-
-					<Input
-						type="text"
-						disabled={true}
-						class="w-fit hover:cursor-default disabled:cursor-default disabled:opacity-100 disabled:hover:cursor-default"
-						value={project.subjects}
-					/>
-				</div>
+				<Collapsible.Root class="mb-2 mt-16 w-fit min-w-52">
+					<div class="flex items-center justify-between space-x-4">
+						<h2 class="mb-1 text-xl font-bold">Fagområder</h2>
+						{#if project.subjects.split('[ENTER]').length > 1}
+							<Collapsible.Trigger asChild let:builder>
+								<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+									{#if builder['data-state'] === 'open'}
+										<ChevronDown class="h-4 w-4 rotate-180 transform" />
+									{:else}
+										<ChevronUp class="h-4 w-4 rotate-180 transform" />
+									{/if}
+									<span class="sr-only">Toggle</span>
+								</Button>
+							</Collapsible.Trigger>
+						{/if}
+					</div>
+					<div class="rounded-md border px-4 py-3 font-mono text-sm">
+						{project.subjects.split('[ENTER]')[0]}
+					</div>
+					<Collapsible.Content class="space-y-2">
+						{#each project.subjects.split('[ENTER]').splice(1) as resource}
+							<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">{resource}</div>
+						{/each}
+					</Collapsible.Content>
+				</Collapsible.Root>
 			{/if}
-			{#if project.resources}
-				<div class="mt-16">
-					<h2 class="mb-1 text-xl font-bold">Nødvendig recurser</h2>
 
-					<Input
-						type="text"
-						disabled={true}
-						class="w-fit hover:cursor-default disabled:cursor-default disabled:opacity-100 disabled:hover:cursor-default"
-						value={project.resources}
-					/>
-				</div>
+			{#if project.resources}
+				<Collapsible.Root class="max-w-1/2 mb-2 mt-8 w-fit min-w-52">
+					<div class="flex items-center justify-between space-x-4">
+						<h2 class="mb-1 text-xl font-bold">Ressourcer</h2>
+						{#if project.resources.split('[ENTER]').length > 1}
+							<Collapsible.Trigger asChild let:builder>
+								<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+									{#if builder['data-state'] === 'open'}
+										<ChevronDown class="h-4 w-4 rotate-180 transform" />
+									{:else}
+										<ChevronUp class="h-4 w-4 rotate-180 transform" />
+									{/if}
+
+									<span class="sr-only">Toggle</span>
+								</Button>
+							</Collapsible.Trigger>
+						{/if}
+					</div>
+					<div class="rounded-md border px-4 py-3 font-mono text-sm">
+						{project.resources.split('[ENTER]')[0]}
+					</div>
+					<Collapsible.Content class="space-y-2">
+						{#each project.resources.split('[ENTER]').splice(1) as resource}
+							<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">{resource}</div>
+						{/each}
+					</Collapsible.Content>
+				</Collapsible.Root>
 			{/if}
 		</div>
 
+		<!-- ? infobox -->
 		<Card.Root class="sticky top-24 h-fit min-w-72 border-primary">
 			<Card.Header class="pb-4">
 				{#if project?.authors?.some((author) => author.user_id === data.user?.id)}
@@ -120,33 +195,7 @@
 				</div>
 			</Card.Content>
 			<Card.Header class="pb-4">
-				<Card.Title class="flex items-center gap-2">
-					Forfattere <form method="POST" action="?/getUsers">
-						<Tooltip.Root>
-							<Tooltip.Trigger asChild let:builder>
-								<Button builders={[builder]} type="submit" size="icon" variant="ghost">
-									<input type="text" value="users" class="absolute hidden" />
-									<UserRoundPlus class="h-4 w-4" />
-								</Button>
-							</Tooltip.Trigger>
-							<Tooltip.Content>
-								<p>Tilføj medforfattere til dette projekt</p>
-							</Tooltip.Content>
-						</Tooltip.Root>
-					</form>
-				</Card.Title>
-				{#if form?.users}
-					<Dialog.Root open={true}>
-						<Dialog.Content>
-							<Dialog.Header>
-								<Dialog.Title>Tilføj forfattere til dette projekt</Dialog.Title>
-								<Dialog.Description>
-									<UserSelector users={form?.users} />
-								</Dialog.Description>
-							</Dialog.Header>
-						</Dialog.Content>
-					</Dialog.Root>
-				{/if}
+				<Card.Title class="flex items-center gap-2">Forfattere</Card.Title>
 			</Card.Header>
 			<Card.Content>
 				<span class="text-sm text-muted-foreground">Dette project er lavet af</span>
@@ -177,25 +226,14 @@
 					{/if}
 				</div>
 			</Card.Content>
-			{#if project.notes}
-				<Card.Header class="pb-4">
-					<Card.Title>Noter</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<Alert.Root class=" w-fit ">
-						<BadgeInfo class="h-4 w-4" />
-						<Alert.Title>Note til vejledere.</Alert.Title>
-						<Alert.Description class="max-w-72">{project.notes}</Alert.Description>
-					</Alert.Root>
-				</Card.Content>
-			{/if}
+
 			<Card.Header class="pb-4">
 				<Card.Title>Projekt links</Card.Title>
 			</Card.Header>
 			<Card.Content>
 				{#if project.files}
 					{#each project.files as file}
-						<a download={file.pathname} href={'/src/files/' + file.pathname}>{file.filename}</a>
+						<DowdloadLink pathName={`${project.id}/${file.name}`}>{file.name}</DowdloadLink>
 					{/each}
 				{/if}
 			</Card.Content>

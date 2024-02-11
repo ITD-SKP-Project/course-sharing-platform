@@ -6,7 +6,7 @@ const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
-import type { Project, ProjectAuthor, ProjectProfession, User } from '$lib/types';
+import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 
 export const load = (async ({ url, locals }) => {
@@ -20,30 +20,66 @@ export const load = (async ({ url, locals }) => {
 	try {
 		const { rows: projects } = await client.query<Project>(
 			locals.user
-				? `SELECT * FROM projects WHERE id = ${id} LIMIT 1;`
-				: `SELECT 
-					 id,
-					title,
-					description,
-					project_fork_id,
-					fork_root_id,
-					created_at,
-					updated_at,
-					subjects,
-					resources,
-					likes,
-					live
-			FROM projects WHERE id = ${id} LIMIT 1;`
+				? `
+				SELECT 
+				  projects.*,
+				 CAST(COUNT(project_likes.id) AS INTEGER) AS likes
+				FROM 
+				  projects
+				LEFT JOIN 
+				  project_likes ON projects.id = project_likes.project_id
+				WHERE 
+				  projects.id = ${id}
+				  AND projects.live = true
+				GROUP BY 
+				  projects.id
+				LIMIT 1;
+			  `
+				: `
+				SELECT 
+				  projects.id,
+				  projects.title,
+				  projects.description,
+				  projects.project_fork_id,
+				  projects.fork_root_id,
+				  projects.created_at,
+				  projects.updated_at,
+				  projects.subjects,
+				  projects.resources,
+				  projects.likes,
+				  projects.live,
+				  COALESCE(CAST(COUNT(project_likes.id) AS INTEGER), 0) AS like_count
+				FROM 
+				  projects
+				LEFT JOIN 
+				  project_likes ON projects.id = project_likes.project_id
+				WHERE 
+				  projects.id = ${id}
+				  AND projects.live = true
+				GROUP BY 
+				  projects.id
+				LIMIT 1;
+			  `
 		);
-		console.log(projects);
 
 		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
+
+		if (locals.user) {
+			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
+				locals.user.id
+			]);
+			projects.forEach((project) => {
+				project.likedByUser = likes.some((like) => like.project_id === project.id);
+			});
+		}
 		//for each project, get authors and professions
 		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
 		console.log(authors);
 
 		//get all users and add them to authors
-		const { rows: users } = await client.query<User>('SELECT * FROM users');
+		const { rows: users } = await client.query<UserEssentials>(
+			'SELECT id, firstname, lastname, email, validated FROM users'
+		);
 		console.log(users);
 
 		const { rows: projectProfessions } =
