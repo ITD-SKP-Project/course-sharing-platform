@@ -14,6 +14,7 @@ export const load = (async ({ locals, url }) => {
 	if (locals.onboardingStatus !== 'needs-email-verification') {
 		throw redirect(301, locals.onboardingRedirectLocation);
 	}
+
 	try {
 		const token = url.searchParams.get('token');
 		if (!token) {

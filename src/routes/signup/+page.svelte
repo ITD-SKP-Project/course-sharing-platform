@@ -9,6 +9,10 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
 	import { AlertTriangle } from 'lucide-svelte';
+
+	import { enhance } from '$app/forms';
+	import { Loader2 } from 'lucide-svelte';
+	let loading = false;
 </script>
 
 <div class="flex h-screen-fix lg:!bg-none" id="theme-image">
@@ -30,7 +34,17 @@
 					<Alert.Title>Fejl: {form?.error}</Alert.Title>
 				</Alert.Root>
 			{/if}
-			<form method="POST" class="flex w-full flex-col items-center justify-center gap-4">
+			<form
+				method="POST"
+				class="flex w-full flex-col items-center justify-center gap-4"
+				use:enhance={() => {
+					loading = true;
+					return async ({ update }) => {
+						loading = false;
+						update();
+					};
+				}}
+			>
 				<h1 class="text-4xl font-bold">Opret en konto</h1>
 				<div class="flex w-full max-w-md flex-col gap-1.5">
 					<Label for="email">E-mail</Label>
@@ -71,3 +85,8 @@
 		</div>
 	</div>
 </div>
+{#if loading}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+		<Loader2 class="h-20 w-20 animate-spin text-primary" />
+	</div>
+{/if}

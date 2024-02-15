@@ -77,7 +77,6 @@ async function sendVerificationEmail(toEmail: string, key: string, domain: strin
 
 function emailTemplate(email: string, domain: string, key: string) {
 	return `
-   
 	<html lang="da">
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />

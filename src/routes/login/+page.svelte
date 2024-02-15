@@ -1,14 +1,16 @@
 <script lang="ts">
 	import type { PageData } from './$types';
-
 	export let data: PageData;
 	export let form;
+
+	import { enhance } from '$app/forms';
+	let loading = false;
 
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
 	import { Button } from '$lib/components/ui/button';
 	import * as Alert from '$lib/components/ui/alert';
-	import { AlertTriangle } from 'lucide-svelte';
+	import { AlertTriangle, Loader2 } from 'lucide-svelte';
 </script>
 
 <div class="flex h-screen-fix lg:!bg-none" id="theme-image">
@@ -26,7 +28,17 @@
 					<Alert.Description>{form?.serverError}</Alert.Description>
 				</Alert.Root>
 			{/if}
-			<form method="POST" class="flex w-full max-w-md flex-col items-center justify-center gap-4">
+			<form
+				method="POST"
+				class="flex w-full max-w-md flex-col items-center justify-center gap-4"
+				use:enhance={() => {
+					loading = true;
+					return async ({ update }) => {
+						loading = false;
+						update();
+					};
+				}}
+			>
 				<h1 class="text-4xl font-bold">Log ind</h1>
 
 				<div class="flex w-full max-w-md flex-col gap-1.5">
@@ -80,3 +92,8 @@
 	></div>
 	<!-- <img src={future} alt="city" class="hidden w-1/2 max-w-[60rem] object-cover lg:block" /> -->
 </div>
+{#if loading}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+		<Loader2 class="h-20 w-20 animate-spin text-primary" />
+	</div>
+{/if}

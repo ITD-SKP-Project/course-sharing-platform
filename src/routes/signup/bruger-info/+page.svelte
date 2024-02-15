@@ -20,6 +20,10 @@
 			: form?.validationErrors?.lastname
 				? pages[1]
 				: pages[0];
+
+	import { enhance } from '$app/forms';
+	import { Loader2 } from 'lucide-svelte';
+	let loading = false;
 </script>
 
 <main class="flex flex-col items-center justify-center px-4">
@@ -32,7 +36,16 @@
 			<Tabs.Trigger value={pages[1]}>Beskrivelse</Tabs.Trigger>
 		</Tabs.List>
 
-		<form method="POST">
+		<form
+			method="POST"
+			use:enhance={() => {
+				loading = true;
+				return async ({ update }) => {
+					loading = false;
+					update();
+				};
+			}}
+		>
 			<Tabs.Content value="name">
 				<Card.Root>
 					<Card.Header>
@@ -115,3 +128,8 @@
 		</form>
 	</Tabs.Root>
 </main>
+{#if loading}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+		<Loader2 class="h-20 w-20 animate-spin text-primary" />
+	</div>
+{/if}

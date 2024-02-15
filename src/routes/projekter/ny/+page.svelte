@@ -53,6 +53,9 @@
 			document.getElementById(triggerId)?.focus();
 		});
 	}
+
+	import { Loader2 } from 'lucide-svelte';
+	let loading = false;
 </script>
 
 <main class="mb-16 flex flex-col gap-8 p-2 sm:p-8">
@@ -63,7 +66,13 @@
 		{#key form}
 			<form
 				method="POST"
-				use:enhance
+				use:enhance={() => {
+					loading = true;
+					return async ({ update }) => {
+						loading = false;
+						update();
+					};
+				}}
 				class="mt-8 flex w-full max-w-lg flex-col gap-12"
 				enctype="multipart/form-data"
 			>
@@ -495,6 +504,11 @@
 		{/key}
 	</div>
 </main>
+{#if loading}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+		<Loader2 class="h-20 w-20 animate-spin text-primary" />
+	</div>
+{/if}
 
 <style>
 </style>
