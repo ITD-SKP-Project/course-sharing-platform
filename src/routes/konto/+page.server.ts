@@ -52,8 +52,7 @@ export const load = (async ({ locals }) => {
 			[locals.user.id]
 		);
 
-		if (!projects || projects.length === 0)
-			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		if (!projects || projects.length === 0) return { userProjects: [] as Project[] };
 
 		// Fetch authors and professions for the retrieved projects
 		const projectsIds = projects.map((p) => p.id);

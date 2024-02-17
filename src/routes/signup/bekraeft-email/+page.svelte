@@ -25,8 +25,12 @@
 	let error: string = '';
 	let errorMessage: string = '';
 
+	import { Loader2 } from 'lucide-svelte';
+	let loading = false;
+
 	async function sendEmail() {
 		if (secondsLeft > 0) return;
+		loading = true;
 		error = '';
 		errorMessage = '';
 
@@ -42,6 +46,7 @@
 			const data = await response.json();
 			errorMessage = data.message;
 		}
+		loading = false;
 		secondsLeft = 60;
 	}
 </script>
@@ -76,3 +81,8 @@
 		</Card.Footer>
 	</Card.Root>
 </main>
+{#if loading}
+	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+		<Loader2 class="h-20 w-20 animate-spin text-primary" />
+	</div>
+{/if}

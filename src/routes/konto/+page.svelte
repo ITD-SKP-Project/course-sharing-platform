@@ -16,7 +16,6 @@
 
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Card from '$lib/components/ui/card';
-	import * as Select from '$lib/components/ui/select';
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
@@ -30,6 +29,18 @@
 	import { enhance } from '$app/forms';
 	import { Loader2 } from 'lucide-svelte';
 	let loading = false;
+
+	async function deleteAccount() {
+		const res = await fetch(`/api/delete-account`, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		if (res.ok) {
+			window.location.href = '/';
+		}
+	}
 </script>
 
 <Toaster />
@@ -109,6 +120,7 @@
 			</form>
 			<form
 				action=""
+				method="POST"
 				class="mt-16 flex w-full flex-col"
 				use:enhance={() => {
 					loading = true;
@@ -234,6 +246,7 @@
 											<Button
 												disabled={confirnDelete.toLowerCase() != 'slet min konto'}
 												builders={[builder]}
+												on:click={deleteAccount}
 												variant="destructive">Slet forevigt</Button
 											>
 										</AlertDialog.Action>
