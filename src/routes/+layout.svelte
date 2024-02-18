@@ -82,6 +82,7 @@
 						{#if data.user?.authority_level >= 3 || ($user?.authority_level && $user?.authority_level >= 3)}
 							<Button variant="outline" href="/admin/brugere">Administrer brugere</Button>
 						{/if}
+
 						<!-- <div class="relative mt-2">
 							<MagnifyingGlass
 								class="color-foreground absolute left-2 top-1/2 h-[1.2rem] w-[1.2rem] -translate-y-1/2 fill-foreground"

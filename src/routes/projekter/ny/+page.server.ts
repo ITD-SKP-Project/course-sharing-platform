@@ -21,11 +21,9 @@ export const load = (async ({ locals }) => {
 	const client = await pool.connect();
 	try {
 		const { rows: users } = await client.query<UserEssentials>(
-			'SELECT id, firstname, lastname, email FROM users WHERE validated = true'
+			'SELECT id, firstname, lastname, email FROM users WHERE validated = true AND id != $1;',
+			[locals.user.id]
 		);
-		//remove the current user from the list of users
-		const index = users.findIndex((user) => user.id === locals.user.id);
-		users.splice(index, 1);
 		return { users: users };
 	} catch (err) {
 		// Handle or throw the error as per your application's error handling policy
@@ -34,6 +32,8 @@ export const load = (async ({ locals }) => {
 			'Der skete en uventet felj da vi prøvede at hente brugere fra databasen. ' +
 				JSON.stringify(err)
 		);
+	} finally {
+		client.release();
 	}
 }) as PageServerLoad;
 

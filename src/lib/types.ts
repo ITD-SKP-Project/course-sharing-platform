@@ -18,6 +18,13 @@ export interface UserEssentials {
 	email: string;
 	validated: boolean;
 }
+export interface UserExludingPassword extends UserEssentials {
+	authority_level?: number;
+	created_at: string;
+	updated_at: string;
+	email_verified: boolean;
+	last_send_email?: Date;
+}
 export interface Project extends ProjectCreation {
 	id: number;
 	created_at: string;
