@@ -12,3 +12,4 @@ vite.config.ts.timestamp-*
 .sql
 .session.sql
 /static/files
+package-lock.json

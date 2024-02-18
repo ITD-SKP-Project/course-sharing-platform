@@ -151,7 +151,10 @@
 			accessor: ({ id }) => id,
 			header: '',
 			cell: ({ value }) => {
-				return createRender(DataTableActions, { id: value });
+				return createRender(DataTableActions, {
+					id: value.toString(),
+					email: data.find((user) => user.id === value)?.email ?? ''
+				});
 			},
 			plugins: {
 				sort: {
