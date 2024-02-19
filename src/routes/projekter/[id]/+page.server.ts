@@ -56,8 +56,6 @@ export const load = (async ({ url, locals }) => {
 				WHERE 
 				  projects.id = ${id}
 				  AND projects.live = true
-				GROUP BY 
-				  projects.id
 				LIMIT 1;
 			  `
 		);

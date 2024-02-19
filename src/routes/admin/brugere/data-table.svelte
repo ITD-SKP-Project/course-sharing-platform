@@ -2,7 +2,7 @@
 	import { createTable, Render, Subscribe, createRender } from 'svelte-headless-table';
 	import DataTableActions from './data-table-actions.svelte';
 	import * as Table from '$lib/components/ui/table';
-
+	export let currentUser: User;
 	export let data: UserExludingPassword[];
 	import {
 		addPagination,
@@ -12,10 +12,10 @@
 	} from 'svelte-headless-table/plugins';
 	import DataTableCheckbox from './data-table-checkbox.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { ArrowUpDown, MoveUp, MoveDown } from 'lucide-svelte';
+	import { ArrowUpDown } from 'lucide-svelte';
 	import { readable } from 'svelte/store';
 	import { Input } from '$lib/components/ui/input';
-	import type { UserExludingPassword } from '$lib/types';
+	import type { UserExludingPassword, User } from '$lib/types';
 
 	const table = createTable(readable(data), {
 		page: addPagination(),
@@ -32,14 +32,16 @@
 			header: (_, { pluginStates }) => {
 				const { allPageRowsSelected } = pluginStates.select;
 				return createRender(DataTableCheckbox, {
-					checked: allPageRowsSelected
+					checked: allPageRowsSelected,
+					value: 'ID'
 				});
 			},
 			cell: ({ row }, { pluginStates }) => {
 				const { getRowState } = pluginStates.select;
 				const { isSelected } = getRowState(row);
 				return createRender(DataTableCheckbox, {
-					checked: isSelected
+					checked: isSelected,
+					value: row.id
 				});
 			},
 			plugins: {
@@ -152,8 +154,8 @@
 			header: '',
 			cell: ({ value }) => {
 				return createRender(DataTableActions, {
-					id: value.toString(),
-					email: data.find((user) => user.id === value)?.email ?? ''
+					user: data.find((user) => user.id === value)!,
+					currentUser: currentUser
 				});
 			},
 			plugins: {
@@ -166,11 +168,10 @@
 
 	const { headerRows, pageRows, tableAttrs, tableBodyAttrs, pluginStates, rows } =
 		table.createViewModel(columns);
-	const { hasNextPage, hasPreviousPage, pageIndex } = pluginStates.page;
+	const { hasNextPage, hasPreviousPage, pageIndex, pageSize, pageCount } = pluginStates.page;
+
 	const { filterValue } = pluginStates.filter;
 	const { selectedDataIds } = pluginStates.select;
-
-	$: console.log($selectedDataIds);
 </script>
 
 <div>
@@ -229,17 +230,20 @@
 			{Object.keys($selectedDataIds).length} of{' '}
 			{$rows.length} row(s) selected.
 		</div>
-		<Button
-			variant="outline"
-			size="sm"
-			on:click={() => ($pageIndex = $pageIndex - 1)}
-			disabled={!$hasPreviousPage}>Previous</Button
-		>
-		<Button
-			variant="outline"
-			size="sm"
-			disabled={!$hasNextPage}
-			on:click={() => ($pageIndex = $pageIndex + 1)}>Next</Button
-		>
+		<div class="flex items-center">
+			<p class="text-sm text-muted-foreground">Side {$pageIndex + 1} af {$pageCount}.</p>
+			<Button
+				variant="outline"
+				size="sm"
+				on:click={() => ($pageIndex = $pageIndex - 1)}
+				disabled={!$hasPreviousPage}>Previous</Button
+			>
+			<Button
+				variant="outline"
+				size="sm"
+				disabled={!$hasNextPage}
+				on:click={() => ($pageIndex = $pageIndex + 1)}>Next</Button
+			>
+		</div>
 	</div>
 </div>

@@ -2,7 +2,7 @@ import type { PageServerLoad } from './$types';
 import { error, redirect } from '@sveltejs/kit';
 import pkg from 'pg';
 import { POSTGRES_URL } from '$env/static/private';
-import type { UserExludingPassword } from '$lib/types';
+import type { User, UserExludingPassword } from '$lib/types';
 const { Pool } = pkg;
 const pool = new Pool({
 	connectionString: POSTGRES_URL,
@@ -10,6 +10,10 @@ const pool = new Pool({
 });
 
 export const load = (async ({ locals }) => {
+	if (!locals.user) {
+		throw redirect(307, '/konto?redirect=/admin/brugere');
+	}
+
 	const client = await pool.connect();
 	try {
 		const { rows: users } = await client.query<UserExludingPassword>(

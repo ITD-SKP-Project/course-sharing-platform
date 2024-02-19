@@ -4,9 +4,13 @@
 
 	export let data: PageData;
 	console.log(data);
+
+	export let form;
+	$: if (form) editUserFormResponse.set(form);
+	import { editUserFormResponse } from '$lib/stores';
 </script>
 
 <div class="container mx-auto py-10">
 	<h1 class="mb-4 text-3xl font-bold">Users</h1>
-	<DataTable data={data.users} />
+	<DataTable data={data.users} currentUser={data.user} />
 </div>

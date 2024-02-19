@@ -1,11 +1,11 @@
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
 	import { Button } from '$lib/components/ui/button';
-	import { Lock, MoreHorizontal, Send, UserRoundX } from 'lucide-svelte';
-	export let email: string;
-	export let id: string;
 
+	import { Link, Lock, MoreHorizontal, Send, UserRoundX } from 'lucide-svelte';
+	export let user: UserExludingPassword;
 	import { Pen } from 'lucide-svelte';
+	import type { UserExludingPassword } from '$lib/types';
 </script>
 
 <DropdownMenu.Root>
@@ -18,19 +18,24 @@
 	<DropdownMenu.Content>
 		<DropdownMenu.Group>
 			<DropdownMenu.Label>Handlinger</DropdownMenu.Label>
-			<DropdownMenu.Item on:click={() => navigator.clipboard.writeText(email)}>
+			<DropdownMenu.Item on:click={() => navigator.clipboard.writeText(user.email)}>
 				Kopier email
 			</DropdownMenu.Item>
-			<DropdownMenu.Item on:click={() => navigator.clipboard.writeText(id)}>
+			<DropdownMenu.Item on:click={() => navigator.clipboard.writeText(user.id.toString())}>
 				Kopier id
 			</DropdownMenu.Item>
 		</DropdownMenu.Group>
-		<DropdownMenu.Separator />
-		<DropdownMenu.Item class="gap-4" href={'mailto:' + email}>
+
+		<DropdownMenu.Item class="gap-4" href={'mailto:' + user.email}>
 			<Send class="ml-2 h-4 w-4" />
 			Send email
 		</DropdownMenu.Item>
-		<DropdownMenu.Item class="gap-4">
+		<DropdownMenu.Item class="gap-4" href={`/projekter/${user.id}`}>
+			<Link class="ml-2 h-4 w-4" />
+			Se projekter
+		</DropdownMenu.Item>
+		<DropdownMenu.Separator />
+		<DropdownMenu.Item class="gap-4" href={`/admin/brugere/rediger/${user.id}`}>
 			<Pen class="ml-2 h-4 w-4" />
 			Rediger
 		</DropdownMenu.Item>

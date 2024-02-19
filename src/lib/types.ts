@@ -23,7 +23,7 @@ export interface UserExludingPassword extends UserEssentials {
 	created_at: string;
 	updated_at: string;
 	email_verified: boolean;
-	last_send_email?: Date;
+	last_send_email?: Date | null;
 }
 export interface Project extends ProjectCreation {
 	id: number;

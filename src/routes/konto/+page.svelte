@@ -73,6 +73,7 @@
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="firstname" class="text-right">Fornavn</Label>
 							<Input
+								type="text"
 								id="firstname"
 								name="firstname"
 								value={data.user.firstname}

@@ -1,8 +1,8 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { z } from 'zod';
 import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
+import { z } from 'zod';
 import { error, json } from '@sveltejs/kit';
 import type {
 	Profession,
