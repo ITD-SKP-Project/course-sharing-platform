@@ -9,11 +9,11 @@ const pool = new Pool({
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 
-export const load = (async ({ url, locals }) => {
+export const load = (async ({ url, locals, params }) => {
 	const client = await pool.connect();
 
-	const id = url.pathname.split('/')[2];
-	if (!id) throw error(404, 'Der blev ikke fundet nogle projekter.');
+	const id = params.id;
+	if (!id) throw error(400, 'Der blev ikke givet et id.');
 	if (typeof +id != 'number') throw error(404, 'Der blev ikke fundet nogle projekter.');
 
 	//get project
@@ -46,9 +46,8 @@ export const load = (async ({ url, locals }) => {
 				  projects.updated_at,
 				  projects.subjects,
 				  projects.resources,
-				  projects.likes,
 				  projects.live,
-				  COALESCE(CAST(COUNT(project_likes.id) AS INTEGER), 0) AS like_count
+				  COALESCE(CAST(COUNT(project_likes.id) AS INTEGER), 0) AS likes
 				FROM 
 				  projects
 				LEFT JOIN 
@@ -56,11 +55,14 @@ export const load = (async ({ url, locals }) => {
 				WHERE 
 				  projects.id = ${id}
 				  AND projects.live = true
+				GROUP BY 
+				  projects.id
 				LIMIT 1;
 			  `
 		);
 
-		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
+		if (!projects || projects.length == 0)
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
 
 		if (locals.user) {
 			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
@@ -72,19 +74,16 @@ export const load = (async ({ url, locals }) => {
 		}
 		//for each project, get authors and professions
 		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
-		console.log(authors);
 
 		//get all users and add them to authors
 		const { rows: users } = await client.query<UserEssentials>(
 			'SELECT id, firstname, lastname, email, validated FROM users'
 		);
-		console.log(users);
 
 		const { rows: projectProfessions } =
 			await client.query<ProjectProfession>(`SELECT pp.*, p.name as profession_name
 		FROM project_professions pp
 		JOIN professions p ON pp.profession_id = p.id;`);
-		console.log(projectProfessions);
 
 		const { rows: projectFiles } = await client.query(
 			`SELECT * FROM project_files WHERE project_id = ${id};`
@@ -103,7 +102,7 @@ export const load = (async ({ url, locals }) => {
 
 		return { project: project };
 	} catch (err) {
-		console.log(err);
+		console.error(err);
 		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();

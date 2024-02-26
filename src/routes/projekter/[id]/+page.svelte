@@ -23,9 +23,19 @@
 
 	import DowdloadLink from '$lib/components/DowdloadLink.svelte';
 
+	import { Toaster } from '$lib/components/ui/sonner';
+	import { toast } from 'svelte-sonner';
+
 	let loadingLike = false;
 	const likeProject = async () => {
+		if (!data.user) {
+			toast('Ikke logget ind.', {
+				description: 'Du skal være logget ind for at kunne like et projekt'
+			});
+			return;
+		}
 		loadingLike = true;
+		console.log(`/api/projects/${project.id}/like`);
 		const response = await fetch(`/api/projects/${project.id}/like`, {
 			method: 'POST',
 			headers: {
@@ -240,3 +250,4 @@
 		</Card.Root>
 	</div>
 </main>
+<Toaster />

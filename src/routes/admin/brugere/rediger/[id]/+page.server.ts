@@ -13,7 +13,6 @@ export const load = (async ({ params, locals }) => {
 	if (!locals.user || locals.user.authority_level < 3) {
 		throw error(401, 'Du har ikke adgang til denne side');
 	}
-	console.log('params:', params);
 
 	let user: UserExludingPassword | null;
 	const client = await pool.connect();
@@ -23,7 +22,6 @@ export const load = (async ({ params, locals }) => {
 			updated_at, email_verified, validated, last_send_email FROM users WHERE id = $1 LIMIT 1;`,
 			[params.id]
 		);
-		console.log('users:', users);
 
 		user = users[0];
 	} catch (err) {

@@ -286,7 +286,6 @@ async function createProject(
 		await client.query('COMMIT'); // Commit the transaction
 
 		// Return success or the created project details
-		console.log('Project created successfully:', projects[0]);
 		return projects[0];
 	} catch (err) {
 		await client.query('ROLLBACK'); // Rollback the transaction on error
