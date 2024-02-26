@@ -32,11 +32,28 @@
 		subjects = 'subjects',
 		resources = 'resources'
 	}
+
+	function toArrayOfStrings(data: Object | undefined, keyword: string): string[] {
+		console.log('🚀 ~ toArrayOfStrings ~ keyword:', keyword);
+		console.log('🚀 ~ toArrayOfStrings ~ data:', typeof data);
+		if (!data || typeof data != 'object') return [];
+
+		//return keys where value includes keyword
+		let result: string[] = [];
+		for (const [key, value] of Object.entries(data)) {
+			if (key.includes(keyword)) {
+				result.push(value);
+			}
+		}
+		return result;
+	}
+
 	let FieldToEdit: Fields = Fields.none;
 	import { Textarea } from '$lib/components/ui/textarea';
 
 	let subjectsArray: string[] = data.project.subjects.split('[ENTER]') ?? [''];
 	const subjectsArrayBackup = subjectsArray;
+
 	let resourcesArray: string[] = data.project.resources.split('[ENTER]') ?? [''];
 	const resourcesArrayBackup = resourcesArray;
 
@@ -51,6 +68,9 @@
 			description: form.successMessage
 		});
 	}
+
+	// let subjectData = data.project?.subjects?.split('[ENTER]') || [];
+	// let subjectDataBackup = subjectData;
 </script>
 
 <Toaster />
@@ -139,9 +159,10 @@
 					>
 						<div class="grid w-full max-w-md items-center gap-1.5">
 							<Label for="description">Beskrivelse</Label>
+
 							<Textarea
 								placeholder="description"
-								value={project.description}
+								value={form?.formData?.description || project.description}
 								name="description"
 								class="w-full"
 							/>
@@ -167,15 +188,15 @@
 					</form>
 				{:else}
 					<p class="text max-w-[40rem] font-light leading-7">
-						{project.description} Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos expedita
-						earum a dolorum corrupti cupiditate commodi facilis similique voluptates nihil corporis laborum
-						officiis reprehenderit id labore neque pariatur sint voluptatem molestias quis magni asperiores,
-						reiciendis dolor! Laudantium, aspernatur tenetur? Deleniti exercitationem iste incidunt sit
-						non, numquam itaque qui quod suscipit quasi veniam sint deserunt distinctio earum necessitatibus,
-						facilis officiis assumenda dolores. Porro quo voluptatem corrupti vero commodi provident
-						ipsum optio eaque natus perspiciatis et perferendis, ea iure ad ullam doloremque sapiente
-						odio! Necessitatibus animi illum numquam aut, nam quisquam labore nihil placeat sint. Perspiciatis
-						quibusdam, nobis obcaecati illo expedita in.
+						{form?.formData?.description || project.description} Lorem ipsum dolor sit amet consectetur
+						adipisicing elit. Quos expedita earum a dolorum corrupti cupiditate commodi facilis similique
+						voluptates nihil corporis laborum officiis reprehenderit id labore neque pariatur sint voluptatem
+						molestias quis magni asperiores, reiciendis dolor! Laudantium, aspernatur tenetur? Deleniti
+						exercitationem iste incidunt sit non, numquam itaque qui quod suscipit quasi veniam sint
+						deserunt distinctio earum necessitatibus, facilis officiis assumenda dolores. Porro quo voluptatem
+						corrupti vero commodi provident ipsum optio eaque natus perspiciatis et perferendis, ea iure
+						ad ullam doloremque sapiente odio! Necessitatibus animi illum numquam aut, nam quisquam labore
+						nihil placeat sint. Perspiciatis quibusdam, nobis obcaecati illo expedita in.
 					</p>
 					<Button
 						size="icon"
@@ -208,7 +229,7 @@
 						<Label for="notes">Noter</Label>
 						<Textarea
 							placeholder="notes"
-							value={project.notes ?? ''}
+							value={form?.formData?.notes ?? project.notes ?? ''}
 							name="notes"
 							class="min-h-32 w-full"
 						/>
@@ -249,11 +270,14 @@
 					<BadgeInfo class="h-4 w-4" />
 					<Alert.Title>Note til vejledere.</Alert.Title>
 					<Alert.Description class="max-w-[40rem]"
-						>{project.notes ?? 'Ingen notater at vise endu...'}</Alert.Description
+						>{form?.formData?.notes ||
+							project.notes ||
+							'Ingen notater at vise endu...'}</Alert.Description
 					>
 				</Alert.Root>
 			{/if}
 
+			<!-- ? Professions -->
 			{#if project.professions && project.professions.length > 0}
 				<div class="mb-8 mt-16">
 					<h2 class="mb-1 text-xl font-bold">Uddannelser</h2>
@@ -376,9 +400,23 @@
 						{project.subjects.split('[ENTER]')[0]}
 					</div>
 					<Collapsible.Content class="space-y-2">
-						{#each project.subjects.split('[ENTER]').splice(1) as resource}
-							<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">{resource}</div>
-						{/each}
+						{#key form}
+							{#if form?.successMessage && toArrayOfStrings(form?.formData, 'subjects-').length > 0}
+								form has been submited
+								{#each toArrayOfStrings(form?.formData, 'subjects-').splice(1) as resource, index}
+									<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
+										{resource}
+									</div>
+								{/each}
+							{:else}
+								no form submited yet
+								{#each project.subjects.split('[ENTER]').splice(1) as resource, index}
+									<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
+										{resource}
+									</div>
+								{/each}
+							{/if}
+						{/key}
 					</Collapsible.Content>
 				</Collapsible.Root>
 				<Button
@@ -391,10 +429,20 @@
 					<Pen class="h-5 w-5" />
 				</Button>
 			{/if}
-
 			<!-- ? Resources -->
 			{#if Fields.resources === FieldToEdit}
-				<form action="">
+				<form
+					action="?/updateResources"
+					method="POST"
+					use:enhance={() => {
+						loading = true;
+						return async ({ update }) => {
+							loading = false;
+							FieldToEdit = Fields.none;
+							update();
+						};
+					}}
+				>
 					<div class="flex flex-col gap-2">
 						<div class="mt-2 flex items-center gap-2">
 							<Label for="resources" class="text-lg">Ressourcer</Label>
@@ -444,10 +492,6 @@
 										</Button>
 									{/if}
 								</div>
-
-								<!-- {#if form?.validationErrors?.[`resources-${index}`]}
-								<p class="text-red-500">{form?.validationErrors?.[`resources-${index}`]}</p>
-							{/if} -->
 							{/each}
 						{/key}
 

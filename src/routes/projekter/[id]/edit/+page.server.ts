@@ -279,5 +279,51 @@ export const actions = {
 		} finally {
 			client.release();
 		}
+	},
+	updateResources: async ({
+		request,
+		params
+	}): Promise<{
+		formData: any;
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+	} | void> => {
+		let formData = Object.fromEntries(await request.formData());
+
+		const resourcesArray = Object.entries(formData).filter(([key, value]) =>
+			key.startsWith('resources-')
+		);
+		function validateCustomArray(array: any): { success: boolean; errors?: any } {
+			let errors: any = {};
+			for (let [key, value] of array) {
+				if (value == '') {
+					errors[key] = 'Dette felt skal udfyldes';
+				}
+			}
+			if (Object.keys(errors).length > 0) return { errors: errors, success: false };
+			return { success: true };
+		}
+		console.log('resourcesArray:', resourcesArray);
+		const { errors: subjectErrors } = validateCustomArray(resourcesArray);
+		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
+
+		const resources = resourcesArray.map(([key, value]) => value.toString());
+		console.log('resources:', resources);
+		const resourcesString = resources.join('[ENTER]');
+		console.log('resourcesString:', resourcesString);
+
+		const client = await pool.connect();
+		try {
+			await client.query<Project>(`UPDATE projects SET resources = $1 WHERE id = $2 RETURNING *;`, [
+				resourcesString,
+				params.id
+			]);
+			return { successMessage: 'Fagområder blev opdateret', formData: formData };
+		} catch (err) {
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} finally {
+			client.release();
+		}
 	}
 };
