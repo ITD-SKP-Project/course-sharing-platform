@@ -69,6 +69,10 @@
 		});
 	}
 
+	let itSupoter = data.project?.professions?.find((p) => p.profession_id == 4) ? true : false;
+	let programmering = data.project?.professions?.find((p) => p.profession_id == 5) ? true : false;
+	let infrastruktur = data.project?.professions?.find((p) => p.profession_id == 6) ? true : false;
+
 	// let subjectData = data.project?.subjects?.split('[ENTER]') || [];
 	// let subjectDataBackup = subjectData;
 </script>
@@ -110,9 +114,6 @@
 							<Button
 								size="icon"
 								variant="destructive"
-								on:click={() => {
-									FieldToEdit = Fields.title;
-								}}
 								on:click={() => {
 									FieldToEdit = Fields.none;
 								}}
@@ -210,340 +211,567 @@
 				{/if}
 			</div>
 			<!-- ? Noter -->
-
-			{#if Fields.notes === FieldToEdit}
-				<form
-					use:enhance={() => {
-						loading = true;
-						return async ({ update }) => {
-							loading = false;
-							FieldToEdit = Fields.none;
-							update();
-						};
-					}}
-					class="flex w-full flex-col gap-2"
-					method="POST"
-					action="?/updateNotes"
-				>
-					<div class="grid w-full max-w-md items-center gap-1.5">
-						<Label for="notes">Noter</Label>
-						<Textarea
-							placeholder="notes"
-							value={form?.formData?.notes ?? project.notes ?? ''}
-							name="notes"
-							class="min-h-32 w-full"
-						/>
-					</div>
-					<div>
+			<div class="mb-8">
+				{#if Fields.notes === FieldToEdit}
+					<form
+						use:enhance={() => {
+							loading = true;
+							return async ({ update }) => {
+								loading = false;
+								FieldToEdit = Fields.none;
+								update();
+							};
+						}}
+						class="flex w-full flex-col gap-2"
+						method="POST"
+						action="?/updateNotes"
+					>
+						<div class="grid w-full max-w-md items-center gap-1.5">
+							<Label for="notes">Noter</Label>
+							<Textarea
+								placeholder="notes"
+								value={form?.formData?.notes ?? project.notes ?? ''}
+								name="notes"
+								class="min-h-32 w-full"
+							/>
+						</div>
+						<div>
+							<Button
+								size="icon"
+								variant="destructive"
+								on:click={() => {
+									FieldToEdit = Fields.none;
+								}}
+							>
+								<Trash class="h-5 w-5" />
+							</Button>
+							<Button
+								size="icon"
+								class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
+								type="submit"
+							>
+								<Save class="h-5 w-5" />
+							</Button>
+						</div>
+					</form>
+				{:else}
+					<div class="flex items-center gap-2">
+						<h2 class=" text-xl font-bold">Underviser Notater</h2>
 						<Button
 							size="icon"
-							variant="destructive"
+							variant="ghost"
 							on:click={() => {
-								FieldToEdit = Fields.none;
+								FieldToEdit = Fields.notes;
 							}}
 						>
-							<Trash class="h-5 w-5" />
-						</Button>
-						<Button
-							size="icon"
-							class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
-							type="submit"
-						>
-							<Save class="h-5 w-5" />
+							<Pen class="h-5 w-5" />
 						</Button>
 					</div>
-				</form>
-			{:else}
-				<div class="mb-2 flex items-center gap-2">
-					<h2 class=" text-xl font-bold">Underviser Notater</h2>
+					<Alert.Root class=" w-fit ">
+						<BadgeInfo class="h-4 w-4" />
+						<Alert.Title>Note til vejledere.</Alert.Title>
+						<Alert.Description class="max-w-[40rem]"
+							>{form?.formData?.notes ||
+								project.notes ||
+								'Ingen notater at vise endu...'}</Alert.Description
+						>
+					</Alert.Root>
+				{/if}
+			</div>
+			<!-- ? Professions -->
+			<div class="mt-16">
+				{#if Fields.professions === FieldToEdit}
+					{#if project.professions && project.professions.length > 0}
+						<form
+							action="?/updateProfessions"
+							method="POST"
+							use:enhance={() => {
+								loading = true;
+								return async ({ update }) => {
+									loading = false;
+									FieldToEdit = Fields.none;
+									update();
+								};
+							}}
+						>
+							<Label for="profession-section">Uddannelser</Label>
+
+							<div class="flex flex-col gap-4 sm:gap-2">
+								<div
+									id="profession-section"
+									class="flex flex-col items-start justify-between space-x-2 sm:flex-row sm:items-center"
+								>
+									<div>
+										<input
+											on:input={(e) => {
+												itSupoter = e.target?.checked ? true : false;
+												console.log(itSupoter);
+											}}
+											type="checkbox"
+											name="it_supporter"
+											checked={form?.formData?.it_supporter || itSupoter}
+											id="it_supporter"
+											aria-labelledby="it_supporter_label"
+										/>
+										<Label
+											id="it_supporter_label"
+											for="it_supporter"
+											class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											It-supporter
+										</Label>
+										{#if form?.validationErrors?.it_supporter}
+											<p class="text-red-500">{form?.validationErrors?.it_supporter}</p>
+										{/if}
+									</div>
+
+									<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
+										<Label for="it-supporter_niveau">Niveau</Label>
+										<Input
+											disabled={!itSupoter}
+											required={itSupoter}
+											name="it_supporter_skill_level"
+											value={form?.formData?.it_supporter_skill_level ||
+												project.professions.find((p) => p.profession_id == 4)?.skill_level}
+											type="text"
+											id="it_supporter_niveau"
+											placeholder="H2 eller GF1"
+										/>
+										{#if form?.validationErrors?.it_supporter_skill_level}
+											<p class="text-red-500">{form?.validationErrors?.it_supporter_skill_level}</p>
+										{/if}
+									</div>
+								</div>
+								<div
+									id="profession-section"
+									class="flex flex-col items-start justify-between space-x-2 sm:flex-row sm:items-center"
+								>
+									<div>
+										<input
+											on:input={(e) => {
+												programmering = e.target?.checked || false;
+											}}
+											type="checkbox"
+											name="programmering"
+											checked={form?.formData?.programmering || programmering}
+											id="programmering"
+											aria-labelledby="programmering_label"
+										/>
+										{#if form?.validationErrors?.programmering}
+											<p class="text-red-500">{form?.validationErrors?.programmering}</p>
+										{/if}
+										<Label
+											id="programmering_label"
+											for="programmering"
+											class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Datatekniker med speciale i programmering
+										</Label>
+									</div>
+									<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
+										<Label for="programmering_niveau">Niveau</Label>
+										<Input
+											disabled={!programmering}
+											required={programmering}
+											value={form?.formData?.programmering_skill_level ||
+												project.professions.find((p) => p.profession_id == 5)?.skill_level}
+											type="text"
+											id="programmering_niveau"
+											placeholder="H2 eller GF1"
+											name="programmering_skill_level"
+										/>
+										{#if form?.validationErrors?.programmering_skill_level}
+											<p class="text-red-500">
+												{form?.validationErrors?.programmering_skill_level}
+											</p>
+										{/if}
+									</div>
+								</div>
+								<div
+									id="profession-section"
+									class="flex flex-col items-start justify-between space-x-2 sm:flex-row sm:items-center"
+								>
+									<div>
+										<input
+											on:input={(e) => {
+												infrastruktur = e.target?.checked || false;
+											}}
+											type="checkbox"
+											checked={form?.formData?.infrastruktur || infrastruktur}
+											name="infrastruktur"
+											id="infrastruktur"
+											aria-labelledby="infrastruktur-label"
+										/>
+
+										<Label
+											id="infrastruktur-label"
+											for="infrastruktur"
+											class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+										>
+											Datatekniker med speciale i infrastruktur
+										</Label>
+										{#if form?.validationErrors?.infrastruktur}
+											<p class="text-red-500">{form?.validationErrors?.infrastruktur}</p>
+										{/if}
+									</div>
+									<div class="mt-2 flex w-full max-w-56 flex-col gap-1.5 sm:mt-0">
+										<Label for="infrastruktur_niveau">Niveau</Label>
+										<Input
+											disabled={!infrastruktur}
+											required={infrastruktur}
+											value={form?.formData?.infrastruktur_skill_level ||
+												project.professions.find((p) => p.profession_id == 6)?.skill_level}
+											type="text"
+											id="infrastruktur_niveau"
+											placeholder="H2 eller GF1"
+											name="infrastruktur_skill_level"
+										/>
+										{#if form?.validationErrors?.infrastruktur_skill_level}
+											<p class="text-red-500">
+												{form?.validationErrors?.infrastruktur_skill_level}
+											</p>
+										{/if}
+									</div>
+								</div>
+							</div>
+							<div class="flex gap-2">
+								<Button
+									size="icon"
+									variant="destructive"
+									on:click={() => {
+										FieldToEdit = Fields.title;
+
+										//reset values
+										itSupoter = data.project?.professions?.find((p) => p.profession_id == 4)
+											? true
+											: false;
+										programmering = data.project?.professions?.find((p) => p.profession_id == 5)
+											? true
+											: false;
+										infrastruktur = data.project?.professions?.find((p) => p.profession_id == 6)
+											? true
+											: false;
+									}}
+								>
+									<Trash class="h-5 w-5" />
+								</Button>
+								<Button
+									size="icon"
+									class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
+									type="submit"
+								>
+									<Save class="h-5 w-5" />
+								</Button>
+							</div>
+						</form>
+					{/if}
+				{:else}
+					<div class="mb-8">
+						<div class="flex items-center gap-2">
+							<h2 class="mb-1 text-xl font-bold">Uddannelser</h2>
+							<Button
+								size="icon"
+								variant="ghost"
+								on:click={() => {
+									FieldToEdit = Fields.professions;
+								}}
+							>
+								<Pen class="h-5 w-5" />
+							</Button>
+						</div>
+						<Table.Root>
+							<Table.Header>
+								<Table.Row>
+									<Table.Head>Udd.</Table.Head>
+									<Table.Head>Niveau</Table.Head>
+								</Table.Row>
+							</Table.Header>
+							<Table.Body>
+								{#if (form?.formData?.it_supporter && form?.formData?.it_supporter_skill_level) || project.professions?.find((p) => p.profession_id == 4)}
+									<Table.Row>
+										<Table.Cell>It-supporter</Table.Cell>
+										<Table.Cell>{form?.formData?.it_supporter_skill_level}</Table.Cell>
+									</Table.Row>
+								{/if}
+								{#if (form?.formData?.programmering && form?.formData?.programmering_skill_level) || project.professions?.find((p) => p.profession_id == 5)}
+									<Table.Row>
+										<Table.Cell>Datatekniker med speciale i programmering</Table.Cell>
+										<Table.Cell>{form?.formData?.programmering_skill_level}</Table.Cell>
+									</Table.Row>
+								{/if}
+								{#if (form?.formData?.infrastruktur && form?.formData?.infrastruktur_skill_level) || project.professions?.find((p) => p.profession_id == 6)}
+									<Table.Row>
+										<Table.Cell>Datatekniker med speciale i infrastruktur</Table.Cell>
+										<Table.Cell>{form?.formData?.infrastruktur_skill_level}</Table.Cell>
+									</Table.Row>
+								{/if}
+							</Table.Body>
+						</Table.Root>
+					</div>
+				{/if}
+			</div>
+			<!-- ? Subjects -->
+			<div class="mt-16">
+				{#if Fields.subjects === FieldToEdit}
+					<form
+						action="?/updateSubjects"
+						method="POST"
+						use:enhance={() => {
+							loading = true;
+							return async ({ update }) => {
+								loading = false;
+								FieldToEdit = Fields.none;
+								update();
+							};
+						}}
+					>
+						<div class="flex flex-col gap-2">
+							<div class="mt-2 flex items-center gap-2">
+								<Label for="subjects" class="text-lg">Fagområder</Label>
+								<Button
+									size="icon"
+									variant="destructive"
+									on:click={() => {
+										FieldToEdit = Fields.none;
+										subjectsArray = subjectsArrayBackup;
+									}}
+								>
+									<Trash class="h-5 w-5" />
+								</Button>
+								<Button
+									size="icon"
+									class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
+									type="submit"
+								>
+									<Save class="h-5 w-5" />
+								</Button>
+							</div>
+							{#key form || reRender}
+								{#each subjectsArray as item, index}
+									<div class="flex gap-2">
+										<Input
+											on:input={(e) => {
+												subjectsArray[index] = e.target?.value;
+											}}
+											type="text"
+											name="subjects-{index}"
+											value={subjectsArray[index] ?? form?.formData[`subjects-${index}`] ?? ''}
+											placeholder="Router 2901"
+											required={index == 0}
+										/>
+										{#if index != 0}
+											<Button
+												size="icon"
+												class="aspect-square"
+												variant="destructive"
+												on:click={() => {
+													subjectsArray = subjectsArray.toSpliced(index, 1); // Remove the item at the specified index
+													subjectsArray = subjectsArray;
+													reRender = !reRender;
+												}}
+											>
+												<X class=" h-4 w-4" />
+											</Button>
+										{/if}
+									</div>
+								{/each}
+							{/key}
+
+							<Button
+								class=" w-fit items-center justify-start"
+								type="button"
+								on:click={() => {
+									subjectsArray.push('');
+									subjectsArray = [...subjectsArray];
+								}}
+							>
+								<Plus class="mr-1.5 h-4 w-4" />
+								Tilføj fagområde
+							</Button>
+						</div>
+					</form>
+				{:else if project.subjects}
+					<Collapsible.Root class="w-fit min-w-52">
+						<div class="flex items-center justify-between space-x-4">
+							<h2 class="mb-1 text-xl font-bold">Fagområder</h2>
+							{#key form}
+								{#if toArrayOfStrings(form?.formData, 'subjects-').length > 1 || project.subjects.split('[ENTER]').length > 1}
+									<Collapsible.Trigger asChild let:builder>
+										<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+											{#if builder['data-state'] === 'open'}
+												<ChevronDown class="h-4 w-4 rotate-180 transform" />
+											{:else}
+												<ChevronUp class="h-4 w-4 rotate-180 transform" />
+											{/if}
+											<span class="sr-only">Toggle</span>
+										</Button>
+									</Collapsible.Trigger>
+								{/if}
+							{/key}
+						</div>
+						<div class="rounded-md border px-4 py-3 font-mono text-sm">
+							{toArrayOfStrings(form?.formData, 'subjects-')[0] ||
+								project.subjects.split('[ENTER]')[0]}
+						</div>
+						<Collapsible.Content class="space-y-2">
+							{#key form}
+								{#if form?.successMessage && toArrayOfStrings(form?.formData, 'subjects-').length > 0}
+									{#each toArrayOfStrings(form?.formData, 'subjects-').splice(1) as resource, index}
+										<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
+											{resource}
+										</div>
+									{/each}
+								{:else}
+									{#each project.subjects.split('[ENTER]').splice(1) as subject, index}
+										<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
+											{subject}
+										</div>
+									{/each}
+								{/if}
+							{/key}
+						</Collapsible.Content>
+					</Collapsible.Root>
 					<Button
 						size="icon"
 						variant="ghost"
 						on:click={() => {
-							FieldToEdit = Fields.notes;
+							FieldToEdit = Fields.subjects;
 						}}
 					>
 						<Pen class="h-5 w-5" />
 					</Button>
-				</div>
-				<Alert.Root class=" w-fit ">
-					<BadgeInfo class="h-4 w-4" />
-					<Alert.Title>Note til vejledere.</Alert.Title>
-					<Alert.Description class="max-w-[40rem]"
-						>{form?.formData?.notes ||
-							project.notes ||
-							'Ingen notater at vise endu...'}</Alert.Description
-					>
-				</Alert.Root>
-			{/if}
-
-			<!-- ? Professions -->
-			{#if project.professions && project.professions.length > 0}
-				<div class="mb-8 mt-16">
-					<h2 class="mb-1 text-xl font-bold">Uddannelser</h2>
-					<Table.Root>
-						<Table.Header>
-							<Table.Row>
-								<Table.Head>Udd.</Table.Head>
-								<Table.Head>Niveau</Table.Head>
-							</Table.Row>
-						</Table.Header>
-						<Table.Body>
-							{#each project.professions as profession}
-								<Table.Row>
-									<Table.Cell>{profession.profession_name}</Table.Cell>
-									<Table.Cell>{profession.skill_level}</Table.Cell>
-								</Table.Row>
-							{/each}
-						</Table.Body>
-					</Table.Root>
-				</div>
-			{/if}
-
-			<!-- ? Subjects -->
-			{#if Fields.subjects === FieldToEdit}
-				<form
-					action="?/updateSubjects"
-					method="POST"
-					use:enhance={() => {
-						loading = true;
-						return async ({ update }) => {
-							loading = false;
-							FieldToEdit = Fields.none;
-							update();
-						};
-					}}
-				>
-					<div class="flex flex-col gap-2">
-						<div class="mt-2 flex items-center gap-2">
-							<Label for="subjects" class="text-lg">Fagområder</Label>
-							<Button
-								size="icon"
-								variant="destructive"
-								on:click={() => {
-									FieldToEdit = Fields.none;
-									subjectsArray = subjectsArrayBackup;
-								}}
-							>
-								<Trash class="h-5 w-5" />
-							</Button>
-							<Button
-								size="icon"
-								class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
-								type="submit"
-							>
-								<Save class="h-5 w-5" />
-							</Button>
-						</div>
-						{#key form || reRender}
-							{#each subjectsArray as item, index}
-								<div class="flex gap-2">
-									<Input
-										on:input={(e) => {
-											subjectsArray[index] = e.target?.value;
-										}}
-										type="text"
-										name="subjects-{index}"
-										value={subjectsArray[index] ?? form?.formData[`subjects-${index}`] ?? ''}
-										placeholder="Router 2901"
-										required={index == 0}
-									/>
-									{#if index != 0}
-										<Button
-											size="icon"
-											class="aspect-square"
-											variant="destructive"
-											on:click={() => {
-												subjectsArray = subjectsArray.toSpliced(index, 1); // Remove the item at the specified index
-												subjectsArray = subjectsArray;
-												reRender = !reRender;
-											}}
-										>
-											<X class=" h-4 w-4" />
-										</Button>
-									{/if}
-								</div>
-							{/each}
-						{/key}
-
-						<Button
-							class=" w-fit items-center justify-start"
-							type="button"
-							on:click={() => {
-								subjectsArray.push('');
-								subjectsArray = [...subjectsArray];
-							}}
-						>
-							<Plus class="mr-1.5 h-4 w-4" />
-							Tilføj fagområde
-						</Button>
-					</div>
-				</form>
-			{:else if project.subjects}
-				<Collapsible.Root class="mb-2 mt-16 w-fit min-w-52">
-					<div class="flex items-center justify-between space-x-4">
-						<h2 class="mb-1 text-xl font-bold">Fagområder</h2>
-						{#if project.subjects.split('[ENTER]').length > 1}
-							<Collapsible.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
-									{#if builder['data-state'] === 'open'}
-										<ChevronDown class="h-4 w-4 rotate-180 transform" />
-									{:else}
-										<ChevronUp class="h-4 w-4 rotate-180 transform" />
-									{/if}
-									<span class="sr-only">Toggle</span>
-								</Button>
-							</Collapsible.Trigger>
-						{/if}
-					</div>
-					<div class="rounded-md border px-4 py-3 font-mono text-sm">
-						{project.subjects.split('[ENTER]')[0]}
-					</div>
-					<Collapsible.Content class="space-y-2">
-						{#key form}
-							{#if form?.successMessage && toArrayOfStrings(form?.formData, 'subjects-').length > 0}
-								form has been submited
-								{#each toArrayOfStrings(form?.formData, 'subjects-').splice(1) as resource, index}
-									<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
-										{resource}
-									</div>
-								{/each}
-							{:else}
-								no form submited yet
-								{#each project.subjects.split('[ENTER]').splice(1) as resource, index}
-									<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
-										{resource}
-									</div>
-								{/each}
-							{/if}
-						{/key}
-					</Collapsible.Content>
-				</Collapsible.Root>
-				<Button
-					size="icon"
-					variant="ghost"
-					on:click={() => {
-						FieldToEdit = Fields.subjects;
-					}}
-				>
-					<Pen class="h-5 w-5" />
-				</Button>
-			{/if}
+				{/if}
+			</div>
 			<!-- ? Resources -->
-			{#if Fields.resources === FieldToEdit}
-				<form
-					action="?/updateResources"
-					method="POST"
-					use:enhance={() => {
-						loading = true;
-						return async ({ update }) => {
-							loading = false;
-							FieldToEdit = Fields.none;
-							update();
-						};
-					}}
-				>
-					<div class="flex flex-col gap-2">
-						<div class="mt-2 flex items-center gap-2">
-							<Label for="resources" class="text-lg">Ressourcer</Label>
+			<div class="mt-16">
+				{#if Fields.resources === FieldToEdit}
+					<form
+						action="?/updateResources"
+						method="POST"
+						use:enhance={() => {
+							loading = true;
+							return async ({ update }) => {
+								loading = false;
+								FieldToEdit = Fields.none;
+								update();
+							};
+						}}
+					>
+						<div class="flex flex-col gap-2">
+							<div class="mt-2 flex items-center gap-2">
+								<Label for="resources" class="text-lg">Ressourcer</Label>
+								<Button
+									size="icon"
+									variant="destructive"
+									on:click={() => {
+										FieldToEdit = Fields.none;
+										resourcesArray = resourcesArrayBackup;
+									}}
+								>
+									<Trash class="h-5 w-5" />
+								</Button>
+								<Button
+									size="icon"
+									class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
+									type="submit"
+								>
+									<Save class="h-5 w-5" />
+								</Button>
+							</div>
+							{#key form || reRender}
+								{#each resourcesArray as item, index}
+									<div class="flex gap-2">
+										<Input
+											on:input={(e) => {
+												resourcesArray[index] = e.target?.value;
+											}}
+											type="text"
+											name="resources-{index}"
+											value={resourcesArray[index] ?? form?.formData[`resources-${index}`] ?? ''}
+											placeholder="Router 2901"
+											required={index == 0}
+										/>
+										{#if index != 0}
+											<Button
+												size="icon"
+												class="aspect-square"
+												variant="destructive"
+												on:click={() => {
+													resourcesArray = resourcesArray.toSpliced(index, 1); // Remove the item at the specified index
+													resourcesArray = resourcesArray;
+													reRender = !reRender;
+												}}
+											>
+												<X class=" h-4 w-4" />
+											</Button>
+										{/if}
+									</div>
+								{/each}
+							{/key}
+
 							<Button
-								size="icon"
-								variant="destructive"
+								class=" w-fit items-center justify-start"
+								type="button"
 								on:click={() => {
-									FieldToEdit = Fields.none;
-									resourcesArray = resourcesArrayBackup;
+									resourcesArray.push('');
+									resourcesArray = [...resourcesArray];
 								}}
 							>
-								<Trash class="h-5 w-5" />
-							</Button>
-							<Button
-								size="icon"
-								class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
-								type="submit"
-							>
-								<Save class="h-5 w-5" />
+								<Plus class="mr-1.5 h-4 w-4" />
+								Tilføj ressourcer
 							</Button>
 						</div>
-						{#key form || reRender}
-							{#each resourcesArray as item, index}
-								<div class="flex gap-2">
-									<Input
-										on:input={(e) => {
-											resourcesArray[index] = e.target?.value;
-										}}
-										type="text"
-										name="resources-{index}"
-										value={resourcesArray[index] ?? form?.formData[`resources-${index}`] ?? ''}
-										placeholder="Router 2901"
-										required={index == 0}
-									/>
-									{#if index != 0}
-										<Button
-											size="icon"
-											class="aspect-square"
-											variant="destructive"
-											on:click={() => {
-												resourcesArray = resourcesArray.toSpliced(index, 1); // Remove the item at the specified index
-												resourcesArray = resourcesArray;
-												reRender = !reRender;
-											}}
-										>
-											<X class=" h-4 w-4" />
-										</Button>
-									{/if}
-								</div>
-							{/each}
-						{/key}
-
-						<Button
-							class=" w-fit items-center justify-start"
-							type="button"
-							on:click={() => {
-								resourcesArray.push('');
-								resourcesArray = [...resourcesArray];
-							}}
-						>
-							<Plus class="mr-1.5 h-4 w-4" />
-							Tilføj ressourcer
-						</Button>
-					</div>
-				</form>
-			{:else if project.resources}
-				<Collapsible.Root class="mb-2 mt-16 w-fit min-w-52">
-					<div class="flex items-center justify-between space-x-4">
-						<h2 class="mb-1 text-xl font-bold">Ressourcer</h2>
-						{#if project.resources.split('[ENTER]').length > 1}
-							<Collapsible.Trigger asChild let:builder>
-								<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
-									{#if builder['data-state'] === 'open'}
-										<ChevronDown class="h-4 w-4 rotate-180 transform" />
-									{:else}
-										<ChevronUp class="h-4 w-4 rotate-180 transform" />
-									{/if}
-									<span class="sr-only">Toggle</span>
-								</Button>
-							</Collapsible.Trigger>
-						{/if}
-					</div>
-					<div class="rounded-md border px-4 py-3 font-mono text-sm">
-						{project.resources.split('[ENTER]')[0]}
-					</div>
-					<Collapsible.Content class="space-y-2">
-						{#each project.resources.split('[ENTER]').splice(1) as resource}
-							<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">{resource}</div>
-						{/each}
-					</Collapsible.Content>
-				</Collapsible.Root>
-				<Button
-					size="icon"
-					variant="ghost"
-					on:click={() => {
-						FieldToEdit = Fields.resources;
-					}}
-				>
-					<Pen class="h-5 w-5" />
-				</Button>
-			{/if}
+					</form>
+				{:else if project.resources}
+					<Collapsible.Root class="w-fit min-w-52">
+						<div class="flex items-center justify-between space-x-4">
+							<h2 class="mb-1 text-xl font-bold">Ressourcer</h2>
+							{#if toArrayOfStrings(form?.formData, 'resources-').length > 1 || project.resources.split('[ENTER]').length > 1}
+								<Collapsible.Trigger asChild let:builder>
+									<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+										{#if builder['data-state'] === 'open'}
+											<ChevronDown class="h-4 w-4 rotate-180 transform" />
+										{:else}
+											<ChevronUp class="h-4 w-4 rotate-180 transform" />
+										{/if}
+										<span class="sr-only">Toggle</span>
+									</Button>
+								</Collapsible.Trigger>
+							{/if}
+						</div>
+						<div class="rounded-md border px-4 py-3 font-mono text-sm">
+							{toArrayOfStrings(form?.formData, 'resources-')[0] ||
+								project.resources.split('[ENTER]')[0]}
+						</div>
+						<Collapsible.Content class="space-y-2">
+							{#key form}
+								{#if form?.successMessage && toArrayOfStrings(form?.formData, 'resources-').length > 0}
+									{#each toArrayOfStrings(form?.formData, 'resources-').splice(1) as resource, index}
+										<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
+											{resource}
+										</div>
+									{/each}
+								{:else}
+									{#each project.resources.split('[ENTER]').splice(1) as resource, index}
+										<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
+											{resource}
+										</div>
+									{/each}
+								{/if}
+							{/key}
+						</Collapsible.Content>
+					</Collapsible.Root>
+					<Button
+						size="icon"
+						variant="ghost"
+						on:click={() => {
+							FieldToEdit = Fields.resources;
+						}}
+					>
+						<Pen class="h-5 w-5" />
+					</Button>
+				{/if}
+			</div>
 		</div>
 
 		<!-- ? infobox -->

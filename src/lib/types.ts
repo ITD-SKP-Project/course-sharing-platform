@@ -1,3 +1,12 @@
+export enum ProjectEditMode {
+	none = '',
+	title = 'title',
+	description = 'description',
+	notes = 'notes',
+	professions = 'professions',
+	subjects = 'subjects',
+	resources = 'resources'
+}
 export interface User {
 	id: number;
 	firstname?: string;

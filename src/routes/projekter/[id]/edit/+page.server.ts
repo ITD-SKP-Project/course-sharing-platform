@@ -6,6 +6,8 @@ const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
+import { validateCustomObject } from '$lib/zodSchemas';
+
 import { z } from 'zod';
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
@@ -321,6 +323,76 @@ export const actions = {
 			]);
 			return { successMessage: 'Fagområder blev opdateret', formData: formData };
 		} catch (err) {
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} finally {
+			client.release();
+		}
+	},
+	updateProfessions: async ({
+		request,
+		params
+	}): Promise<{
+		formData: any;
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+	} | void> => {
+		let professionsSchema = z.object({
+			it_supporter: z.enum(['on']).optional(),
+			it_supporter_skill_level: z.string().optional(),
+			programmering: z.enum(['on']).optional(),
+			programmering_skill_level: z.string().optional(),
+			infrastruktur: z.enum(['on']).optional(),
+			infrastruktur_skill_level: z.string().optional()
+		});
+		let formData = Object.fromEntries(await request.formData());
+
+		const client = await pool.connect();
+		type ProjectSchemaType = z.infer<typeof professionsSchema>;
+		let result: ProjectSchemaType;
+		try {
+			result = professionsSchema.parse({ ...formData });
+
+			const { success: objSuccess, errors: objErrors } = validateCustomObject(result); //further validation of the zod result
+			if (!objSuccess && objErrors) {
+				return {
+					formData: { ...formData },
+					validationErrors: {
+						...objErrors
+					}
+				};
+			}
+
+			await client.query<Project>(`BEGIN`);
+			await client.query(`DELETE from project_professions where project_id = $1`, [params.id]);
+			if (result.it_supporter) {
+				await client.query(
+					`INSERT INTO project_professions (project_id, profession_id, skill_level) VALUES ($1,4, $2)`,
+					[params.id, result.it_supporter_skill_level]
+				);
+			}
+			if (result.programmering) {
+				await client.query(
+					`INSERT INTO project_professions (project_id, profession_id, skill_level) VALUES ($1, 5, $2)`,
+					[params.id, result.programmering_skill_level]
+				);
+			}
+			if (result.infrastruktur) {
+				await client.query(
+					`INSERT INTO project_professions (project_id, profession_id, skill_level) VALUES ($1, 6, $2)`,
+					[params.id, result.infrastruktur_skill_level]
+				);
+			}
+			await client.query<Project>(`COMMIT`);
+
+			return { successMessage: 'Fagområder blev opdateret', formData: formData };
+		} catch (err) {
+			console.error(err);
+			await client.query<Project>(`ROLLBACK`);
+			if (err instanceof z.ZodError) {
+				const { fieldErrors: errors } = err.flatten();
+				return { validationErrors: errors, formData: formData };
+			}
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();
