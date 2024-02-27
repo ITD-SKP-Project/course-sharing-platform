@@ -16,3 +16,16 @@ export const months = [
 	'November',
 	'December'
 ];
+
+export function toArrayOfStrings(data: Object | undefined, keyword: string): string[] {
+	if (!data || typeof data != 'object') return [];
+
+	//return keys where value includes keyword
+	let result: string[] = [];
+	for (const [key, value] of Object.entries(data)) {
+		if (key.includes(keyword)) {
+			result.push(value);
+		}
+	}
+	return result;
+}
