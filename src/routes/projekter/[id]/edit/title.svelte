@@ -12,6 +12,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import type { Project } from '$lib/types';
 	import { enhance } from '$app/forms';
+	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
 </script>
 
 <div class="mb-8 flex gap-2">
@@ -21,7 +22,6 @@
 				loading = true;
 				return async ({ update }) => {
 					loading = false;
-					FieldToEdit = ProjectEditMode.none;
 					update();
 				};
 			}}
@@ -42,24 +42,7 @@
 			{#if form?.validationErrors?.title}
 				<p class="text-red-500">{form?.validationErrors?.title}</p>
 			{/if}
-			<div class="flex gap-2">
-				<Button
-					size="icon"
-					variant="destructive"
-					on:click={() => {
-						FieldToEdit = ProjectEditMode.none;
-					}}
-				>
-					<Trash class="h-5 w-5" />
-				</Button>
-				<Button
-					size="icon"
-					class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
-					type="submit"
-				>
-					<Save class="h-5 w-5" />
-				</Button>
-			</div>
+			<SaveOrDisgardButtons {FieldToEdit} />
 		</form>
 	{:else}
 		<div class="flex flex-col">

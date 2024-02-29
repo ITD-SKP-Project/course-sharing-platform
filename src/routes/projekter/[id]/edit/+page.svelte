@@ -1,36 +1,31 @@
 <script lang="ts">
 	import { Loader2 } from 'lucide-svelte';
 	import * as Card from '$lib/components/ui/card';
-
-	import { Button } from '$lib/components/ui/button';
 	import { Separator } from '$lib/components/ui/separator';
-	import DowdloadLink from '$lib/components/DowdloadLink.svelte';
-
 	import Title from './title.svelte';
 	import Description from './description.svelte';
 	import Notes from './notes.svelte';
 	import Professions from './professions.svelte';
 	import Subjects from './subjects.svelte';
 	import Resources from './resources.svelte';
-
+	import Files from './files.svelte';
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
+	$: console.log('data:', data);
 	export let form;
-
+	$: console.log('form:', form);
 	let project = data.project as Project;
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
 	import { months } from '$lib/index';
-
 	import { ProjectEditMode } from '$lib/types';
-
-	let FieldToEdit: ProjectEditMode = ProjectEditMode.none;
-
-	let loading = false;
-
+	import * as Dialog from '$lib/components/ui/dialog';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
+
+	let FieldToEdit: ProjectEditMode = ProjectEditMode.none;
+	let loading = false;
 
 	$: if (form?.successMessage) {
 		FieldToEdit = ProjectEditMode.none;
@@ -38,17 +33,13 @@
 			description: form.successMessage
 		});
 	}
-
-	// let subjectData = data.project?.subjects?.split('[ENTER]') || [];
-	// let subjectDataBackup = subjectData;
 </script>
 
-<Toaster />
 <main class="p-2 px-4 transition-all duration-500 sm:p-8 md:px-16">
 	<div class="flex grid-cols-3 grid-rows-1 flex-col justify-between gap-4 lg:grid">
 		<div class="col-span-2">
 			<!-- ? title -->
-			<Title {project} {form} {loading} {FieldToEdit} />
+			<Title {project} {form} {loading} bind:FieldToEdit />
 			<!-- ? Description -->
 			<Description {project} {form} {loading} {FieldToEdit} />
 
@@ -56,7 +47,7 @@
 			<Notes {project} {form} {loading} {FieldToEdit} />
 
 			<!-- ? Professions -->
-			<Professions {project} {form} {loading} {FieldToEdit} />
+			<Professions {project} {form} {loading} bind:FieldToEdit />
 
 			<!-- ? Subjects -->
 			<Subjects {project} {form} {loading} {FieldToEdit} />
@@ -128,20 +119,28 @@
 
 			<Separator class="mx-auto my-0 w-5/6 bg-primary-foreground/25" />
 
-			<span class="p-6 text-sm font-semibold text-primary-foreground/75">Projekt links</span>
-
 			<Card.Content>
-				{#if project.files}
-					{#each project.files as file}
-						<DowdloadLink pathName={`${project.id}/${file.name}`}>{file.name}</DowdloadLink>
-					{/each}
-				{/if}
+				<!-- files -->
+				<Files {project} {form} {loading} {FieldToEdit} />
 			</Card.Content>
 		</Card.Root>
 	</div>
 </main>
+
+<!-- Not direcly visible in the ui -->
 {#if loading}
 	<div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
 		<Loader2 class="h-20 w-20 animate-spin text-primary" />
 	</div>
 {/if}
+<Dialog.Root open={form?.serverError ? true : false}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Ups. Der er sket en fejl 500 på serveren.</Dialog.Title>
+			<Dialog.Description>
+				{form?.serverError}
+			</Dialog.Description>
+		</Dialog.Header>
+	</Dialog.Content>
+</Dialog.Root>
+<Toaster />

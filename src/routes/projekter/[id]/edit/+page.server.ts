@@ -7,10 +7,11 @@ const pool = new Pool({
 	ssl: true
 });
 import { validateCustomObject } from '$lib/zodSchemas';
-
+import { validateCustomFileArray } from '$lib/index';
 import { z } from 'zod';
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
-import { error, json } from '@sveltejs/kit';
+import { error, fail, json } from '@sveltejs/kit';
+import { deleteFile, postFile } from '$lib/server/files';
 
 export const load = (async ({ url, locals, params }) => {
 	const client = await pool.connect();
@@ -393,6 +394,68 @@ export const actions = {
 				const { fieldErrors: errors } = err.flatten();
 				return { validationErrors: errors, formData: formData };
 			}
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} finally {
+			client.release();
+		}
+	},
+	updateFiles: async ({
+		request,
+		params
+	}): Promise<{
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+	} | void> => {
+		let formData = Object.fromEntries(await request.formData());
+		const filesArray = Object.entries(formData).filter(([key, value]) => key.startsWith('files-'));
+		const { success: fileSuccess, errors: fileErrors } = validateCustomFileArray(filesArray);
+
+		if (!fileSuccess && fileErrors) {
+			return {
+				validationErrors: {
+					...fileErrors
+				}
+			};
+		}
+
+		const client = await pool.connect();
+		try {
+			await client.query<Project>(`BEGIN`);
+			await client.query(`DELETE from project_files where project_id = $1`, [params.id]);
+
+			filesArray.forEach(async ([key, value]) => {
+				const file = value as unknown as File;
+
+				const fileQueryText =
+					'INSERT INTO project_files (name, project_id, file_type, pathname, size) VALUES ($1, $2, $3, $4, $5)';
+				const fileValues = [
+					file.name,
+					params.id,
+					file.type,
+					`${params.id}/${file.name}`,
+					file.size
+				];
+				await client.query(fileQueryText, fileValues);
+
+				await postFile(file, params.id);
+			});
+
+			const res: {
+				status: number;
+				body: { message: string };
+			} = await deleteFile(params.id);
+			console.log('res:', res);
+			if (res.status != 200) {
+				await client.query<Project>(`ROLLBACK`);
+				return { serverError: res.body.message };
+			} else {
+				await client.query<Project>(`COMMIT`);
+				return { successMessage: 'Filer blev opdateret' };
+			}
+		} catch (err) {
+			console.error(err);
+			await client.query<Project>(`ROLLBACK`);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();

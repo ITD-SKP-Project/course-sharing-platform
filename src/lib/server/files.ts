@@ -1,7 +1,7 @@
 import { writeFile } from 'fs/promises';
 import fs from 'fs';
 
-import { resolve } from 'path';
+import { resolve, join } from 'path';
 
 export async function postFile(file: File, subFolder?: string) {
 	let uploadFolder = resolve('uploads');
@@ -28,27 +28,45 @@ export async function postFile(file: File, subFolder?: string) {
 
 	return {
 		status: 200,
-		body: { message: 'Files uploaded successfully.' }
+		body: { message: 'Filen blev lagt op.' }
 	};
 }
-export async function getFile(fileName: string) {
-	const filePath = resolve('uploads', fileName); // Adjust the path based on your file storage location
+//delete file
+export async function deleteFile(path: string) {
+	try {
+		const dirPath = resolve('uploads', path);
 
-	if (fs.existsSync(filePath)) {
-		const fileContent = fs.readFileSync(filePath);
+		if (!fs.existsSync(dirPath)) {
+			return {
+				status: 404,
+				body: { message: `Directory "${path}" does not exist.` }
+			};
+		}
+
+		const files = fs.readdirSync(dirPath);
+
+		for (const file of files) {
+			const currentPath = join(dirPath, file);
+			if (fs.lstatSync(currentPath).isDirectory()) {
+				// Recursively delete directory contents
+				await deleteFile(join(path, file));
+				// Optionally, remove the directory itself after clearing its contents
+				fs.rmdirSync(currentPath);
+			} else {
+				// Delete file
+				fs.unlinkSync(currentPath);
+			}
+		}
 
 		return {
 			status: 200,
-			headers: {
-				'Content-Disposition': `attachment; filename="${fileName}"`,
-				'Content-Type': 'application/octet-stream'
-			},
-			body: fileContent
+			body: { message: 'Directory contents were deleted.' }
 		};
-	} else {
+	} catch (err) {
+		console.error(err);
 		return {
-			status: 404,
-			body: { message: 'File not found' }
+			status: 500,
+			body: { message: `Oops. An unknown error occurred on the server.` }
 		};
 	}
 }

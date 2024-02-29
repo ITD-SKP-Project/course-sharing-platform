@@ -50,20 +50,7 @@ function validateCustomArray(array: any): { success: boolean; errors?: any } {
 	return { success: true };
 }
 
-function validateCustomFileArray(files: any): { success: boolean; errors?: any } {
-	let errors: any = {};
-	//validate each file and pust the error to the errors object
-	files.forEach(([key, value]) => {
-		if (value.size == 0) {
-			errors[key] = 'Filen må ikke være tom';
-		}
-		if (value.size > 1_000_000_000) {
-			errors[key] = 'Filen er for stor. Max 1gb tilladt.';
-		}
-	});
-	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
-	return { success: true };
-}
+import { validateCustomFileArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';
 //action
 export const actions = {

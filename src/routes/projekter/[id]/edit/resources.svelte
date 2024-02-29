@@ -6,6 +6,7 @@
 
 	import { ProjectEditMode } from '$lib/types';
 	import { toArrayOfStrings } from '$lib/index';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 
 	import { Save, Trash, Pen, X, Plus, ChevronDown, ChevronUp } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';

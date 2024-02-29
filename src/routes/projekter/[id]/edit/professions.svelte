@@ -13,6 +13,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import type { Project } from '$lib/types';
 	import { enhance } from '$app/forms';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 
 	let itSupoter = project?.professions?.find((p) => p.profession_id == 4) ? true : false;
 	let programmering = project?.professions?.find((p) => p.profession_id == 5) ? true : false;
@@ -174,31 +175,50 @@
 					</div>
 				</div>
 				<div class="flex gap-2">
-					<Button
-						size="icon"
-						variant="destructive"
-						on:click={() => {
-							FieldToEdit = ProjectEditMode.title;
+					<Tooltip.Root>
+						<Tooltip.Trigger asChild let:builder>
+							<Button
+								builders={[builder]}
+								size="icon"
+								variant="destructive"
+								on:click={() => {
+									FieldToEdit = ProjectEditMode.title;
 
-							//reset values
-							itSupoter = project?.professions?.find((p) => p.profession_id == 4) ? true : false;
-							programmering = project?.professions?.find((p) => p.profession_id == 5)
-								? true
-								: false;
-							infrastruktur = project?.professions?.find((p) => p.profession_id == 6)
-								? true
-								: false;
-						}}
-					>
-						<Trash class="h-5 w-5" />
-					</Button>
-					<Button
-						size="icon"
-						class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
-						type="submit"
-					>
-						<Save class="h-5 w-5" />
-					</Button>
+									//reset values
+									itSupoter = project?.professions?.find((p) => p.profession_id == 4)
+										? true
+										: false;
+									programmering = project?.professions?.find((p) => p.profession_id == 5)
+										? true
+										: false;
+									infrastruktur = project?.professions?.find((p) => p.profession_id == 6)
+										? true
+										: false;
+								}}
+							>
+								<Trash class="h-5 w-5" />
+							</Button>
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							<p>Annuller</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
+
+					<Tooltip.Root>
+						<Tooltip.Trigger asChild let:builder>
+							<Button
+								builders={[builder]}
+								size="icon"
+								class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
+								type="submit"
+							>
+								<Save class="h-5 w-5" />
+							</Button>
+						</Tooltip.Trigger>
+						<Tooltip.Content>
+							<p>Annuller</p>
+						</Tooltip.Content>
+					</Tooltip.Root>
 				</div>
 			</form>
 		{/if}
@@ -227,16 +247,22 @@
 					{#if (form?.formData?.it_supporter && form?.formData?.it_supporter_skill_level) || project.professions?.find((p) => p.profession_id == 4)}
 						<Table.Row>
 							<Table.Cell>It-supporter</Table.Cell>
-							<Table.Cell>{form?.formData?.it_supporter_skill_level}</Table.Cell>
+							<Table.Cell
+								>{project.professions?.find((p) => p.profession_id == 4)?.skill_level ||
+									form?.formData?.it_supporter_skill_level}</Table.Cell
+							>
 						</Table.Row>
 					{/if}
 					{#if (form?.formData?.programmering && form?.formData?.programmering_skill_level) || project.professions?.find((p) => p.profession_id == 5)}
 						<Table.Row>
 							<Table.Cell>Datatekniker med speciale i programmering</Table.Cell>
-							<Table.Cell>{form?.formData?.programmering_skill_level}</Table.Cell>
+							<Table.Cell
+								>{project.professions?.find((p) => p.profession_id == 5)?.skill_level ||
+									form?.formData?.programmering_skill_level}</Table.Cell
+							>
 						</Table.Row>
 					{/if}
-					{#if (form?.formData?.infrastruktur && form?.formData?.infrastruktur_skill_level) || project.professions?.find((p) => p.profession_id == 6)}
+					{#if project.professions?.find((p) => p.profession_id == 6)?.skill_level || (form?.formData?.infrastruktur && form?.formData?.infrastruktur_skill_level) || project.professions?.find((p) => p.profession_id == 6)}
 						<Table.Row>
 							<Table.Cell>Datatekniker med speciale i infrastruktur</Table.Cell>
 							<Table.Cell>{form?.formData?.infrastruktur_skill_level}</Table.Cell>

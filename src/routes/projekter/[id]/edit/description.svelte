@@ -12,6 +12,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import type { Project } from '$lib/types';
 	import { enhance } from '$app/forms';
+	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
 </script>
 
 <div class="mb-8 flex w-full gap-2">
@@ -39,24 +40,7 @@
 					class="w-full"
 				/>
 			</div>
-			<div>
-				<Button
-					size="icon"
-					variant="destructive"
-					on:click={() => {
-						FieldToEdit = ProjectEditMode.none;
-					}}
-				>
-					<Trash class="h-5 w-5" />
-				</Button>
-				<Button
-					size="icon"
-					class="bg-green-500 hover:bg-green-600 focus:ring-green-500"
-					type="submit"
-				>
-					<Save class="h-5 w-5" />
-				</Button>
-			</div>
+			<SaveOrDisgardButtons {FieldToEdit} />
 		</form>
 	{:else}
 		<div class="flex flex-col">
