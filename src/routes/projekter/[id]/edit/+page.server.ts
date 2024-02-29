@@ -6,14 +6,18 @@ const pool = new Pool({
 	connectionString: POSTGRES_URL,
 	ssl: true
 });
+import { validateCustomArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';
 import { validateCustomFileArray } from '$lib/index';
 import { z } from 'zod';
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
-import { error, fail, json } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { deleteFile, postFile } from '$lib/server/files';
 
-export const load = (async ({ url, locals, params }) => {
+export const load = (async ({ locals, params }) => {
+	if (!locals.user) {
+		throw redirect(307, `/login?redirect=/projekter/${params.id}/edit`);
+	}
 	const client = await pool.connect();
 
 	const id = params.id;
@@ -104,7 +108,7 @@ export const load = (async ({ url, locals, params }) => {
 		});
 		project.files = projectFiles;
 
-		return { project: project };
+		return { project: project, users: users };
 	} catch (err) {
 		console.error(err);
 		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
@@ -251,16 +255,7 @@ export const actions = {
 		const subjectsArray = Object.entries(formData).filter(([key, value]) =>
 			key.startsWith('subjects-')
 		);
-		function validateCustomArray(array: any): { success: boolean; errors?: any } {
-			let errors: any = {};
-			for (let [key, value] of array) {
-				if (value == '') {
-					errors[key] = 'Dette felt skal udfyldes';
-				}
-			}
-			if (Object.keys(errors).length > 0) return { errors: errors, success: false };
-			return { success: true };
-		}
+
 		console.log('subjectsArray:', subjectsArray);
 		const { errors: subjectErrors } = validateCustomArray(subjectsArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
@@ -297,16 +292,7 @@ export const actions = {
 		const resourcesArray = Object.entries(formData).filter(([key, value]) =>
 			key.startsWith('resources-')
 		);
-		function validateCustomArray(array: any): { success: boolean; errors?: any } {
-			let errors: any = {};
-			for (let [key, value] of array) {
-				if (value == '') {
-					errors[key] = 'Dette felt skal udfyldes';
-				}
-			}
-			if (Object.keys(errors).length > 0) return { errors: errors, success: false };
-			return { success: true };
-		}
+
 		console.log('resourcesArray:', resourcesArray);
 		const { errors: subjectErrors } = validateCustomArray(resourcesArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
@@ -453,6 +439,56 @@ export const actions = {
 				await client.query<Project>(`COMMIT`);
 				return { successMessage: 'Filer blev opdateret' };
 			}
+		} catch (err) {
+			console.error(err);
+			await client.query<Project>(`ROLLBACK`);
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} finally {
+			client.release();
+		}
+	},
+	updateAuthors: async ({
+		params,
+		request,
+		locals
+	}): Promise<{
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+		formData: any;
+	} | void> => {
+		let formData = Object.fromEntries(await request.formData());
+		const usersArray = Object.entries(formData).filter(([key, value]) => key.startsWith('users-'));
+		const { success: userSuccess, errors: userErrors } = validateCustomArray(usersArray);
+		if (!userSuccess && userErrors) {
+			return {
+				formData: formData,
+				validationErrors: {
+					...userErrors
+				}
+			};
+		}
+
+		const userIds = usersArray.map(([key, value]) => parseInt(value.toString()));
+
+		const client = await pool.connect();
+		try {
+			await client.query<Project>(`BEGIN`);
+
+			await client.query(`DELETE from project_authors where project_id = $1`, [params.id]);
+
+			const projectAuthorQueryText =
+				'INSERT INTO project_authors (project_id, user_id, authority_level) VALUES ($1, $2, $3)';
+			const projectAuthorValues = [params.id, locals.user.id, 3]; // Assuming authority_level is the correct column name
+			await client.query(projectAuthorQueryText, projectAuthorValues);
+			userIds.forEach(async (author) => {
+				const projectAuthorValues = [params.id, author, 1]; // Assuming authority_level is the correct column name
+				if (author != locals.user.id)
+					await client.query(projectAuthorQueryText, projectAuthorValues);
+			});
+
+			await client.query<Project>(`COMMIT`);
+			return { successMessage: 'Filer blev opdateret', formData: formData };
 		} catch (err) {
 			console.error(err);
 			await client.query<Project>(`ROLLBACK`);

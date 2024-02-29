@@ -1,6 +1,6 @@
 <script lang="ts">
 	export let FieldToEdit: ProjectEditMode;
-	export let loading: boolean = false;
+	export let loading: boolean;
 	export let project: Project;
 	export let form: any;
 
@@ -13,6 +13,9 @@
 	import type { Project } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
+
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 </script>
 
 <div class="mb-8 flex gap-2">
@@ -21,7 +24,7 @@
 			use:enhance={() => {
 				loading = true;
 				return async ({ update }) => {
-					loading = false;
+					dispatch('update');
 					update();
 				};
 			}}

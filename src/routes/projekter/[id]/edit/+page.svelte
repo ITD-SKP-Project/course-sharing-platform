@@ -9,6 +9,7 @@
 	import Subjects from './subjects.svelte';
 	import Resources from './resources.svelte';
 	import Files from './files.svelte';
+	import Authors from './authors.svelte';
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
@@ -25,13 +26,16 @@
 	import { toast } from 'svelte-sonner';
 
 	let FieldToEdit: ProjectEditMode = ProjectEditMode.none;
-	let loading = false;
+	$: loading = false;
 
-	$: if (form?.successMessage) {
-		FieldToEdit = ProjectEditMode.none;
-		toast('Handlingen lykkedes!', {
-			description: form.successMessage
-		});
+	function handleUpdate() {
+		if (!form?.validationErrors && form?.successMessage) {
+			loading = false;
+			FieldToEdit = ProjectEditMode.none;
+			toast('Handlingen lykkedes!', {
+				description: form.successMessage
+			});
+		}
 	}
 </script>
 
@@ -39,21 +43,21 @@
 	<div class="flex grid-cols-3 grid-rows-1 flex-col justify-between gap-4 lg:grid">
 		<div class="col-span-2">
 			<!-- ? title -->
-			<Title {project} {form} {loading} bind:FieldToEdit />
+			<Title {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 			<!-- ? Description -->
-			<Description {project} {form} {loading} {FieldToEdit} />
+			<Description {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 
 			<!-- ? Noter -->
-			<Notes {project} {form} {loading} {FieldToEdit} />
+			<Notes {project} {form} bind:loading {FieldToEdit} on:update={handleUpdate} />
 
 			<!-- ? Professions -->
-			<Professions {project} {form} {loading} bind:FieldToEdit />
+			<Professions {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 
 			<!-- ? Subjects -->
-			<Subjects {project} {form} {loading} {FieldToEdit} />
+			<Subjects {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 
 			<!-- ? Resources -->
-			<Resources {project} {form} {loading} {FieldToEdit} />
+			<Resources {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 		</div>
 
 		<!-- ? infobox -->
@@ -84,44 +88,25 @@
 					</div>
 				</div>
 			</Card.Content>
-			<Separator class="mx-auto my-0 w-5/6 bg-primary-foreground/25" />
+			<div class="p-6">
+				<Separator class=" my-0 w-full bg-primary-foreground/25" />
 
-			<span class="p-6 text-sm font-semibold text-primary-foreground/75">Forfattere</span>
+				<Authors
+					on:update={handleUpdate}
+					currentUser={data.user}
+					{project}
+					{form}
+					bind:loading
+					bind:FieldToEdit
+					users={data.users}
+				/>
 
-			<Card.Content>
-				<div
-					id="authors"
-					class="p.2 mt-2 flex w-full flex-col flex-wrap gap-x-2 gap-y-2 rounded-md border-secondary"
-				>
-					{#if project.authors && project.authors.length > 0}
-						{#each project.authors as author}
-							{#if author?.user}
-								<a href="/?forfatter={author.user.firstname}-{author.user.lastname}">
-									<div class="flex min-w-max items-center gap-2">
-										<div
-											class="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/75 text-secondary-foreground"
-										>
-											{author.user.firstname ? author.user.firstname[0] : ''}{author.user.lastname
-												? author.user.lastname[0]
-												: ''}
-										</div>
-										<span class="ml-2 font-medium"
-											>{author.user.firstname}
-											{author.user.lastname}
-										</span>
-									</div>
-								</a>
-							{/if}
-						{/each}
-					{/if}
-				</div>
-			</Card.Content>
-
-			<Separator class="mx-auto my-0 w-5/6 bg-primary-foreground/25" />
+				<Separator class=" my-0 w-full bg-primary-foreground/25" />
+			</div>
 
 			<Card.Content>
 				<!-- files -->
-				<Files {project} {form} {loading} {FieldToEdit} />
+				<Files {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 			</Card.Content>
 		</Card.Root>
 	</div>

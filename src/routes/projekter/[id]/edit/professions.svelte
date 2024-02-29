@@ -18,6 +18,9 @@
 	let itSupoter = project?.professions?.find((p) => p.profession_id == 4) ? true : false;
 	let programmering = project?.professions?.find((p) => p.profession_id == 5) ? true : false;
 	let infrastruktur = project?.professions?.find((p) => p.profession_id == 6) ? true : false;
+
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 </script>
 
 <div class="mt-16">
@@ -29,7 +32,7 @@
 				use:enhance={() => {
 					loading = true;
 					return async ({ update }) => {
-						loading = false;
+						dispatch('update');
 						update();
 					};
 				}}

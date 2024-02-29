@@ -400,6 +400,7 @@
 					</Button>
 				</div>
 
+				<!-- live mode -->
 				<div class="flex w-full flex-col gap-1.5">
 					<Label for="livemode" class="text-lg">Udgivelsestidpunkt</Label>
 					<div>
@@ -412,6 +413,7 @@
 					</div>
 				</div>
 
+				<!-- ? users -->
 				<div class="flex flex-col gap-1.5">
 					<Label for="users" class="text-lg">Medforfattere</Label>
 					<Popover.Root bind:open let:ids>
@@ -490,7 +492,7 @@
 								class="h-4 w-4"
 							/>
 							<input
-								value={usersAdded[index]?.id ?? form?.formData[`resources-${index}`] ?? ''}
+								value={usersAdded[index]?.id ?? form?.formData[`users-${index}`] ?? ''}
 								type="text"
 								name="users-{index}"
 								class="hidden"

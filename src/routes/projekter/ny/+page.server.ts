@@ -39,16 +39,7 @@ export const load = (async ({ locals }) => {
 
 type ProjectSchemaType = z.infer<typeof ProjectSchema>;
 
-function validateCustomArray(array: any): { success: boolean; errors?: any } {
-	let errors: any = {};
-	for (let [key, value] of array) {
-		if (value == '') {
-			errors[key] = 'Dette felt skal udfyldes';
-		}
-	}
-	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
-	return { success: true };
-}
+import { validateCustomArray } from '$lib/index';
 
 import { validateCustomFileArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';

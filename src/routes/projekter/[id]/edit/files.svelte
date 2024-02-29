@@ -18,6 +18,9 @@
 	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
 
 	let numberOfFiles = [0];
+
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 </script>
 
 {#if ProjectEditMode.files === FieldToEdit}
@@ -29,7 +32,6 @@
 		use:enhance={() => {
 			loading = true;
 			return async ({ update }) => {
-				loading = false;
 				location.reload();
 				update();
 			};

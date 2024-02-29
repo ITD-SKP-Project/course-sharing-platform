@@ -43,3 +43,13 @@ export function validateCustomFileArray(files: any): { success: boolean; errors?
 	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
 	return { success: true };
 }
+export function validateCustomArray(array: any): { success: boolean; errors?: any } {
+	let errors: any = {};
+	for (let [key, value] of array) {
+		if (value == '') {
+			errors[key] = 'Dette felt skal udfyldes';
+		}
+	}
+	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
+	return { success: true };
+}

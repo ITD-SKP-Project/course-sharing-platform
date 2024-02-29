@@ -20,6 +20,9 @@
 	const resourcesArrayBackup = resourcesArray;
 
 	let reRender = false;
+
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 </script>
 
 <div class="mt-16">
@@ -30,8 +33,7 @@
 			use:enhance={() => {
 				loading = true;
 				return async ({ update }) => {
-					loading = false;
-					FieldToEdit = ProjectEditMode.none;
+					dispatch('update');
 					update();
 				};
 			}}

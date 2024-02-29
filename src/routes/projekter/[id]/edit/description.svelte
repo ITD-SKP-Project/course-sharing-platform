@@ -13,6 +13,9 @@
 	import type { Project } from '$lib/types';
 	import { enhance } from '$app/forms';
 	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
+
+	import { createEventDispatcher } from 'svelte';
+	const dispatch = createEventDispatcher();
 </script>
 
 <div class="mb-8 flex w-full gap-2">
@@ -21,8 +24,7 @@
 			use:enhance={() => {
 				loading = true;
 				return async ({ update }) => {
-					loading = false;
-					FieldToEdit = ProjectEditMode.none;
+					dispatch('update');
 					update();
 				};
 			}}

@@ -6,7 +6,8 @@ export enum ProjectEditMode {
 	professions = 'professions',
 	subjects = 'subjects',
 	resources = 'resources',
-	files = 'files'
+	files = 'files',
+	authors = 'authors'
 }
 export interface User {
 	id: number;
