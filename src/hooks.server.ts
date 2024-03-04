@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { sql } from '@vercel/postgres';
 import { JWT_SECRET } from '$env/static/private';
 import type { Handle } from '@sveltejs/kit';
 import type { User } from '$lib/types';

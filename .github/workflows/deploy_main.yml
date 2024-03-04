@@ -37,7 +37,6 @@ jobs:
         envkey_BODY_SIZE_LIMIT: ${{ secrets.BODY_SIZE_LIMIT }}
     
     - run: npm i
-    - run: node -r dotenv/config build
     - run: npm run build
     - run: ls -lah .svelte-kit
     
