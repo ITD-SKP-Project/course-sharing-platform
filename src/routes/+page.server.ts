@@ -22,16 +22,16 @@ export const load = (async ({ locals }) => {
 	try {
 		const { rows: projects } = await client.query<Project>(
 			`SELECT 
-				projects.*,
-				CAST(COUNT(project_likes.id) AS INTEGER) AS likes
+			projects.*,
+			CAST(COUNT(project_likes.id) AS INTEGER) AS likes
 			FROM 
-				projects
+			projects
 			LEFT JOIN 
-				project_likes ON projects.id = project_likes.project_id
+			project_likes ON projects.id = project_likes.project_id
 			WHERE 
-				projects.live = true
+			projects.live = true
 			GROUP BY 
-				projects.id;
+			projects.id;
 			`
 		);
 		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
@@ -55,8 +55,8 @@ export const load = (async ({ locals }) => {
 
 		const { rows: projectProfessions } =
 			await client.query<ProjectProfession>(`SELECT pp.*, p.name as profession_name
-		FROM project_professions pp
-		JOIN professions p ON pp.profession_id = p.id;`);
+				FROM project_professions pp
+				JOIN professions p ON pp.profession_id = p.id;`);
 		const { rows: professions } = await client.query<Profession>(`SELECT * FROM professions; `);
 
 		//add authors and professions to projects

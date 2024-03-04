@@ -4,7 +4,7 @@ import fs from 'fs';
 import { resolve, join } from 'path';
 
 export async function postFile(file: File, subFolder?: string) {
-	let uploadFolder = resolve('uploads');
+	let uploadFolder = resolve('/home/opgbank/uploads');
 
 	if (subFolder) {
 		uploadFolder = resolve(uploadFolder, subFolder);
