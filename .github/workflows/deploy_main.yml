@@ -38,7 +38,6 @@ jobs:
     
     - run: npm i
     - run: npm run build
-    - run: ls -lah .svelte-kit
     
     - name: Stop running deployment
       continue-on-error: true
@@ -113,7 +112,7 @@ jobs:
     #     key: ${{ secrets.NODE_SERVER_SSH_KEY }}
     #     port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
     #     script: |
-    #       ln -s /home/opgbank/data/ /home/opgbank/uploads
+    #       ln -s /home/opgbank/data/ uploads
 
     - name: Copy env file
       uses: appleboy/ssh-action@master
@@ -135,5 +134,5 @@ jobs:
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
           cd /home/opgbank/build
-          pm2 start index.js
+          node -r dotenv/config ./
   
