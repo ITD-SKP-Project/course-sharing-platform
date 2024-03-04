@@ -30,7 +30,7 @@
 	}
 </script>
 
-<Button class="m-0 p-0" variant="link" on:click={downloadFile}>
+<Button class="m-0 p-0 text-primary-foreground" variant="link" on:click={downloadFile}>
 	<slot />
 </Button>
 <Toaster />

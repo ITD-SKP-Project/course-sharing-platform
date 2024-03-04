@@ -23,9 +23,19 @@
 
 	import DowdloadLink from '$lib/components/DowdloadLink.svelte';
 
+	import { Toaster } from '$lib/components/ui/sonner';
+	import { toast } from 'svelte-sonner';
+
 	let loadingLike = false;
 	const likeProject = async () => {
+		if (!data.user) {
+			toast('Ikke logget ind.', {
+				description: 'Du skal være logget ind for at kunne like et projekt'
+			});
+			return;
+		}
 		loadingLike = true;
+		console.log(`/api/projects/${project.id}/like`);
 		const response = await fetch(`/api/projects/${project.id}/like`, {
 			method: 'POST',
 			headers: {
@@ -47,9 +57,9 @@
 	});
 </script>
 
-<main class="flex flex-col gap-4 p-2 sm:p-8 lg:px-32">
-	<div class="relative flex flex-wrap justify-between gap-4">
-		<div>
+<main class="p-2 px-4 transition-all duration-500 sm:px-8 md:px-16">
+	<div class="flex grid-cols-3 grid-rows-1 flex-col justify-between gap-4 lg:grid">
+		<div class="col-span-2">
 			<div class="mb-8 flex items-center gap-2">
 				{#key project.likedByUser && project.likes}
 					<Button on:click={likeProject} variant="ghost" size="icon" class="text-md gap-2">
@@ -167,7 +177,9 @@
 		</div>
 
 		<!-- ? infobox -->
-		<Card.Root class="sticky top-24 h-fit min-w-72 border-primary">
+		<Card.Root
+			class="sticky top-24 mb-4 mt-8 h-fit min-w-72 border-primary lg:ml-auto lg:mt-0 lg:max-w-96"
+		>
 			<Card.Header class="pb-4">
 				{#if project?.authors?.some((author) => author.user_id === data.user?.id)}
 					<Button class="mb-2" size="lg">Rediger projekt</Button>
@@ -240,3 +252,4 @@
 		</Card.Root>
 	</div>
 </main>
+<Toaster />

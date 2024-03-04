@@ -113,7 +113,7 @@ jobs:
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
-          ln -s /home/opgbank/data/ /home/opgbank/build/client/files
+          ln -s /home/opgbank/data/ /home/opgbank/uploads
 
     - name: Copy env file
       uses: appleboy/ssh-action@master

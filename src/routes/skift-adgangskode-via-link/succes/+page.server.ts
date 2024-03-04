@@ -11,7 +11,6 @@ const pool = new Pool({
 export const load = (async ({ url }) => {
 	const token = url.searchParams.get('token');
 	if (!token) {
-		console.log('No token provided');
 		throw redirect(301, '/login');
 	}
 

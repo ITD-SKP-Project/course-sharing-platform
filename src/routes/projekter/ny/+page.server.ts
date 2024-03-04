@@ -39,58 +39,10 @@ export const load = (async ({ locals }) => {
 
 type ProjectSchemaType = z.infer<typeof ProjectSchema>;
 
-function validateCustomArray(array: any): { success: boolean; errors?: any } {
-	let errors: any = {};
-	for (let [key, value] of array) {
-		if (value == '') {
-			errors[key] = 'Dette felt skal udfyldes';
-		}
-	}
-	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
-	return { success: true };
-}
+import { validateCustomArray } from '$lib/index';
 
-function validateCustomFileArray(files: any): { success: boolean; errors?: any } {
-	let errors: any = {};
-	//validate each file and pust the error to the errors object
-	files.forEach(([key, value]) => {
-		if (value.size == 0) {
-			errors[key] = 'Filen må ikke være tom';
-		}
-		if (value.size > 1_000_000_000) {
-			errors[key] = 'Filen er for stor. Max 1gb tilladt.';
-		}
-	});
-	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
-	return { success: true };
-}
-function validateCustomObject(project: any): { success: boolean; errors?: any } {
-	let errors: any = {};
-
-	const { it_supporter, it_supporter_skill_level } = project;
-	if (it_supporter && it_supporter_skill_level == '') {
-		errors.it_supporter_skill_level = 'Du skal vælge et niveau for it-supporter';
-	}
-
-	const { programmering, programmering_skill_level } = project;
-	if (programmering && programmering_skill_level == '') {
-		errors.programmering_skill_level = 'Du skal vælge et niveau for programmering';
-	}
-
-	const { infrastruktur, infrastruktur_skill_level } = project;
-	if (infrastruktur && infrastruktur_skill_level == '') {
-		errors.infrastruktur_skill_level = 'Du skal vælge et niveau for infrastruktur';
-	}
-
-	if (!infrastruktur && !programmering && !it_supporter) {
-		errors.it_supporter = 'Du skal vælge mindst en færdighed.';
-		errors.programmering = 'Du skal vælge mindst en færdighed.';
-		errors.infrastruktur = 'Du skal vælge mindst en færdighed.';
-	}
-
-	if (Object.keys(errors).length > 0) return { errors: errors, success: false };
-	return { success: true };
-}
+import { validateCustomFileArray } from '$lib/index';
+import { validateCustomObject } from '$lib/zodSchemas';
 //action
 export const actions = {
 	default: async ({
@@ -203,6 +155,8 @@ export const actions = {
 						...userErrors
 					}
 				};
+			} else {
+				throw error(500, 'Internal server error: ' + JSON.stringify(err));
 			}
 		}
 	}
@@ -286,7 +240,6 @@ async function createProject(
 		await client.query('COMMIT'); // Commit the transaction
 
 		// Return success or the created project details
-		console.log('Project created successfully:', projects[0]);
 		return projects[0];
 	} catch (err) {
 		await client.query('ROLLBACK'); // Rollback the transaction on error

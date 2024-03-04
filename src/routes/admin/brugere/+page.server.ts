@@ -9,9 +9,9 @@ const pool = new Pool({
 	ssl: true
 });
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	if (!locals.user) {
-		throw redirect(307, '/konto?redirect=/admin/brugere');
+		throw redirect(307, `/konto?redirect=${url.pathname}`);
 	}
 
 	const client = await pool.connect();

@@ -13,7 +13,11 @@ export const POST: RequestHandler = async ({ locals, url, params }) => {
 	//get the project id from the url
 
 	const projectId = params.id;
+
 	const userId = locals.user.id;
+	if (!userId) {
+		return error(401, 'Unauthorized');
+	}
 
 	const client = await pool.connect();
 	try {
