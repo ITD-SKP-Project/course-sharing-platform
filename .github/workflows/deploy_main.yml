@@ -133,6 +133,7 @@ jobs:
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
-          cd /home/opgbank/build
-          node -r dotenv/config ./ &
+          cd /home/opgbank/
+          ./hej.sh
+
   
