@@ -134,5 +134,5 @@ jobs:
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
           cd /home/opgbank/build
-          node -r dotenv/config ./
+          node -r dotenv/config ./ &
   
