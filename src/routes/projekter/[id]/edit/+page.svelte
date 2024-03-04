@@ -13,9 +13,9 @@
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
-	$: console.log('data:', data);
+
 	export let form;
-	$: console.log('form:', form);
+
 	let project = data.project as Project;
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);

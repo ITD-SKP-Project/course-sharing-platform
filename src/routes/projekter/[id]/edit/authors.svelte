@@ -4,7 +4,7 @@
 	export let project: Project;
 	export let form: any;
 	export let users: UserEssentials[];
-	console.log('🚀 ~ users:', users);
+
 	export let currentUser: User;
 
 	import { Save, Trash, Pen, ChevronsUpDown, Check, X } from 'lucide-svelte';

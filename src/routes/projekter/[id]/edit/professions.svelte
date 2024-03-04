@@ -48,7 +48,6 @@
 							<input
 								on:input={(e) => {
 									itSupoter = e.target?.checked ? true : false;
-									console.log(itSupoter);
 								}}
 								type="checkbox"
 								name="it_supporter"

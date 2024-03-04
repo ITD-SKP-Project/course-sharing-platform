@@ -6,7 +6,6 @@
 	import { toast } from 'svelte-sonner';
 
 	async function downloadFile() {
-		console.log('🚀 ~ downloadFile ~ pathName:', pathName);
 		const response = await fetch(`/api/files/download`, {
 			method: 'POST',
 			headers: {
@@ -16,7 +15,6 @@
 		});
 		if (!response.ok) {
 			let data = (await response.json()) as unknown as { message: string };
-			console.log('🚀 ~ downloadFile ~ data:', data);
 			toast('Fejl. Linket virker ikke.', {
 				description: data.message
 			});

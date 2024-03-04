@@ -4,7 +4,6 @@
 	export let form: ActionData;
 	export let data: PageData;
 
-	$: console.log(form);
 	$: if (form?.projectId) {
 		goto(`/projekter/${form.projectId}`);
 	}
@@ -136,7 +135,6 @@
 								<input
 									on:input={(e) => {
 										itSupoter = e.target?.checked ? true : false;
-										console.log(itSupoter);
 									}}
 									type="checkbox"
 									name="it_supporter"

@@ -16,7 +16,6 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;
-	console.log(data);
 	import { user as userStore } from '$lib/index';
 	const user: User | null = data.user || $userStore;
 

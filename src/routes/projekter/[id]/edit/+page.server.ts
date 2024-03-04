@@ -256,14 +256,12 @@ export const actions = {
 			key.startsWith('subjects-')
 		);
 
-		console.log('subjectsArray:', subjectsArray);
 		const { errors: subjectErrors } = validateCustomArray(subjectsArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
 
 		const subjects = subjectsArray.map(([key, value]) => value.toString());
-		console.log('subjects:', subjects);
+
 		const subjectsString = subjects.join('[ENTER]');
-		console.log('subjectsString:', subjectsString);
 
 		const client = await pool.connect();
 		try {
@@ -293,14 +291,12 @@ export const actions = {
 			key.startsWith('resources-')
 		);
 
-		console.log('resourcesArray:', resourcesArray);
 		const { errors: subjectErrors } = validateCustomArray(resourcesArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
 
 		const resources = resourcesArray.map(([key, value]) => value.toString());
-		console.log('resources:', resources);
+
 		const resourcesString = resources.join('[ENTER]');
-		console.log('resourcesString:', resourcesString);
 
 		const client = await pool.connect();
 		try {
@@ -431,7 +427,7 @@ export const actions = {
 				status: number;
 				body: { message: string };
 			} = await deleteFile(params.id);
-			console.log('res:', res);
+
 			if (res.status != 200) {
 				await client.query<Project>(`ROLLBACK`);
 				return { serverError: res.body.message };

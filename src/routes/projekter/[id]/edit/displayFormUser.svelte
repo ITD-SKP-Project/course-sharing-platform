@@ -3,10 +3,8 @@
 
 	export let id: string;
 	export let users: UserEssentials[];
-	console.log('users:', users);
 
 	const user = users.find((user) => user.id.toString() == id);
-	console.log('user:', user);
 </script>
 
 {#if user}

@@ -68,8 +68,6 @@ export const actions = {
 	} | void> => {
 		const formData = Object.fromEntries(await request.formData());
 
-		console.log('formData:', formData);
-
 		//validate form
 		let user: User | null = locals.user;
 		if (!user) {

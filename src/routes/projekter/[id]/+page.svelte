@@ -3,8 +3,7 @@
 	import type { Project } from '$lib/types';
 	export let data: PageData;
 	export let form;
-	$: console.log(form, 'form');
-	$: console.log(data, 'data');
+
 	let project = data.project as Project;
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
@@ -35,7 +34,7 @@
 			return;
 		}
 		loadingLike = true;
-		console.log(`/api/projects/${project.id}/like`);
+
 		const response = await fetch(`/api/projects/${project.id}/like`, {
 			method: 'POST',
 			headers: {
@@ -46,7 +45,7 @@
 
 		if (response.ok) {
 			const data = await response.json();
-			console.log('🚀 ~ likeProject ~ data:', data);
+
 			project.likedByUser = data.liked;
 			project.likes = data.likes ?? 0;
 		}
