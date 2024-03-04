@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	// get the last part of the url
 	const { pathName } = await request.json();
 
-	let filePath = resolve('uploads', pathName);
+	let filePath = resolve('/home/opgbank/uploads', pathName);
 
 	if (!fs.existsSync(filePath)) {
 		throw error(404, { message: `File "${pathName}" not found` });
