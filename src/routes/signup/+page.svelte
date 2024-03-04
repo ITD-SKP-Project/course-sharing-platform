@@ -46,6 +46,11 @@
 				}}
 			>
 				<h1 class="text-4xl font-bold">Opret en konto</h1>
+				<p class="text-center text-sm text-muted-foreground">
+					Hvis du er lærer eller vejleder, kan du oprette en konto. Herefter kan du oprette
+					projekter i systemet.
+				</p>
+
 				<div class="flex w-full max-w-md flex-col gap-1.5">
 					<Label for="email">E-mail</Label>
 					<Input

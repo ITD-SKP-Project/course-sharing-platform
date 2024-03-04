@@ -29,12 +29,16 @@
 	$: loading = false;
 
 	function handleUpdate() {
+		loading = false;
 		if (!form?.validationErrors && form?.successMessage) {
-			loading = false;
 			FieldToEdit = ProjectEditMode.none;
-			toast('Handlingen lykkedes!', {
-				description: form.successMessage
-			});
+			if (form.successMessage) {
+				toast('Handlingen lykkedes!', {
+					description: form.successMessage
+				});
+			} else {
+				toast('Fejl');
+			}
 		}
 	}
 </script>
@@ -91,15 +95,20 @@
 			<div class="p-6">
 				<Separator class=" my-0 w-full bg-primary-foreground/25" />
 
-				<Authors
-					on:update={handleUpdate}
-					currentUser={data.user}
-					{project}
-					{form}
-					bind:loading
-					bind:FieldToEdit
-					users={data.users}
-				/>
+				{#key FieldToEdit}
+					<Authors
+						on:update={() => {
+							handleUpdate();
+							location.reload();
+						}}
+						currentUser={data.user}
+						{project}
+						bind:form
+						bind:loading
+						bind:FieldToEdit
+						users={data.users.filter((user) => user.id !== data.user.id)}
+					/>
+				{/key}
 
 				<Separator class=" my-0 w-full bg-primary-foreground/25" />
 			</div>
