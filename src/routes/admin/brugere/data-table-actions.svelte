@@ -35,7 +35,7 @@
 			Se projekter
 		</DropdownMenu.Item>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item class="gap-4" href={`/admin/brugere/rediger/${user.id}`}>
+		<DropdownMenu.Item class="gap-4" href={`/admin/brugere/${user.id}/rediger`}>
 			<Pen class="ml-2 h-4 w-4" />
 			Rediger
 		</DropdownMenu.Item>

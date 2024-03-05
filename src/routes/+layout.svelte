@@ -74,11 +74,7 @@
 					<Sheet.Title>Find det du leder efter...</Sheet.Title>
 					<Sheet.Description class="flex flex-col gap-2">
 						<Button variant="outline">Forside</Button>
-
 						<Button variant="outline" href="/konto">Din konto</Button>
-						{#if data.user?.authority_level >= 2 || ($user?.authority_level && $user?.authority_level >= 2)}
-							<Button variant="outline" href="/admin/projekter">Administrer projekter</Button>
-						{/if}
 						{#if data.user?.authority_level >= 3 || ($user?.authority_level && $user?.authority_level >= 3)}
 							<Button variant="outline" href="/admin/brugere">Administrer brugere</Button>
 						{/if}

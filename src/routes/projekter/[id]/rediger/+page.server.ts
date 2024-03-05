@@ -69,19 +69,28 @@ export const load = (async ({ locals, params }) => {
 			  `
 		);
 
-		if (!projects || projects.length == 0)
-			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		let project = projects[0] as Project;
 
-		if (locals.user) {
-			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
-				locals.user.id
-			]);
-			projects.forEach((project) => {
-				project.likedByUser = likes.some((like) => like.project_id === project.id);
-			});
-		}
+		if (!project) throw error(404, 'Der blev ikke fundet nogle projekter.');
+
+		const { rows: likes } = await client.query(
+			`SELECT * FROM project_likes WHERE user_id = $1 AND project_id = $2`,
+			[locals.user.id, id]
+		);
+
+		project.likedByUser = likes.some((like) => like.project_id === project.id);
+
 		//for each project, get authors and professions
-		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
+		const { rows: authors } = await client.query<ProjectAuthor>(
+			'SELECT * FROM project_authors WHERE project_id = $1',
+			[id]
+		);
+		//if the user who is logged in is not an admin, check if the user is an author of the project
+		if (locals.user.authority_level < 3) {
+			if (!authors.some((author) => author.user_id === locals.user.id) || authors.length == 0) {
+				throw error(403, 'Du har ikke adgang til denne side');
+			}
+		}
 
 		//get all users and add them to authors
 		const { rows: users } = await client.query<UserEssentials>(
@@ -98,7 +107,7 @@ export const load = (async ({ locals, params }) => {
 		);
 
 		//add authors and professions to projects
-		const project = projects[0];
+
 		project.authors = authors.filter((author) => author.project_id === project.id);
 		project.professions = projectProfessions.filter(
 			(projectProfession) => projectProfession.project_id === project.id

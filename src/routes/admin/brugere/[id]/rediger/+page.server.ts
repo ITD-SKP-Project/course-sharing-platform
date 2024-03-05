@@ -1,4 +1,4 @@
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad } from '../$types';
 import { error, redirect } from '@sveltejs/kit';
 import pkg from 'pg';
 import { POSTGRES_URL } from '$env/static/private';

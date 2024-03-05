@@ -172,16 +172,25 @@
 
 	const { filterValue } = pluginStates.filter;
 	const { selectedDataIds } = pluginStates.select;
+	$: console.log($selectedDataIds);
 </script>
 
 <div>
-	<div class="flex items-center py-4">
+	<div class="flex items-center gap-2 py-4">
 		<Input
 			class="max-w-sm"
 			placeholder="Søg efter navn eller email..."
 			type="text"
 			bind:value={$filterValue}
 		/>
+		<Button disabled={Object.keys($selectedDataIds).length === 0} class="px-4" variant="destructive"
+			>Slet</Button
+		>
+		<Button
+			disabled={Object.keys($selectedDataIds).length === 0}
+			class=" bg-yellow-400 px-4 text-yellow-950 hover:bg-yellow-500">Deaktiver</Button
+		>
+		<!-- <Button class="ml-auto px-4">Opret</Button> -->
 	</div>
 	<div class="rounded-md border">
 		<Table.Root {...$tableAttrs}>

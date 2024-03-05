@@ -181,7 +181,9 @@
 		>
 			<Card.Header class="pb-4">
 				{#if project?.authors?.some((author) => author.user_id === data.user?.id)}
-					<Button class="mb-2" size="lg">Rediger projekt</Button>
+					<Button href="/projekter/{project.id}/rediger" class="mb-2" size="lg"
+						>Rediger projekt</Button
+					>
 				{/if}
 				<Card.Title>Info</Card.Title>
 			</Card.Header>
