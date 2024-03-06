@@ -1,11 +1,7 @@
 import type { PageServerLoad } from './$types';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
+
 import { validateCustomArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';
 import { validateCustomFileArray } from '$lib/index';

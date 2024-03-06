@@ -2,13 +2,8 @@ import type { PageServerLoad } from './$types';
 import type { Project, ProjectFile, ProjectFileCreation, UserEssentials, User } from '$lib/types';
 // import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { error, redirect } from '@sveltejs/kit';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
 import { ProjectSchema } from '$lib/zodSchemas';
 import { z } from 'zod';
 import { postFile } from '$lib/server/files';

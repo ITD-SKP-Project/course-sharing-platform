@@ -1,13 +1,8 @@
 import type { VerificationToken } from '$lib/types';
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
-import { POSTGRES_URL } from '$env/static/private';
-import pkg from 'pg';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
 export const load = (async ({ url }) => {
 	const token = url.searchParams.get('token');
 	if (!token) {

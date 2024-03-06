@@ -1,13 +1,8 @@
 import type { PageServerLoad } from '../$types';
 import { error, redirect } from '@sveltejs/kit';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
+
 import type { User, UserExludingPassword } from '$lib/types';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+import { pool } from '$lib/server/database';
 import { z } from 'zod';
 export const load = (async ({ params, locals }) => {
 	if (!locals.user || locals.user.authority_level < 3) {

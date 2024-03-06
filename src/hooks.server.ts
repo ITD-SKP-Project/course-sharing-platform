@@ -2,13 +2,8 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '$env/static/private';
 import type { Handle } from '@sveltejs/kit';
 import type { User } from '$lib/types';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
 
 export const handle = (async ({ event, resolve }) => {
 	const sessionCookie = event.cookies.get('token');

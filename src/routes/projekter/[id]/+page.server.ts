@@ -1,11 +1,6 @@
 import type { PageServerLoad } from './$types';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 

@@ -25,16 +25,13 @@ jobs:
       uses: SpicyPizza/create-envfile@v2.0
       with:
         #This actually even though its thinks it wont
-        envkey_POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-        envkey_POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
-        envkey_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-        envkey_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        envkey_POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-        envkey_POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
+        envkey_SOP_POSTGRES_DATABASE: ${{ secrets.SOP_POSTGRES_DATABASE }}
+        envkey_SOP_POSTGRES_PASSWORD: ${{ secrets.SOP_POSTGRES_PASSWORD }}
+        envkey_SOP_POSTGRES_HOST: ${{ secrets.SOP_POSTGRES_HOST }}
+        envkey_SOP_POSTGRES_USER: ${{ secrets.SOP_POSTGRES_USER }}
         envkey_JWT_SECRET: ${{ secrets.JWT_SECRET }}
         envkey_BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
         envkey_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        envkey_BODY_SIZE_LIMIT: ${{ secrets.BODY_SIZE_LIMIT }}
     
     - run: npm i
     - run: npm run build

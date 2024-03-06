@@ -6,10 +6,7 @@ import * as randombytes from 'randombytes';
 import { RESEND_API_KEY } from '$env/static/private';
 import { Resend } from 'resend';
 const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+import { pool } from '$lib/server/database';
 
 const registerSchema = z.object({
 	email: z

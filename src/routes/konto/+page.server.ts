@@ -11,13 +11,9 @@ import type {
 	ProjectProfession,
 	UserEssentials
 } from '$lib/types';
-import pkg from 'pg';
-import { POSTGRES_URL, BCRYPT_SALT_ROUNDS } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
+import { pool } from '$lib/server/database';
 
 export const load = (async ({ locals }) => {
 	if (
