@@ -22,24 +22,26 @@
 	import { months } from '$lib/index';
 	import { ProjectEditMode } from '$lib/types';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { Toaster } from '$lib/components/ui/sonner';
+
 	import { toast } from 'svelte-sonner';
 
 	let FieldToEdit: ProjectEditMode = ProjectEditMode.none;
 	$: loading = false;
 
 	function handleUpdate() {
-		loading = false;
-		if (!form?.validationErrors && form?.successMessage) {
-			FieldToEdit = ProjectEditMode.none;
-			if (form.successMessage) {
-				toast('Handlingen lykkedes!', {
-					description: form.successMessage
-				});
-			} else {
-				toast('Fejl');
+		setTimeout(() => {
+			loading = false;
+			if (!form?.validationErrors && form?.successMessage) {
+				FieldToEdit = ProjectEditMode.none;
+				if (form.successMessage) {
+					toast('Handlingen lykkedes!', {
+						description: form.successMessage
+					});
+				} else {
+					toast('Fejl');
+				}
 			}
-		}
+		}, 500);
 	}
 </script>
 
@@ -137,4 +139,3 @@
 		</Dialog.Header>
 	</Dialog.Content>
 </Dialog.Root>
-<Toaster />

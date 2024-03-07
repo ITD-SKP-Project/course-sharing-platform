@@ -12,10 +12,24 @@ export const load = (async ({ locals, url }) => {
 	const client = await pool.connect();
 	try {
 		const { rows: users } = await client.query<UserExludingPassword>(
-			`SELECT id, firstname, lastname, email, authority_level, created_at, 
-			updated_at, email_verified, validated, last_send_email FROM users WHERE id != $1;`,
+			`SELECT 
+			pending_users.context,
+			users.id ,
+			 users.firstname, 
+			users.lastname, 
+			users.email, 
+			users.authority_level, 
+			users.created_at, 
+       		users.updated_at, 
+	   		users.email_verified, 
+	   		users.validated, 
+			users.last_send_email 
+			FROM users 
+			LEFT JOIN pending_users ON users.id = pending_users.user_id
+			WHERE users.id != $1;`,
 			[locals.user.id]
 		);
+		console.log('users', users);
 
 		return { users: users };
 	} catch (err) {

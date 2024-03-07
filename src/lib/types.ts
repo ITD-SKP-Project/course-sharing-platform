@@ -21,6 +21,7 @@ export interface User {
 	validated: boolean;
 	email_verified: boolean;
 	last_send_email?: Date;
+	context?: string;
 }
 export interface UserEssentials {
 	id: number;
@@ -35,6 +36,7 @@ export interface UserExludingPassword extends UserEssentials {
 	updated_at: string;
 	email_verified: boolean;
 	last_send_email?: Date | null;
+	context?: string;
 }
 export interface Project extends ProjectCreation {
 	id: number;

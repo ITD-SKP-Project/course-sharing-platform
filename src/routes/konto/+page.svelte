@@ -23,6 +23,7 @@
 	import { AlertTriangle } from 'lucide-svelte';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { Star } from 'lucide-svelte';
+	import { Separator } from '$lib/components/ui/separator';
 
 	let confirnDelete = '';
 
@@ -31,20 +32,35 @@
 	let loading = false;
 
 	async function deleteAccount() {
-		const res = await fetch(`/api/delete-account`, {
+		const res = await fetch(`/api/users/delete`, {
 			method: 'DELETE',
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		});
 		if (res.ok) {
+			toast('Din konto er blevet slettet.', {
+				description: form.successMessage
+			});
 			window.location.href = '/';
+		} else {
+			toast('Der skete en fejl', {
+				description: 'Din konto blev ikke slettet.'
+			});
 		}
 	}
 </script>
 
 <Toaster />
 <main class="flex flex-col px-8 pb-8 pt-2">
+	<div class="flex justify-between">
+		<h1 class="text-3xl font-bold">Velkommen til din konto, {data.user?.firstname || ''}</h1>
+		{#if data.user?.authority_level && data.user.authority_level > 0}
+			<Button href="/projekter/ny">Opret nyt projekt</Button>
+		{/if}
+	</div>
+
+	<Separator class="my-4" />
 	<Sheet.Root>
 		<Sheet.Trigger asChild let:builder>
 			<Button builders={[builder]} class="ml-auto" variant="outline">Bruger info</Button>
@@ -68,7 +84,8 @@
 				action="?/updateName"
 				class="flex w-full flex-col"
 			>
-				<div class="my-4 grid gap-4">
+				<h2 class="mt-8 font-semibold">Ret dine oplysninger</h2>
+				<div class="mb-4 mt-2 grid gap-4">
 					{#key data.user.firstname}
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="firstname" class="text-right">Fornavn</Label>
@@ -98,28 +115,8 @@
 						</div>
 					{/key}
 				</div>
-				{#key form?.successMessage}
-					<AlertDialog.Root open={form?.successMessage}>
-						<AlertDialog.Trigger asChild let:builder>
-							<Button builders={[builder]} type="submit" class="!ml-auto">Gem</Button>
-						</AlertDialog.Trigger>
-						<AlertDialog.Content>
-							<AlertDialog.Header>
-								<AlertDialog.Title></AlertDialog.Title>
-								<AlertDialog.Description>
-									This action cannot be undone. This will permanently delete your account and remove
-									your data from our servers.
-								</AlertDialog.Description>
-							</AlertDialog.Header>
-							<AlertDialog.Footer>
-								<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
-								<AlertDialog.Action>Continue</AlertDialog.Action>
-							</AlertDialog.Footer>
-						</AlertDialog.Content>
-					</AlertDialog.Root>
-				{/key}
 			</form>
-			<form
+			<!-- <form
 				action=""
 				method="POST"
 				class="mt-16 flex w-full flex-col"
@@ -142,7 +139,7 @@
 					</div>
 				</div>
 				<Button class="!ml-auto">Gem</Button>
-			</form>
+			</form> -->
 			<form
 				method="POST"
 				action="?/updatePassword"
@@ -155,8 +152,10 @@
 				}}
 				class="mt-16 flex w-full flex-col"
 			>
+				<h2 class="mt-8 font-semibold">Skift adgangskode</h2>
+
 				{#key data.user.password}
-					<div class="mb-4 grid gap-4">
+					<div class="mb-4 mt-2 grid gap-4">
 						<div class="grid grid-cols-4 items-center gap-4">
 							<Label for="password" class="text-right">Nuværende kodeord</Label>
 							<Input

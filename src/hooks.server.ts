@@ -34,6 +34,7 @@ export const handle = (async ({ event, resolve }) => {
 	try {
 		const queryText = 'SELECT * from users where id = $1 LIMIT 1';
 		const { rows: users } = await client.query<User>(queryText, [decodedUser.id]);
+		console.log('🚀 ~ handle ~ decodedUser:', decodedUser);
 		client.release();
 
 		if (!users || users.length <= 0) {
@@ -43,6 +44,7 @@ export const handle = (async ({ event, resolve }) => {
 		}
 
 		const user = users[0] as User;
+		console.log('🚀 ~ handle ~ user:', user);
 		event.locals.user = user;
 
 		if (!user.email_verified) {

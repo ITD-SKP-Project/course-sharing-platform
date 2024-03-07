@@ -58,7 +58,7 @@ export const actions = {
 
 			// Insert into pending_users
 			const insertPendingUserQuery = 'INSERT INTO pending_users (user_id, context) VALUES ($1, $2)';
-			await client.query(insertPendingUserQuery, [result.userId, result.context]);
+			await client.query(insertPendingUserQuery, [locals.user.id, result.context]);
 
 			// Commit transaction
 			await client.query('COMMIT');
