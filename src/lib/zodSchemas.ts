@@ -92,7 +92,8 @@ export const ProjectSchema = z.object({
 	programmering: z.enum(['on']).optional(),
 	programmering_skill_level: z.string().optional(),
 	infrastruktur: z.enum(['on']).optional(),
-	infrastruktur_skill_level: z.string().optional()
+	infrastruktur_skill_level: z.string().optional(),
+	course_length: z.string().min(1, 'Du skal skrive hvor lang tid projektet tager.')
 });
 
 export function validateCustomObject(project: any): { success: boolean; errors?: any } {

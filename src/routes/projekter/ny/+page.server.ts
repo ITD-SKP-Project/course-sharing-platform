@@ -122,7 +122,6 @@ export const actions = {
 
 			const project: Project = await createProject(
 				result,
-				pool,
 				locals.user,
 				filesArray,
 				userIds,
@@ -159,7 +158,6 @@ export const actions = {
 
 async function createProject(
 	Project: ProjectSchemaType,
-	pool: pkg.Pool,
 	user: User,
 	files: any,
 	authors: number[],
@@ -171,13 +169,14 @@ async function createProject(
 		await client.query('BEGIN'); // Start transaction
 
 		const projectQueryText =
-			'INSERT INTO projects (title, description, resources, subjects, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+			'INSERT INTO projects (title, description, resources, subjects, notes, course_length) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
 		const projectValues = [
 			Project.title,
 			Project.description,
-			resources.join('[ENTER]'),
-			subjects.join('[ENTER]'),
-			Project.notes
+			resources.join('[ENTER]') || '',
+			subjects.join('[ENTER]') || '',
+			Project.notes,
+			Project.course_length
 		];
 		const { rows: projects } = await client.query<Project>(projectQueryText, projectValues);
 
@@ -215,7 +214,7 @@ async function createProject(
 			await client.query(infrastrukturQueryText, infrastrukturValues);
 		}
 
-		files.forEach(async ([key, value]) => {
+		for (const [key, value] of files) {
 			const file = value as unknown as File;
 
 			const fileQueryText =
@@ -230,13 +229,14 @@ async function createProject(
 			await client.query(fileQueryText, fileValues);
 
 			await postFile(file, projects[0].id.toString());
-		});
+		}
 
 		await client.query('COMMIT'); // Commit the transaction
 
 		// Return success or the created project details
 		return projects[0];
 	} catch (err) {
+		console.error('Error creating project:', err);
 		await client.query('ROLLBACK'); // Rollback the transaction on error
 		throw error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {

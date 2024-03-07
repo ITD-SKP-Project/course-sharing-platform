@@ -7,7 +7,8 @@ export enum ProjectEditMode {
 	subjects = 'subjects',
 	resources = 'resources',
 	files = 'files',
-	authors = 'authors'
+	authors = 'authors',
+	course_length = 'course_length'
 }
 export interface User {
 	id: number;
@@ -57,6 +58,7 @@ export interface ProjectCreation {
 	subjects: string;
 	resources: string;
 	notes: string;
+	course_length: string;
 }
 export interface ProjectAuthor extends ProjectAuthorCreation {
 	id: number;
@@ -75,6 +77,11 @@ export interface ProjectAuthorCreation {
 	project_id: number | null;
 	user_id: number;
 	authority_level: number;
+}
+export interface pending_users {
+	id: number;
+	user_id: number;
+	context: string;
 }
 export interface ProjectProfession extends ProjectProfessionCreation {
 	id: number;

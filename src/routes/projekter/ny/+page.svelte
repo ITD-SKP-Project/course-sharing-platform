@@ -108,6 +108,21 @@
 						<p class="text-red-500">{form?.validationErrors?.description}</p>
 					{/if}
 				</div>
+				<!-- ? course length -->
+				<div class="flex w-full flex-col gap-1.5">
+					<Label class="text-lg" for="description">Tidforbrug</Label>
+					<Textarea
+						name="course_length"
+						value={form?.formData?.course_length}
+						id="course_length"
+						required={true}
+						placeholder="f.eks. 2 Uger"
+					/>
+					<p class="text-sm text-muted-foreground">Hvor lang tid tager det at lave projektet?</p>
+					{#if form?.validationErrors?.course_length}
+						<p class="text-red-500">{form?.validationErrors?.course_length}</p>
+					{/if}
+				</div>
 				<!-- ? notes -->
 				<div class="flex w-full flex-col gap-1.5">
 					<Label for="notes" class="text-lg">Underviser notater</Label>

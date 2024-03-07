@@ -8,8 +8,7 @@ import type {
 	ProjectProfession,
 	UserEssentials
 } from '$lib/types';
-import { error, json } from '@sveltejs/kit';
-import type { User } from '$lib/types';
+import { error } from '@sveltejs/kit';
 
 export const load = (async ({ locals }) => {
 	const client = await pool.connect();

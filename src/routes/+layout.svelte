@@ -5,8 +5,6 @@
 	import * as Sheet from '$lib/components/ui/sheet';
 	import { Button } from '$lib/components/ui/button';
 	import { HamburgerMenu, Person, MagnifyingGlass, Home } from 'radix-icons-svelte';
-	import { Input } from '$lib/components/ui/input';
-	import * as Card from '$lib/components/ui/card';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip';
 	import { onMount } from 'svelte';
@@ -17,7 +15,8 @@
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { gsap } from 'gsap/dist/gsap';
 	import Flip from 'gsap/dist/Flip';
-
+	import { page } from '$app/stores';
+	$: console.log('🚀 ~ file: %2Blayout.svelte ~ line 31 ~ page', $page);
 	let state: any;
 
 	gsap.registerPlugin(Flip);
@@ -39,6 +38,7 @@
 	});
 
 	export let data: LayoutData;
+	console.log('🚀 ~ data:', data);
 	let darkMode = data.darkmode;
 	let color: string = data.color ?? '';
 	user.set(data.user);
@@ -59,7 +59,6 @@
 			color = color;
 		}
 	}
-	import { page } from '$app/stores';
 
 	let open = false;
 </script>
@@ -68,8 +67,21 @@
 	<div class="flex gap-4">
 		<Sheet.Root bind:open>
 			<Sheet.Trigger asChild let:builder>
-				<Button aria-label="Åben Sidebar knap" size="icon" builders={[builder]} variant="outline">
+				<Button
+					aria-label="Åben Sidebar knap"
+					class="relative"
+					size="icon"
+					builders={[builder]}
+					variant="outline"
+				>
 					<HamburgerMenu class="h-[1.2rem] w-[1.2rem]" />
+					{#if data.notificationCount > 0 && $page.route.id != '/admin/brugere'}
+						<div
+							class="absolute -bottom-2 -right-2 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
+						>
+							{data.notificationCount}
+						</div>
+					{/if}
 				</Button>
 			</Sheet.Trigger>
 			<Sheet.Content side="left">
@@ -96,8 +108,18 @@
 									open = false;
 								}}
 								variant="outline"
-								href="/admin/brugere">Administrer brugere</Button
+								class="relative"
+								href="/admin/brugere"
 							>
+								Administrer brugere
+								{#if data.notificationCount > 0 && $page.route.id != '/admin/brugere'}
+									<div
+										class="absolute -bottom-2 -right-2 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
+									>
+										{data.notificationCount}
+									</div>
+								{/if}
+							</Button>
 						{/if}
 					</Sheet.Description>
 				</Sheet.Header>
