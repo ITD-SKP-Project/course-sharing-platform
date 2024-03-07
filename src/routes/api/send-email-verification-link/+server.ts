@@ -38,7 +38,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		const domain =
 			process.env.NODE_ENV === 'development'
 				? 'http://localhost:5173'
-				: 'https://course-sharing-platform.vercel.app';
+				: 'https://opgavebank.webhotel-itskp.dk/';
 
 		await sendVerificationEmail(user.email, key, domain);
 

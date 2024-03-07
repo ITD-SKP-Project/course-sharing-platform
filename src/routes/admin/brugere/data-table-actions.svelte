@@ -14,8 +14,9 @@
 		MessageSquareMore
 	} from 'lucide-svelte';
 	export let user: UserExludingPassword;
+	export let currentUser: User;
 	import { Pen } from 'lucide-svelte';
-	import type { UserExludingPassword } from '$lib/types';
+	import type { User, UserExludingPassword } from '$lib/types';
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 
@@ -46,14 +47,11 @@
 				);
 			window.location.href = '/admin/brugere';
 		} else {
-			if (loaded)
-				localStorage.setItem(
-					'toast',
-					JSON.stringify({
-						title: 'Der skete en fejl',
-						description: 'Brugeren blev ikke slettet.'
-					})
-				);
+			const json = await res.json();
+			toast('Der skete en fejl', {
+				description: json.message,
+				duration: 5000
+			});
 		}
 	}
 
@@ -71,14 +69,11 @@
 				localStorage.setItem('toast', JSON.stringify({ title: 'Brugeren/e er blevet aktiveret.' }));
 			window.location.href = '/admin/brugere';
 		} else {
-			if (loaded)
-				localStorage.setItem(
-					'toast',
-					JSON.stringify({
-						title: 'Der skete en fejl',
-						description: 'Ingen brugere blev aktiveret.'
-					})
-				);
+			const json = await res.json();
+			toast('Der skete en fejl', {
+				description: json.message,
+				duration: 5000
+			});
 		}
 	}
 	async function deactivateUser() {
@@ -98,14 +93,11 @@
 				);
 			window.location.href = '/admin/brugere';
 		} else {
-			if (loaded)
-				localStorage.setItem(
-					'toast',
-					JSON.stringify({
-						title: 'Der skete en fejl',
-						description: 'Ingen brugere blev deaktiveret.'
-					})
-				);
+			const json = await res.json();
+			toast('Der skete en fejl', {
+				description: json.message,
+				duration: 5000
+			});
 		}
 	}
 </script>
@@ -137,27 +129,48 @@
 			<Send class="ml-2 h-4 w-4" />
 			Send email
 		</DropdownMenu.Item>
-		<DropdownMenu.Item class="gap-4" href={`/projekter/${user.id}`}>
+		<DropdownMenu.Item class="gap-4" href={`/?forfatter=${user.firstname}-${user.lastname}`}>
 			<Link class="ml-2 h-4 w-4" />
 			Se projekter
 		</DropdownMenu.Item>
 		<DropdownMenu.Separator />
-		<DropdownMenu.Item class="gap-4" href={`/admin/brugere/${user.id}/rediger`}>
+		<DropdownMenu.Item
+			class="gap-4"
+			href={`/admin/brugere/${user.id}/rediger`}
+			disabled={currentUser.authority_level && user.authority_level
+				? currentUser.authority_level < user.authority_level
+				: false}
+		>
 			<Pen class="ml-2 h-4 w-4" />
 			Rediger
 		</DropdownMenu.Item>
 		{#if user.validated}
-			<DropdownMenu.Item on:click={deactivateUser} class="gap-4 ">
+			<DropdownMenu.Item
+				on:click={deactivateUser}
+				class="gap-4 "
+				disabled={currentUser.authority_level && user.authority_level
+					? currentUser.authority_level < user.authority_level
+					: false}
+			>
 				<Lock class="ml-2 h-4 w-4" />
 				Deaktiver
 			</DropdownMenu.Item>
 		{:else}
-			<DropdownMenu.Item on:click={activateUser} class="gap-4 ">
+			<DropdownMenu.Item
+				on:click={activateUser}
+				class="gap-4 "
+				disabled={currentUser.authority_level && user.authority_level
+					? currentUser.authority_level < user.authority_level
+					: false}
+			>
 				<Unlock class="ml-2 h-4 w-4" />
 				Aktiver
 			</DropdownMenu.Item>
 		{/if}
 		<DropdownMenu.Item
+			disabled={currentUser.authority_level && user.authority_level
+				? currentUser.authority_level < user.authority_level
+				: false}
 			on:click={() => {
 				showDeletionDialog = true;
 			}}

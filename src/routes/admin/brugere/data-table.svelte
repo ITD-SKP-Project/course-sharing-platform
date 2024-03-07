@@ -114,7 +114,7 @@
 						return 'Bruge Moderator';
 					case 4:
 						return 'Administrator';
-					case 4:
+					case 5:
 						return 'Jeff Bezos';
 					default:
 						return 'Ukendt';
@@ -188,7 +188,8 @@
 			header: '',
 			cell: ({ value }) => {
 				return createRender(DataTableActions, {
-					user: data.find((user) => user.id === value)!
+					user: data.find((user) => user.id === value)!,
+					currentUser: currentUser
 				});
 			},
 			plugins: {
@@ -225,16 +226,14 @@
 				'Content-Type': 'application/json'
 			}
 		});
+		console.log(res);
 		if (res.ok) {
 			if (loaded)
 				localStorage.setItem('toast', JSON.stringify({ title: 'Brugeren/e er blevet slettet.' }));
-			window.location.href = '/admin/brugere';
+			// window.location.href = '/admin/brugere';
 		} else {
-			if (loaded)
-				localStorage.setItem(
-					'toast',
-					JSON.stringify({ title: 'Der skete en fejl', description: 'Ingen brugere blev slettet.' })
-				);
+			const json = await res.json();
+			toast('Der skete en fejl', { description: json.message, duration: 5000 });
 		}
 	}
 	async function activateUser() {
@@ -255,14 +254,8 @@
 				localStorage.setItem('toast', JSON.stringify({ title: 'Brugeren/e er blevet aktiveret.' }));
 			window.location.href = '/admin/brugere';
 		} else {
-			if (loaded)
-				localStorage.setItem(
-					'toast',
-					JSON.stringify({
-						title: 'Der skete en fejl',
-						description: 'Ingen brugere blev aktiveret.'
-					})
-				);
+			const json = await res.json();
+			toast('Der skete en fejl', { description: json.message, duration: 5000 });
 		}
 	}
 	async function deactivateUser() {
@@ -286,14 +279,11 @@
 				);
 			window.location.href = '/admin/brugere';
 		} else {
-			if (loaded)
-				localStorage.setItem(
-					'toast',
-					JSON.stringify({
-						title: 'Der skete en fejl',
-						description: 'Ingen brugere blev deaktiveret.'
-					})
-				);
+			const json = await res.json();
+			toast('Der skete en fejl', {
+				description: json.message,
+				duration: 5000
+			});
 		}
 	}
 
@@ -347,8 +337,8 @@
 								<AlertDialog.Action asChild let:builder>
 									<Button
 										disabled={Object.keys($selectedDataIds).length > 1
-											? confirnDelete.toLowerCase() != 'slet bruger'
-											: confirnDelete.toLowerCase() != 'slet brugere'}
+											? confirnDelete.toLowerCase() != 'slet brugere'
+											: confirnDelete.toLowerCase() != 'slet bruger'}
 										builders={[builder]}
 										on:click={deleteUsers}
 										variant="destructive">Slet forevigt</Button

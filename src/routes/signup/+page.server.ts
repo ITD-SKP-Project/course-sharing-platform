@@ -102,7 +102,7 @@ export const actions = {
 		if (process.env.NODE_ENV === 'development') {
 			domain = 'http://localhost:5173';
 		} else {
-			domain = 'https://course-sharing-platform.vercel.app';
+			domain = 'https://opgavebank.webhotel-itskp.dk/';
 		}
 
 		const resend = new Resend(RESEND_API_KEY);

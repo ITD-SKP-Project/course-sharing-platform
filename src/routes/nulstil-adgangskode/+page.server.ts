@@ -104,7 +104,7 @@ async function createVerificationToken(
 function getDomain(): string {
 	return process.env.NODE_ENV === 'development'
 		? 'http://localhost:5173'
-		: 'https://course-sharing-platform.vercel.app';
+		: 'https://opgavebank.webhotel-itskp.dk/';
 }
 
 async function sendResetPasswordEmail(

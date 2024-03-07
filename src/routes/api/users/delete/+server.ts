@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { error, json } from '@sveltejs/kit';
+import { error, fail, json } from '@sveltejs/kit';
 
 import { pool } from '$lib/server/database';
 
@@ -13,16 +13,32 @@ export const DELETE: RequestHandler = async ({ locals, url }) => {
 	}
 
 	const client = await pool.connect();
+
+	let privilegeErrorId: number | null = null;
+	await client.query('BEGIN');
 	try {
-		//remove user with
-		ids.forEach(async (id: number) => {
+		for (const id of ids) {
+			const { rows: user } = await client.query<{ authority_level: number }>(
+				'SELECT authority_level FROM users WHERE id = $1 LIMIT 1;',
+				[id]
+			);
+
+			if (user[0] && user[0].authority_level > locals.user.authority_level) {
+				privilegeErrorId = id;
+				throw error(403);
+			}
 			await client.query('SELECT delete_user($1);', [id]);
-		});
+		}
 		await client.query('COMMIT');
 	} catch (e) {
 		console.error('Error deleting user:', e);
-		client.query('ROLLBACK');
-		throw error(500, 'Der skete en fejl under sletning af din konto.');
+		await client.query('ROLLBACK');
+		if (privilegeErrorId)
+			return error(
+				403,
+				'Du har ikke rettigheder til at slette brugeren med id: ' + privilegeErrorId + '.'
+			);
+		else throw error(500, 'Der skete en fejl under sletning af din konto.');
 	} finally {
 		client.release();
 	}

@@ -5,8 +5,8 @@
 	export let data: PageData;
 
 	export let form;
-	$: if (form) editUserFormResponse.set(form);
 	import { editUserFormResponse } from '$lib/stores';
+	$: if (form) editUserFormResponse.set(form);
 </script>
 
 <div class="container mx-auto py-10">

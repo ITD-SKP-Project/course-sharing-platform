@@ -12,18 +12,32 @@ export const POST: RequestHandler = async ({ locals, url }) => {
 		throw error(400, "Der blev ikke givet nogle id'er.");
 	}
 
+	let privilegeErrorId: number | null = null;
 	const client = await pool.connect();
+	await client.query('BEGIN');
 	try {
-		//remove user with
-		await client.query('BEGIN');
-		ids.forEach(async (id: number) => {
+		for (const id of ids) {
+			const { rows: user } = await client.query<{ authority_level: number }>(
+				'SELECT authority_level FROM users WHERE id = $1 LIMIT 1;',
+				[id]
+			);
+
+			if (user[0] && user[0].authority_level > locals.user.authority_level) {
+				privilegeErrorId = id;
+				throw error(403);
+			}
 			await client.query('UPDATE users SET validated = false WHERE id = $1', [id]);
-		});
+		}
 		await client.query('COMMIT');
 	} catch (e) {
 		console.error('Error deleting user:', e);
 		client.query('ROLLBACK');
-		throw error(500, 'Der skete en fejl under aktivering af din konto.');
+		if (privilegeErrorId)
+			return error(
+				403,
+				'Du har ikke rettigheder til at ændre på brugeren med id: ' + privilegeErrorId + '.'
+			);
+		else throw error(500, 'Der skete en fejl under aktivering af din konto.');
 	} finally {
 		client.release();
 	}
