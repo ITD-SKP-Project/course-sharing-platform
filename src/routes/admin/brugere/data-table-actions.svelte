@@ -36,12 +36,24 @@
 			}
 		});
 		if (res.ok) {
-			toast('Brugeren er blevet slettet.');
+			if (loaded)
+				localStorage.setItem(
+					'toast',
+					JSON.stringify({
+						title: 'Der skete en fejl',
+						description: 'Ingen brugere blev deaktiveret.'
+					})
+				);
 			window.location.href = '/admin/brugere';
 		} else {
-			toast('Der skete en fejl', {
-				description: 'Brugeren blev ikke slettet.'
-			});
+			if (loaded)
+				localStorage.setItem(
+					'toast',
+					JSON.stringify({
+						title: 'Der skete en fejl',
+						description: 'Brugeren blev ikke slettet.'
+					})
+				);
 		}
 	}
 

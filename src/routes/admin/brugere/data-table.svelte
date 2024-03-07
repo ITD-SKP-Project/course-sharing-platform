@@ -20,18 +20,18 @@
 	import { toast } from 'svelte-sonner';
 	import { onMount } from 'svelte';
 	let loaded = false;
-	onMount(() => {
-		loaded = true;
-		setTimeout(() => {
-			const toastData = localStorage.getItem('toast');
-			if (toastData) {
-				console.log('sending toast');
-				const { title, description } = JSON.parse(localStorage.getItem('toast')!);
-				toast(title, { description: description || '' });
-				localStorage.removeItem('toast');
-			}
-		}, 500);
-	});
+	// onMount(() => {
+	// 	loaded = true;
+	// 	setTimeout(() => {
+	// 		const toastData = localStorage.getItem('toast');
+	// 		if (toastData) {
+	// 			console.log('sending toast');
+	// 			const { title, description } = JSON.parse(localStorage.getItem('toast')!);
+	// 			toast(title, { description: description || '' });
+	// 			localStorage.removeItem('toast');
+	// 		}
+	// 	}, 500);
+	// });
 	const table = createTable(readable(data), {
 		page: addPagination(),
 		sort: addSortBy(),
