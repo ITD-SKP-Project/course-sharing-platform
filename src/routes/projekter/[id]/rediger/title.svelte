@@ -46,12 +46,15 @@
 			{#if form?.validationErrors?.title}
 				<p class="text-red-500">{form?.validationErrors?.title}</p>
 			{/if}
-			<SaveOrDisgardButtons {FieldToEdit} />
+			<SaveOrDisgardButtons bind:FieldToEdit />
 		</form>
 	{:else}
 		<div class="flex flex-col">
 			<h2 class="mb-1 text-xl font-bold">Title</h2>
-			<h1 class="text-4xl font-semibold">{form?.formData?.title ?? project.title}</h1>
+
+			<p class="text max-w-[40rem] font-light leading-7">
+				{form?.formData?.title ?? project.title}
+			</p>
 		</div>
 		<Button
 			size="icon"

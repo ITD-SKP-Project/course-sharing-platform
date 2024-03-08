@@ -112,7 +112,7 @@
 								href="/admin/brugere"
 							>
 								Administrer brugere
-								{#if data.notificationCount > 0 && $page.route.id != '/admin/brugere'}
+								{#if data.notificationCount > 0}
 									<div
 										class="absolute -bottom-2 -right-2 flex aspect-square h-6 w-6 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white"
 									>

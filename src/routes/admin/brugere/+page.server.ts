@@ -13,9 +13,9 @@ export const load = (async ({ locals, url }) => {
 	try {
 		const { rows: users } = await client.query<UserExludingPassword>(
 			`SELECT 
-			pending_users.context,
+			COALESCE(pending_users.context, '') AS context,
 			users.id ,
-			 users.firstname, 
+			users.firstname, 
 			users.lastname, 
 			users.email, 
 			users.authority_level, 

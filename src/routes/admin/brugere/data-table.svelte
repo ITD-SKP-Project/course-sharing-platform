@@ -18,20 +18,8 @@
 	import type { UserExludingPassword, User } from '$lib/types';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { toast } from 'svelte-sonner';
-	import { onMount } from 'svelte';
 	let loaded = false;
-	// onMount(() => {
-	// 	loaded = true;
-	// 	setTimeout(() => {
-	// 		const toastData = localStorage.getItem('toast');
-	// 		if (toastData) {
-	// 			console.log('sending toast');
-	// 			const { title, description } = JSON.parse(localStorage.getItem('toast')!);
-	// 			toast(title, { description: description || '' });
-	// 			localStorage.removeItem('toast');
-	// 		}
-	// 	}, 500);
-	// });
+
 	const table = createTable(readable(data), {
 		page: addPagination(),
 		sort: addSortBy(),
@@ -61,8 +49,20 @@
 			},
 			plugins: {
 				sort: {
-					disable: true
+					disable: false
 				}
+			}
+		}),
+		table.column({
+			accessor: 'context',
+			header: 'Ny bruger',
+			plugins: {
+				filter: {
+					exclude: true
+				}
+			},
+			cell: ({ value }) => {
+				return value ? 'Ja' : 'Nej';
 			}
 		}),
 		table.column({
@@ -82,9 +82,6 @@
 			accessor: 'validated',
 			header: 'Aktiveret',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -97,9 +94,6 @@
 			accessor: 'authority_level',
 			header: 'Retighedsniveau',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -125,9 +119,6 @@
 			accessor: 'created_at',
 			header: 'Oprettet',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -141,9 +132,6 @@
 			accessor: 'updated_at',
 			header: 'Opdateret',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -157,9 +145,6 @@
 			accessor: 'email_verified',
 			header: 'Email verificeret',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -168,21 +153,7 @@
 				return value ? 'Ja' : 'Nej';
 			}
 		}),
-		table.column({
-			accessor: 'context',
-			header: 'Ny bruger',
-			plugins: {
-				sort: {
-					disable: true
-				},
-				filter: {
-					exclude: true
-				}
-			},
-			cell: ({ value }) => {
-				return value ? 'Ja' : 'Nej';
-			}
-		}),
+
 		table.column({
 			accessor: ({ id }) => id,
 			header: '',
@@ -206,7 +177,6 @@
 
 	const { filterValue } = pluginStates.filter;
 	const { selectedDataIds } = pluginStates.select;
-	$: console.log($selectedDataIds);
 
 	table.data.subscribe((data) => data);
 
@@ -356,8 +326,10 @@
 			disabled={Object.keys($selectedDataIds).length === 0}
 			class=" bg-yellow-400 px-4 text-yellow-950 hover:bg-yellow-500">Deaktiver</Button
 		>
-		<Button on:click={activateUser} disabled={Object.keys($selectedDataIds).length === 0}
-			>Aktiver</Button
+		<Button
+			class="bg-blue-500 text-blue-50 hover:bg-blue-600"
+			on:click={activateUser}
+			disabled={Object.keys($selectedDataIds).length === 0}>Aktiver</Button
 		>
 		<!-- <Button class="ml-auto px-4">Opret</Button> -->
 	</div>
@@ -370,7 +342,7 @@
 							{#each headerRow.cells as cell (cell.id)}
 								<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()} let:props>
 									<Table.Head {...attrs} class="[&:has([role=checkbox])]:pl-3">
-										{#if cell.id === 'email'}
+										{#if cell.id === 'id' || cell.id === 'email' || cell.id === 'firstname' || cell.id === 'lastname' || cell.id === 'context' || cell.id === 'created_at' || cell.id === 'updated_at' || cell.id === 'authority_level' || cell.id === 'email_verified' || cell.id === 'validated'}
 											<Button variant="ghost" on:click={props.sort.toggle}>
 												<Render of={cell.render()} />
 												<ArrowUpDown class="h-4 w-4" />

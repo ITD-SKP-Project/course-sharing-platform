@@ -42,7 +42,7 @@
 					class="w-full"
 				/>
 			</div>
-			<SaveOrDisgardButtons {FieldToEdit} />
+			<SaveOrDisgardButtons bind:FieldToEdit />
 		</form>
 	{:else}
 		<div class="flex flex-col">

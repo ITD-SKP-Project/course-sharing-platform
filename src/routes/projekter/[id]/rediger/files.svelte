@@ -7,10 +7,9 @@
 	import { ProjectEditMode } from '$lib/types';
 	import { toArrayOfStrings } from '$lib/index';
 
-	import { Plus, X, Trash, Save, Pen } from 'lucide-svelte';
+	import { Plus, X, Pen } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
 	import { Input } from '$lib/components/ui/input';
-
 	import { Button } from '$lib/components/ui/button';
 	import type { Project } from '$lib/types';
 	import { enhance } from '$app/forms';
@@ -18,9 +17,6 @@
 	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
 
 	let numberOfFiles = [0];
-
-	import { createEventDispatcher } from 'svelte';
-	const dispatch = createEventDispatcher();
 </script>
 
 {#if ProjectEditMode.files === FieldToEdit}
@@ -88,7 +84,7 @@
 			<Plus class="mr-1.5 h-4 w-4" />
 			Tilføj
 		</Button>
-		<SaveOrDisgardButtons {FieldToEdit} />
+		<SaveOrDisgardButtons bind:FieldToEdit />
 	</form>
 {:else if project.files}
 	<div class="flex items-center">
@@ -103,6 +99,7 @@
 			<Pen class="h-5 w-5" />
 		</Button>
 	</div>
+
 	{#if toArrayOfStrings(form?.formData?.files, 'files').length > 0}
 		{#each toArrayOfStrings(form?.formData?.files, 'files') as file}
 			<DowdloadLink pathName={`${project.id}/${file}`}>{file}</DowdloadLink>

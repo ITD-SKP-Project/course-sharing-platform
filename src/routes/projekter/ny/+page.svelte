@@ -111,7 +111,7 @@
 				<!-- ? course length -->
 				<div class="flex w-full flex-col gap-1.5">
 					<Label class="text-lg" for="description">Tidforbrug</Label>
-					<Textarea
+					<Input
 						name="course_length"
 						value={form?.formData?.course_length}
 						id="course_length"

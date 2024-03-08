@@ -116,30 +116,7 @@
 					{/key}
 				</div>
 			</form>
-			<!-- <form
-				action=""
-				method="POST"
-				class="mt-16 flex w-full flex-col"
-				use:enhance={() => {
-					loading = true;
-					return async ({ update }) => {
-						loading = false;
-						update();
-					};
-				}}
-			>
-				<div class="mb-4 grid gap-4">
-					<div class="grid grid-cols-4 items-center gap-4">
-						<Label for="email" class="text-right">Email</Label>
-						<Input id="email" value="Petersen" class="col-span-3" />
-						<p class="col-span-3 col-start-2 text-sm text-muted-foreground">
-							Note: Hvis du ændrer din email, vil du blive logget ud og du skal bekrafte den email
-							igen.
-						</p>
-					</div>
-				</div>
-				<Button class="!ml-auto">Gem</Button>
-			</form> -->
+
 			<form
 				method="POST"
 				action="?/updatePassword"

@@ -185,48 +185,50 @@
 		</div>
 	</form>
 {:else}
-	<div class="flex items-center">
-		<span class=" text-sm font-semibold text-primary-foreground/75">Forfattere</span>
-		<Button
-			size="icon"
-			variant="ghost"
-			on:click={() => {
-				FieldToEdit = ProjectEditMode.authors;
-			}}
+	<div>
+		<div class="flex items-center">
+			<span class=" text-sm font-semibold text-primary-foreground/75">Forfattere</span>
+			<Button
+				size="icon"
+				variant="ghost"
+				on:click={() => {
+					FieldToEdit = ProjectEditMode.authors;
+				}}
+			>
+				<Pen class="h-5 w-5" />
+			</Button>
+		</div>
+		<div
+			id="authors"
+			class="p.2 mt-2 flex w-full flex-col flex-wrap gap-x-2 gap-y-2 rounded-md border-secondary"
 		>
-			<Pen class="h-5 w-5" />
-		</Button>
-	</div>
-	<div
-		id="authors"
-		class="p.2 mt-2 flex w-full flex-col flex-wrap gap-x-2 gap-y-2 rounded-md border-secondary"
-	>
-		{#key form}
-			{#if toArrayOfStrings(form?.formData, 'users').length > 0}
-				{#each toArrayOfStrings(form?.formData, 'users-') as id}
-					<DisplayFormUser {users} {id} />
-				{/each}
-			{:else if project.authors && project.authors.length > 0}
-				{#each project.authors as author}
-					{#if author?.user}
-						<a href="/?forfatter={author.user.firstname}-{author.user.lastname}">
-							<div class="flex min-w-max items-center gap-2">
-								<div
-									class="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/75 text-secondary-foreground"
-								>
-									{author.user.firstname ? author.user.firstname[0] : ''}{author.user.lastname
-										? author.user.lastname[0]
-										: ''}
+			{#key form}
+				{#if toArrayOfStrings(form?.formData, 'users').length > 0}
+					{#each toArrayOfStrings(form?.formData, 'users-') as id}
+						<DisplayFormUser {users} {id} />
+					{/each}
+				{:else if project.authors && project.authors.length > 0}
+					{#each project.authors as author}
+						{#if author?.user}
+							<a href="/?forfatter={author.user.firstname}-{author.user.lastname}">
+								<div class="flex min-w-max items-center gap-2">
+									<div
+										class="flex h-8 w-8 items-center justify-center rounded-full bg-secondary/75 text-secondary-foreground"
+									>
+										{author.user.firstname ? author.user.firstname[0] : ''}{author.user.lastname
+											? author.user.lastname[0]
+											: ''}
+									</div>
+									<span class="ml-2 font-medium"
+										>{author.user.firstname}
+										{author.user.lastname}
+									</span>
 								</div>
-								<span class="ml-2 font-medium"
-									>{author.user.firstname}
-									{author.user.lastname}
-								</span>
-							</div>
-						</a>
-					{/if}
-				{/each}
-			{/if}
-		{/key}
+							</a>
+						{/if}
+					{/each}
+				{/if}
+			{/key}
+		</div>
 	</div>
 {/if}

@@ -54,7 +54,7 @@ async function sendVerificationEmail(toEmail: string) {
 		const { error: sendError } = await resend.emails.send({
 			from: 'info@kennik.dk',
 			to: [toEmail],
-			subject: 'Bekræft din email',
+			subject: 'Din konto er blevet slettet.',
 			html: emailTemplate(toEmail)
 		});
 

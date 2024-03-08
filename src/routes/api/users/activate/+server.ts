@@ -56,16 +56,16 @@ async function sendVerificationEmail(toEmail: string) {
 		const { error: sendError } = await resend.emails.send({
 			from: 'info@kennik.dk',
 			to: [toEmail],
-			subject: 'Bekræft din email',
+			subject: 'Din konto er blevet aktiveret.',
 			html: emailTemplate(toEmail)
 		});
 
 		if (sendError) {
-			throw new Error('Email sending failed: ' + JSON.stringify(sendError));
+			throw error(500, 'Email sending failed: ' + JSON.stringify(sendError));
 		}
 	} catch (err) {
 		console.error('Error in sendVerificationEmail:' + JSON.stringify(err));
-		throw err;
+		throw error(500, JSON.stringify(err));
 	}
 }
 
