@@ -29,7 +29,6 @@
 	});
 
 	async function deleteUser() {
-		console.log('delete user');
 		const res = await fetch(`/api/users/delete?ids=${JSON.stringify([user.id])}`, {
 			method: 'DELETE',
 			headers: {

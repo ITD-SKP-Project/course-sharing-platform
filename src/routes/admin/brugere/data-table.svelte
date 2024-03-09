@@ -196,7 +196,6 @@
 				'Content-Type': 'application/json'
 			}
 		});
-		console.log(res);
 		if (res.ok) {
 			if (loaded)
 				localStorage.setItem('toast', JSON.stringify({ title: 'Brugeren/e er blevet slettet.' }));

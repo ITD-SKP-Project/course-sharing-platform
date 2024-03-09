@@ -3,7 +3,6 @@
 	export let loading: boolean;
 	export let project: Project;
 	export let form: any;
-	$: console.log('🚀 ~ form:', form);
 
 	import { ProjectEditMode } from '$lib/types';
 

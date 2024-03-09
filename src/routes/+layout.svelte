@@ -16,7 +16,6 @@
 	import { gsap } from 'gsap/dist/gsap';
 	import Flip from 'gsap/dist/Flip';
 	import { page } from '$app/stores';
-	$: console.log('🚀 ~ file: %2Blayout.svelte ~ line 31 ~ page', $page);
 	let state: any;
 
 	gsap.registerPlugin(Flip);
@@ -38,7 +37,6 @@
 	});
 
 	export let data: LayoutData;
-	console.log('🚀 ~ data:', data);
 	let darkMode = data.darkmode;
 	let color: string = data.color ?? '';
 	user.set(data.user);

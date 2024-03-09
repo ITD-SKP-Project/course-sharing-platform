@@ -7,6 +7,7 @@ export const load = (async ({ locals, url }) => {
 	const client = await pool.connect();
 
 	if (locals.onboardingStatus !== 'needs-email-verification') {
+		console.log('onboardingStatus:', locals.onboardingStatus);
 		throw redirect(301, locals.onboardingRedirectLocation);
 	}
 

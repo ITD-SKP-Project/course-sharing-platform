@@ -29,7 +29,6 @@ export const load = (async ({ locals, url }) => {
 			WHERE users.id != $1;`,
 			[locals.user.id]
 		);
-		console.log('users', users);
 
 		return { users: users };
 	} catch (err) {

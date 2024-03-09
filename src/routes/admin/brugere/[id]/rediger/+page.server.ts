@@ -6,11 +6,9 @@ import { pool } from '$lib/server/database';
 import { z } from 'zod';
 export const load = (async ({ params, locals }) => {
 	if (!locals.user) {
-		console.log('locals.user', locals.user);
 		throw error(401, 'Du skal være logget ind for at se denne side.');
 	}
 	if (locals.user.authority_level < 3) {
-		console.log('locals.user', locals.user);
 		throw error(403, 'Du har ikke adgang til at se denne side.');
 	}
 
@@ -78,10 +76,9 @@ export const actions = {
 		let result: any;
 		try {
 			result = updateUserSchema.parse(formData);
-			console.log('result', result);
 		} catch (err: any) {
 			const { fieldErrors: errors } = err.flatten();
-			console.log('errors', errors);
+			console.error('errors', errors);
 			return {
 				formData: formData,
 				validationErrors: errors
