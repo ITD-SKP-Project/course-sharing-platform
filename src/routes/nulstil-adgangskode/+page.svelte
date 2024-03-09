@@ -12,34 +12,6 @@
 
 	export let form;
 
-	// let email = '';
-	// let currentPage = 'beforeSend';
-
-	// function validateEmail(email: string) {
-	// 	const re = /\S+@\S+\.\S+/;
-	// 	return re.test(email);
-	// }
-
-	// async function sendResetEmail() {
-	// 	error = '';
-	// 	errorMessage = '';
-
-	// 	const response = await fetch('/api/password/send-reset-link', {
-	// 		method: 'POST',
-	// 		headers: {
-	// 			'content-type': 'application/json'
-	// 		},
-	// 		body: JSON.stringify({ email: email })
-	// 	});
-	// 	if (!response.ok) {
-	// 		error = response.statusText;
-	// 		const data = await response.json();
-	// 		errorMessage = data.message;
-	// 		return;
-	// 	}
-	// 	currentPage = 'afterSend';
-	// }
-
 	let pages = ['beforeSend', 'afterSend'];
 
 	//if there are validation errors, set the current page to the first page with errors

@@ -12,15 +12,16 @@ import { deleteFile, postFile } from '$lib/server/files';
 
 export const load = (async ({ locals, params }) => {
 	if (!locals.user) {
-		throw redirect(307, `/login?redirect=/projekter/${params.id}/edit`);
+		throw redirect(307, `/login?redirect=/projekter/${params.id}/rediger`);
 	}
 	const client = await pool.connect();
 
 	const id = params.id;
-	if (!id) throw error(400, 'Der blev ikke givet et id.');
-	if (typeof +id != 'number') throw error(404, 'Der blev ikke fundet nogle projekter.');
+	if (isNaN(+id)) throw error(400, "Id'et skal være et tal.");
 
 	//get project
+
+	let errorType: number | null = null;
 	try {
 		const { rows: projects } = await client.query<Project>(
 			locals.user
@@ -33,7 +34,7 @@ export const load = (async ({ locals, params }) => {
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
 				WHERE 
-				  projects.id = ${id}
+				  projects.id = $1
 				  AND projects.live = true
 				GROUP BY 
 				  projects.id
@@ -57,17 +58,20 @@ export const load = (async ({ locals, params }) => {
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
 				WHERE 
-				  projects.id = ${id}
+				  projects.id = $1
 				  AND projects.live = true
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
-			  `
+			  `,
+			[id]
 		);
 
+		if (!projects || projects.length == 0) {
+			errorType = 404;
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		}
 		let project = projects[0] as Project;
-
-		if (!project) throw error(404, 'Der blev ikke fundet nogle projekter.');
 
 		const { rows: likes } = await client.query(
 			`SELECT * FROM project_likes WHERE user_id = $1 AND project_id = $2`,
@@ -84,6 +88,7 @@ export const load = (async ({ locals, params }) => {
 		//if the user who is logged in is not an admin, check if the user is an author of the project
 		if (locals.user.authority_level < 3) {
 			if (!authors.some((author) => author.user_id === locals.user.id) || authors.length == 0) {
+				errorType = 403;
 				throw error(403, 'Du har ikke adgang til denne side');
 			}
 		}
@@ -116,7 +121,10 @@ export const load = (async ({ locals, params }) => {
 		return { project: project, users: users };
 	} catch (err) {
 		console.error(err);
-		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		if (errorType == 403)
+			return error(403, 'Du har ikke rettigheder til at ændre på dette projekt.');
+		else if (errorType == 404) throw error(404, 'Der blev ikke fundet nogle projekter.');
+		else throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();
 	}

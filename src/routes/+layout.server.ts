@@ -1,8 +1,6 @@
 import type { User, pending_users } from '$lib/types';
 import type { LayoutServerLoad } from './$types';
 import { pool } from '$lib/server/database';
-import { number } from 'zod';
-import { fail } from '@sveltejs/kit';
 
 export const load = (async ({ cookies, locals }) => {
 	const darkmode = cookies.get('darkmode');

@@ -25,9 +25,6 @@ export const load = (async ({ locals }) => {
 
 	const client = await pool.connect();
 	try {
-		// Check if locals.user is defined
-		if (!locals.user) throw error(404, 'User not found.');
-
 		// Fetch projects where the user is an author, including likes count
 		const { rows: projects } = await client.query<Project>(
 			`SELECT 
@@ -85,10 +82,11 @@ export const load = (async ({ locals }) => {
 		});
 
 		return { userProjects: projects };
-	} catch (error) {
-		console.error('Error fetching projects:', JSON.stringify(error));
-		throw new Error(
-			'Error processing your request. Please try again later. ' + JSON.stringify(error)
+	} catch (err) {
+		console.error('Error fetching projects:', JSON.stringify(err));
+		throw error(
+			500,
+			'Error processing your request. Please try again later. ' + JSON.stringify(err)
 		);
 	} finally {
 		client.release();

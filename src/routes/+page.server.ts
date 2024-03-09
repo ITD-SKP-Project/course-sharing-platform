@@ -10,8 +10,9 @@ import type {
 } from '$lib/types';
 import { error } from '@sveltejs/kit';
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	const client = await pool.connect();
+	let errorType: number | null = null;
 	try {
 		const { rows: projects } = await client.query<Project>(
 			`SELECT 
@@ -27,7 +28,10 @@ export const load = (async ({ locals }) => {
 			projects.id;
 			`
 		);
-		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
+		if (!projects) {
+			errorType = 404;
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		}
 		//try to find project_like from locals.user
 		if (locals.user) {
 			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
@@ -64,12 +68,12 @@ export const load = (async ({ locals }) => {
 		});
 
 		return { projects: projects, professions: professions };
-	} catch (error) {
+	} catch (err) {
 		// Handle or throw the error as per your application's error handling policy
-		console.error('Authentication error:', JSON.stringify(error));
-		throw new Error(
-			'Error processing your request. Please try again later. ' + JSON.stringify(error)
-		);
+		console.error(JSON.stringify(error));
+		if (errorType === 404) {
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		} else throw error(500, 'Fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();
 	}

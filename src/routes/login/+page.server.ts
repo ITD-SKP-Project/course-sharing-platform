@@ -5,6 +5,7 @@ import { JWT_SECRET } from '$env/static/private';
 import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
+import { user as userStore } from '$lib/index';
 
 import { pool } from '$lib/server/database';
 
@@ -72,7 +73,6 @@ export const actions = {
 
 			// Make token
 			const token = jwt.sign(user, JWT_SECRET, { expiresIn: '10h' });
-			console.log('token created');
 
 			// Set cookie
 			cookies.set('token', token, {
@@ -81,7 +81,7 @@ export const actions = {
 				secure: true,
 				sameSite: 'strict'
 			});
-			console.log('token set');
+			userStore.set(user);
 
 			// Determine redirect logic
 		} catch (err: any) {
@@ -98,8 +98,6 @@ export const actions = {
 };
 function onboardingRedirect(user: User, url: URL): void {
 	if (!user.email_verified) {
-		console.log('redirecting to email verification page');
-
 		throw redirect(303, '/signup/bekraeft-email');
 	}
 	if (!user.firstname || !user.lastname) {

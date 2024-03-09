@@ -17,10 +17,7 @@ export const load = (async ({ url }) => {
 			throw error(404, 'Token not found');
 		}
 		const deleteTokenQuery = 'DELETE FROM verification_tokens WHERE token = $1 RETURNING *';
-		const deletedTokens = await client.query<VerificationToken>(deleteTokenQuery, [token]);
-		if (!deletedTokens.rows || deletedTokens.rows.length === 0) {
-			throw error(404, 'Token not found');
-		}
+		await client.query<VerificationToken>(deleteTokenQuery, [token]);
 	} catch (err) {
 		// Handle or throw the error as per your application's error handling policy
 		console.warn('Authentication error:', JSON.stringify(err));

@@ -9,9 +9,11 @@ export const load = (async ({ url, locals, params }) => {
 
 	const id = params.id;
 	if (!id) throw error(400, 'Der blev ikke givet et id.');
-	if (typeof +id != 'number') throw error(404, 'Der blev ikke fundet nogle projekter.');
+	//check if id is a number
+	if (isNaN(+id)) throw error(400, "Id'et skal være et tal.");
 
 	//get project
+	let errorType: number | null = null;
 	try {
 		const { rows: projects } = await client.query<Project>(
 			locals.user
@@ -24,7 +26,7 @@ export const load = (async ({ url, locals, params }) => {
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
 				WHERE 
-				  projects.id = ${id}
+				  projects.id = $1
 				  AND projects.live = true
 				GROUP BY 
 				  projects.id
@@ -48,16 +50,19 @@ export const load = (async ({ url, locals, params }) => {
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
 				WHERE 
-				  projects.id = ${id}
+				  projects.id = $1
 				  AND projects.live = true
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
-			  `
+			  `,
+			[id]
 		);
 
-		if (!projects || projects.length == 0)
+		if (!projects || projects.length == 0) {
+			errorType = 404;
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		}
 
 		if (locals.user) {
 			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
@@ -98,7 +103,9 @@ export const load = (async ({ url, locals, params }) => {
 		return { project: project };
 	} catch (err) {
 		console.error(err);
-		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		if (errorType === 404) {
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		} else throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();
 	}

@@ -4,13 +4,13 @@ import { redirect } from '@sveltejs/kit';
 import { pool } from '$lib/server/database';
 
 export const load = (async ({ locals, url }) => {
-	const client = await pool.connect();
-
 	if (locals.onboardingStatus !== 'needs-email-verification') {
-		console.log('onboardingStatus:', locals.onboardingStatus);
-		throw redirect(301, locals.onboardingRedirectLocation);
+		throw redirect(
+			301,
+			locals.onboardingRedirectLocation + '?redirect=' + url.searchParams.get('token')
+		);
 	}
-
+	const client = await pool.connect();
 	try {
 		const token = url.searchParams.get('token');
 		if (!token) {

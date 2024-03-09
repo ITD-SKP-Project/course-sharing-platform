@@ -8,7 +8,6 @@ import { pool } from '$lib/server/database';
 export const handle = (async ({ event, resolve }) => {
 	const sessionCookie = event.cookies.get('token');
 	if (!sessionCookie) {
-		console.log('No session cookie');
 		event.locals.user = null;
 		event.locals.onboardingStatus = 'none';
 		event.locals.onboardingRedirectLocation = '/login';
@@ -18,7 +17,7 @@ export const handle = (async ({ event, resolve }) => {
 
 	jwt.verify(sessionCookie, JWT_SECRET, (err, decoded) => {
 		if (err || !decoded) {
-			console.log('Error decoding token:', err);
+			console.warn('Error decoding token:', err);
 			event.locals.user = null;
 
 			event.cookies.delete('token', {
@@ -27,7 +26,6 @@ export const handle = (async ({ event, resolve }) => {
 			return resolve(event);
 		}
 		decodedUser = decoded as User | undefined | null;
-		console.log('decodedUser:', decodedUser);
 	});
 	if (!decodedUser) {
 		return resolve(event);
@@ -37,12 +35,10 @@ export const handle = (async ({ event, resolve }) => {
 	try {
 		const queryText = 'SELECT * from users where id = $1 LIMIT 1';
 		const { rows: users } = await client.query<User>(queryText, [decodedUser.id]);
-		console.log('users:', users);
 
 		client.release();
 
 		if (!users || users.length <= 0) {
-			console.log('No user found');
 			event.cookies.delete('token', {
 				path: '/'
 			});

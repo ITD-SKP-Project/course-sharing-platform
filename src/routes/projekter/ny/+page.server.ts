@@ -1,8 +1,20 @@
+/* 
+	load function
+		if user is not logged in, redirect to login page
+		if user is not validated, throw error
+		query users from database and return them so they can be used in the form
+
+	default action
+		get form data from request
+		validate form data
+		if validation fails, return validation errors and form data
+		create project in database
+		return formData and project id
+*/
+
 import type { PageServerLoad } from './$types';
 import type { Project, ProjectFile, ProjectFileCreation, UserEssentials, User } from '$lib/types';
-// import { writeFileSync, existsSync, mkdirSync } from 'fs';
 import { error, redirect } from '@sveltejs/kit';
-
 import { pool } from '$lib/server/database';
 import { ProjectSchema } from '$lib/zodSchemas';
 import { z } from 'zod';
@@ -12,6 +24,9 @@ import { postFile } from '$lib/server/files';
 export const load = (async ({ locals }) => {
 	if (!locals.user) {
 		throw redirect(307, '/login?redirect=/projekter/ny');
+	}
+	if (!locals.user.validated) {
+		throw error(403, 'Div konto er endu ikke blevet godkendt.');
 	}
 	const client = await pool.connect();
 	try {
@@ -35,7 +50,6 @@ export const load = (async ({ locals }) => {
 type ProjectSchemaType = z.infer<typeof ProjectSchema>;
 
 import { validateCustomArray } from '$lib/index';
-
 import { validateCustomFileArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';
 //action
