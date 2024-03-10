@@ -77,15 +77,7 @@
 			</div>
 			<h1 class="mb-8 text-4xl font-semibold">{project.title}</h1>
 			<p class="text max-w-[40rem] font-light leading-7">
-				{project.description} Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos expedita
-				earum a dolorum corrupti cupiditate commodi facilis similique voluptates nihil corporis laborum
-				officiis reprehenderit id labore neque pariatur sint voluptatem molestias quis magni asperiores,
-				reiciendis dolor! Laudantium, aspernatur tenetur? Deleniti exercitationem iste incidunt sit non,
-				numquam itaque qui quod suscipit quasi veniam sint deserunt distinctio earum necessitatibus,
-				facilis officiis assumenda dolores. Porro quo voluptatem corrupti vero commodi provident ipsum
-				optio eaque natus perspiciatis et perferendis, ea iure ad ullam doloremque sapiente odio! Necessitatibus
-				animi illum numquam aut, nam quisquam labore nihil placeat sint. Perspiciatis quibusdam, nobis
-				obcaecati illo expedita in.
+				{project.description}
 			</p>
 			{#if project.notes}
 				<h2 class="mb-2 mt-16 text-xl font-bold">Underviser Notater</h2>
