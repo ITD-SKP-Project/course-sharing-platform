@@ -52,19 +52,18 @@
 					name={`files-${index}`}
 					required={index == 0}
 				/>
-				{#if index != 0}
-					<Button
-						size="icon"
-						class="aspect-square"
-						variant="destructive"
-						on:click={() => {
-							const target = document.querySelector(`#files-${index}`);
-							target?.remove();
-						}}
-					>
-						<X class="h-4 w-4" />
-					</Button>
-				{/if}
+
+				<Button
+					size="icon"
+					class="aspect-square"
+					variant="destructive"
+					on:click={() => {
+						const target = document.querySelector(`#files-${index}`);
+						target?.remove();
+					}}
+				>
+					<X class="h-4 w-4" />
+				</Button>
 			</div>
 
 			{#if form?.validationErrors?.[`files-${index}`]}

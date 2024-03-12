@@ -505,5 +505,42 @@ export const actions = {
 		} finally {
 			client.release();
 		}
+	},
+	updateCourseLength: async ({
+		params,
+		request,
+		locals
+	}): Promise<{
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+		formData: any;
+	} | void> => {
+		let formData = Object.fromEntries(await request.formData());
+		const titleSchema = z.object({
+			course_length: z.string().min(1, 'Projekt tidsforbrug er påkrævet.')
+		});
+		type titleSchemaType = z.infer<typeof titleSchema>;
+
+		let result: titleSchemaType;
+		const client = await pool.connect();
+		try {
+			result = titleSchema.parse({ ...formData });
+
+			await client.query<Project>(
+				`UPDATE projects SET course_length = $1 WHERE id = $2 RETURNING *;`,
+				[result.course_length, params.id]
+			);
+			return { successMessage: 'Projekt tidsforbrug blev opdateret', formData: formData };
+		} catch (err) {
+			if (err instanceof z.ZodError) {
+				const { fieldErrors: errors } = err.flatten();
+				return { validationErrors: errors, formData: formData };
+			} else {
+				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+			}
+		} finally {
+			client.release();
+		}
 	}
 };

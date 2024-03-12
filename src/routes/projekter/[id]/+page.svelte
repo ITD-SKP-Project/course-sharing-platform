@@ -5,6 +5,7 @@
 	export let form;
 
 	let project = data.project as Project;
+	console.log('🚀 ~ project:', project);
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
 	import * as Collapsible from '$lib/components/ui/collapsible';
@@ -230,13 +231,9 @@
 						{/each}
 					{/if}
 				</div>
-			</Card.Content>
 
-			<Card.Header class="pb-4">
-				<Card.Title>Projekt links</Card.Title>
-			</Card.Header>
-			<Card.Content>
-				{#if project.files}
+				{#if project.files && project.files.length > 0}
+					<Card.Title>Projekt links</Card.Title>
 					{#each project.files as file}
 						<DowdloadLink pathName={`${project.id}/${file.name}`}>{file.name}</DowdloadLink>
 					{/each}

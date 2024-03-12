@@ -377,7 +377,7 @@
 					{#each numberOfFiles as index}
 						<div class="flex gap-2" id="files-{index}">
 							<Input type="file" name={`files-${index}`} required={index == 0} />
-							{#if index != 0}
+							
 								<Button
 									size="icon"
 									class="aspect-square"
@@ -389,7 +389,7 @@
 								>
 									<X class="h-4 w-4" />
 								</Button>
-							{/if}
+							
 						</div>
 						<p class="text-sm text-muted-foreground">
 							Upload filer som er relateret til projektet. F.eks. kodefiler, billeder og dokumenter.
