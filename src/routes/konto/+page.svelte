@@ -114,6 +114,7 @@
 							{/if}
 						</div>
 					{/key}
+					<Button type="submit" class="!ml-auto">Gem</Button>
 				</div>
 			</form>
 

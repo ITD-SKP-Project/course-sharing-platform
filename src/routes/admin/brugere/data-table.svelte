@@ -55,7 +55,7 @@
 		}),
 		table.column({
 			accessor: 'context',
-			header: 'Ny bruger',
+			header: 'Skal godkendes',
 			plugins: {
 				filter: {
 					exclude: true
