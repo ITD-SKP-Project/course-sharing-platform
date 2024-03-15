@@ -1,3 +1,5 @@
+import {sequence} from '@sveltejs/kit/hooks';
+import * as Sentry from '@sentry/sveltekit';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '$env/static/private';
 import type { Handle } from '@sveltejs/kit';
@@ -5,7 +7,12 @@ import type { User } from '$lib/types';
 
 import { pool } from '$lib/server/database';
 
-export const handle = (async ({ event, resolve }) => {
+Sentry.init({
+    dsn: "https://bd0b656d83362f80416a093a00c42a41@o4506914465447936.ingest.us.sentry.io/4506914478358528",
+    tracesSampleRate: 1
+})
+
+export const handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }) => {
 	const sessionCookie = event.cookies.get('token');
 	if (!sessionCookie) {
 		event.locals.user = null;
@@ -76,4 +83,5 @@ export const handle = (async ({ event, resolve }) => {
 	}
 
 	return resolve(event);
-}) satisfies Handle;
+}) satisfies Handle);
+export const handleError = Sentry.handleErrorWithSentry();
