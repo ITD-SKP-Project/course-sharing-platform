@@ -9,6 +9,7 @@
 	import Subjects from './subjects.svelte';
 	import Resources from './resources.svelte';
 	import Files from './files.svelte';
+	import Live from './live.svelte';
 	import Authors from './authors.svelte';
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
@@ -65,6 +66,9 @@
 
 			<!-- ? Resources -->
 			<Resources {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
+
+			<!-- ? Live -->
+			<Live {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 		</div>
 
 		<!-- ? infobox -->
@@ -76,6 +80,7 @@
 			</Card.Header>
 
 			<Card.Content class="m-0">
+				<!-- ? dates -->
 				<div class="flex flex-col gap-4">
 					<div class="flex flex-col gap-1">
 						<span class="text-sm font-semibold text-primary-foreground/75">Oprettet</span>
@@ -95,31 +100,30 @@
 					</div>
 				</div>
 
-				<div>
-					<Separator class=" my-0 w-full bg-primary-foreground/25" />
+				<Separator class="my-3  w-full bg-primary-foreground/25" />
 
-					{#key FieldToEdit}
-						<Authors
-							on:update={() => {
-								handleUpdate();
-								location.reload();
-							}}
-							currentUser={data.user}
-							{project}
-							bind:form
-							bind:loading
-							bind:FieldToEdit
-							users={data.users.filter((user) => user.id !== data.user.id)}
-						/>
-					{/key}
+				<!-- ? authors -->
+				<Authors
+					on:update={() => {
+						handleUpdate();
+						location.reload();
+					}}
+					currentUser={data.user}
+					{project}
+					bind:form
+					bind:loading
+					bind:FieldToEdit
+					users={data.users.filter((user) => user.id !== data.user.id)}
+				/>
 
-					<Separator class=" my-0 w-full bg-primary-foreground/25" />
-					<!-- ? course length -->
-					<CourseLength {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
-					<Separator class=" my-0 w-full bg-primary-foreground/25" />
-				</div>
+				<Separator class="my-3 w-full bg-primary-foreground/25" />
 
-				<!-- files -->
+				<!-- ? course length -->
+				<CourseLength {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
+
+				<Separator class="my-3 w-full bg-primary-foreground/25" />
+
+				<!-- ? files -->
 				<Files {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 			</Card.Content>
 		</Card.Root>

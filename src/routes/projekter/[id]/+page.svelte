@@ -170,11 +170,11 @@
 
 		<!-- ? infobox -->
 		<Card.Root
-			class="sticky top-24 mb-4 mt-8 h-fit min-w-72 border-primary lg:ml-auto lg:mt-0 lg:max-w-96"
+			class="sticky top-24 mb-4 mt-8 h-fit min-w-72 bg-primary text-primary-foreground lg:ml-auto lg:mt-0 lg:max-w-96"
 		>
 			<Card.Header class="pb-4">
 				{#if project?.authors?.some((author) => author.user_id === data.user?.id)}
-					<Button href="/projekter/{project.id}/rediger" class="mb-2" size="lg"
+					<Button href="/projekter/{project.id}/rediger" class="mb-2" size="lg" variant="secondary"
 						>Rediger projekt</Button
 					>
 				{/if}
@@ -183,7 +183,7 @@
 			<Card.Content>
 				<div class="flex flex-col gap-4">
 					<div class="flex flex-col gap-1">
-						<span class="text-sm text-muted-foreground">Oprettet</span>
+						<span class="text-sm font-semibold text-primary-foreground/75">Oprettet</span>
 						<span class="text-sm"
 							>{created_at.getDay()}.
 							{months[created_at.getMonth()]}
@@ -191,7 +191,7 @@
 						>
 					</div>
 					<div class="flex flex-col gap-1">
-						<span class="text-sm text-muted-foreground">Senest opdateret</span>
+						<span class="text-sm font-semibold text-primary-foreground/75">Senest opdateret</span>
 						<span class="text-sm"
 							>{updated_at.getDay()}.
 							{months[updated_at.getMonth()]}
@@ -204,7 +204,9 @@
 				<Card.Title class="flex items-center gap-2">Forfattere</Card.Title>
 			</Card.Header>
 			<Card.Content>
-				<span class="text-sm text-muted-foreground">Dette project er lavet af</span>
+				<span class="text-sm font-semibold text-primary-foreground/75"
+					>Dette project er lavet af</span
+				>
 				<div
 					id="authors"
 					class="p.2 mt-2 flex w-full flex-col flex-wrap gap-x-2 gap-y-2 rounded-md border-secondary"
@@ -215,7 +217,7 @@
 								<a href="/?forfatter={author.user.firstname}-{author.user.lastname}">
 									<div class="flex min-w-max items-center gap-2">
 										<div
-											class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/75 text-primary-foreground"
+											class="flex h-8 w-8 items-center justify-center rounded-full bg-card/75 text-card-foreground"
 										>
 											{author.user.firstname ? author.user.firstname[0] : ''}{author.user.lastname
 												? author.user.lastname[0]
@@ -233,7 +235,7 @@
 				</div>
 
 				{#if project.files && project.files.length > 0}
-					<Card.Title>Projekt links</Card.Title>
+					<Card.Title class="mt-8">Projekt links</Card.Title>
 					{#each project.files as file}
 						<DowdloadLink pathName={`${project.id}/${file.name}`}>{file.name}</DowdloadLink>
 					{/each}

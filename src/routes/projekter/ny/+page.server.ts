@@ -202,10 +202,10 @@ async function createProject(
 			'INSERT INTO project_authors (project_id, user_id, authority_level) VALUES ($1, $2, $3)';
 		const projectAuthorValues = [projects[0].id, user.id, 3]; // Assuming authority_level is the correct column name
 		await client.query(projectAuthorQueryText, projectAuthorValues);
-		authors.forEach(async (author) => {
+		for (const author of authors) {
 			const projectAuthorValues = [projects[0].id, author, 1]; // Assuming authority_level is the correct column name
 			await client.query(projectAuthorQueryText, projectAuthorValues);
-		});
+		}
 
 		if (Project.it_supporter) {
 			const itSupporterQueryText =

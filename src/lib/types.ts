@@ -8,7 +8,8 @@ export enum ProjectEditMode {
 	resources = 'resources',
 	files = 'files',
 	authors = 'authors',
-	course_length = 'course_length'
+	course_length = 'course_length',
+	live = 'live'
 }
 export interface User {
 	id: number;

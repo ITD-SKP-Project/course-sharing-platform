@@ -27,18 +27,24 @@ export const load = (async ({ locals, params }) => {
 			locals.user
 				? `
 				SELECT 
-				  projects.*,
-				 CAST(COUNT(project_likes.id) AS INTEGER) AS likes
-				FROM 
-				  projects
-				LEFT JOIN 
-				  project_likes ON projects.id = project_likes.project_id
-				WHERE 
-				  projects.id = $1
-				  AND projects.live = true
-				GROUP BY 
-				  projects.id
-				LIMIT 1;
+				projects.*,
+				COALESCE(CAST(COUNT(project_likes.id) AS INTEGER), 0) AS likes
+			  FROM 
+				projects
+			  LEFT JOIN 
+				project_likes ON projects.id = project_likes.project_id
+			  LEFT JOIN 
+				project_authors ON projects.id = project_authors.project_id
+			  WHERE 
+				(
+				  projects.live = true
+				  OR (projects.live = false AND project_authors.user_id = $2)
+				)
+				AND projects.id = $1
+			  GROUP BY 
+				projects.id
+			  LIMIT 1;
+			
 			  `
 				: `
 				SELECT 
@@ -53,18 +59,23 @@ export const load = (async ({ locals, params }) => {
 				  projects.resources,
 				  projects.live,
 				  COALESCE(CAST(COUNT(project_likes.id) AS INTEGER), 0) AS likes
-				FROM 
+				  FROM 
 				  projects
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
+				LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
 				WHERE 
-				  projects.id = $1
-				  AND projects.live = true
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $2)
+				  )
+				  AND projects.id = $1
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
 			  `,
-			[id]
+			[id, locals.user?.id]
 		);
 
 		if (!projects || projects.length == 0) {
@@ -95,7 +106,7 @@ export const load = (async ({ locals, params }) => {
 
 		//get all users and add them to authors
 		const { rows: users } = await client.query<UserEssentials>(
-			'SELECT id, firstname, lastname, email, validated FROM users'
+			'SELECT id, firstname, lastname, email, validated FROM users where validated = true'
 		);
 
 		const { rows: projectProfessions } =
@@ -419,7 +430,7 @@ export const actions = {
 			await client.query<Project>(`BEGIN`);
 			await client.query(`DELETE from project_files where project_id = $1`, [params.id]);
 
-			filesArray.forEach(async ([key, value]) => {
+			for (const [key, value] of filesArray) {
 				const file = value as unknown as File;
 
 				const fileQueryText =
@@ -434,7 +445,7 @@ export const actions = {
 				await client.query(fileQueryText, fileValues);
 
 				await postFile(file, params.id);
-			});
+			}
 
 			const res: {
 				status: number;
@@ -466,6 +477,7 @@ export const actions = {
 		serverError?: string;
 		formData: any;
 	} | void> => {
+		let addedIds: number[] = [];
 		let formData = Object.fromEntries(await request.formData());
 		const usersArray = Object.entries(formData).filter(([key, value]) => key.startsWith('users-'));
 		const { success: userSuccess, errors: userErrors } = validateCustomArray(usersArray);
@@ -490,11 +502,16 @@ export const actions = {
 				'INSERT INTO project_authors (project_id, user_id, authority_level) VALUES ($1, $2, $3)';
 			const projectAuthorValues = [params.id, locals.user.id, 3]; // Assuming authority_level is the correct column name
 			await client.query(projectAuthorQueryText, projectAuthorValues);
-			userIds.forEach(async (author) => {
+			for (const author of userIds) {
+				if (addedIds.includes(author) || addedIds.includes(locals.user?.id)) continue;
+				console.log('author', author);
+				console.log('locals.user.id', locals.user.id);
+				console.log('addedIds', addedIds);
+				addedIds.push(author);
 				const projectAuthorValues = [params.id, author, 1]; // Assuming authority_level is the correct column name
 				if (author != locals.user.id)
 					await client.query(projectAuthorQueryText, projectAuthorValues);
-			});
+			}
 
 			await client.query<Project>(`COMMIT`);
 			return { successMessage: 'Filer blev opdateret', formData: formData };
@@ -532,6 +549,47 @@ export const actions = {
 				[result.course_length, params.id]
 			);
 			return { successMessage: 'Projekt tidsforbrug blev opdateret', formData: formData };
+		} catch (err) {
+			if (err instanceof z.ZodError) {
+				const { fieldErrors: errors } = err.flatten();
+				return { validationErrors: errors, formData: formData };
+			} else {
+				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+			}
+		} finally {
+			client.release();
+		}
+	},
+	updateLive: async ({
+		params,
+		request,
+		locals
+	}): Promise<{
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+		formData: any;
+	} | void> => {
+		const liveSchema = z.object({
+			live: z.enum(['yes', 'no'])
+		});
+
+		let formData = Object.fromEntries(await request.formData());
+		const titleSchema = z.object({
+			course_length: z.string().min(1, 'Projekt tidsforbrug er påkrævet.')
+		});
+		type LiveSchemaType = z.infer<typeof liveSchema>;
+
+		let result: LiveSchemaType;
+		const client = await pool.connect();
+		try {
+			result = liveSchema.parse({ ...formData });
+
+			await client.query<Project>(`UPDATE projects SET live = $1 WHERE id = $2 RETURNING *;`, [
+				result.live == 'no' ? false : true,
+				params.id
+			]);
+			return { successMessage: 'Projekt synlighed blev opdateret', formData: formData };
 		} catch (err) {
 			if (err instanceof z.ZodError) {
 				const { fieldErrors: errors } = err.flatten();

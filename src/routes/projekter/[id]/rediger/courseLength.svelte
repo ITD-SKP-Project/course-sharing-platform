@@ -40,7 +40,7 @@
 				required={true}
 				placeholder="f.eks. 2 Uger"
 			/>
-			<p class="text-sm text-muted-foreground">Hvor lang tid tager det at lave projektet?</p>
+			<p class="text-sm text-primary-foreground">Hvor lang tid tager det at lave projektet?</p>
 			{#if form?.validationErrors?.course_length}
 				<p class="text-red-500">{form?.validationErrors?.course_length}</p>
 			{/if}
@@ -50,18 +50,21 @@
 	</form>
 {:else}
 	<div class="flex flex-col">
-		<span class="text-sm font-semibold text-primary-foreground/75">Tidforbrug</span>
+		<div class="flex items-center">
+			<span class="text-sm font-semibold text-primary-foreground/75">Tidforbrug</span>
+
+			<Button
+				size="icon"
+				variant="ghost"
+				on:click={() => {
+					FieldToEdit = ProjectEditMode.course_length;
+				}}
+			>
+				<Pen class="h-5 w-5" />
+			</Button>
+		</div>
 		<p class="text max-w-[40rem] font-light leading-7">
 			{form?.formData?.course_length || project.course_length}
 		</p>
 	</div>
-	<Button
-		size="icon"
-		variant="ghost"
-		on:click={() => {
-			FieldToEdit = ProjectEditMode.course_length;
-		}}
-	>
-		<Pen class="h-5 w-5" />
-	</Button>
 {/if}

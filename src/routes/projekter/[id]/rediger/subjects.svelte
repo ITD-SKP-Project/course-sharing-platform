@@ -105,7 +105,18 @@
 	{:else if project.subjects}
 		<Collapsible.Root class="w-fit min-w-52">
 			<div class="flex items-center justify-between space-x-4">
-				<h2 class="mb-1 text-xl font-bold">Fagområder</h2>
+				<div class="flex items-center gap-2">
+					<h2 class="mb-1 text-xl font-bold">Fagområder</h2>
+					<Button
+						size="icon"
+						variant="ghost"
+						on:click={() => {
+							FieldToEdit = ProjectEditMode.subjects;
+						}}
+					>
+						<Pen class="h-5 w-5" />
+					</Button>
+				</div>
 				{#key form}
 					{#if toArrayOfStrings(form?.formData, 'subjects-').length > 1 || project.subjects.split('[ENTER]').length > 1}
 						<Collapsible.Trigger asChild let:builder>
@@ -142,14 +153,5 @@
 				{/key}
 			</Collapsible.Content>
 		</Collapsible.Root>
-		<Button
-			size="icon"
-			variant="ghost"
-			on:click={() => {
-				FieldToEdit = ProjectEditMode.subjects;
-			}}
-		>
-			<Pen class="h-5 w-5" />
-		</Button>
 	{/if}
 </div>

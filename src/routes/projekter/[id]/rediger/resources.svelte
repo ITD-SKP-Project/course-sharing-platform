@@ -106,7 +106,19 @@
 	{:else if project.resources}
 		<Collapsible.Root class="w-fit min-w-52">
 			<div class="flex items-center justify-between space-x-4">
-				<h2 class="mb-1 text-xl font-bold">Ressourcer</h2>
+				<div class="flex items-center gap-2">
+					<h2 class="mb-1 text-xl font-bold">Ressourcer</h2>
+					<Button
+						size="icon"
+						variant="ghost"
+						on:click={() => {
+							FieldToEdit = ProjectEditMode.resources;
+						}}
+					>
+						<Pen class="h-5 w-5" />
+					</Button>
+				</div>
+
 				{#if toArrayOfStrings(form?.formData, 'resources-').length > 1 || project.resources.split('[ENTER]').length > 1}
 					<Collapsible.Trigger asChild let:builder>
 						<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
@@ -141,14 +153,5 @@
 				{/key}
 			</Collapsible.Content>
 		</Collapsible.Root>
-		<Button
-			size="icon"
-			variant="ghost"
-			on:click={() => {
-				FieldToEdit = ProjectEditMode.resources;
-			}}
-		>
-			<Pen class="h-5 w-5" />
-		</Button>
 	{/if}
 </div>

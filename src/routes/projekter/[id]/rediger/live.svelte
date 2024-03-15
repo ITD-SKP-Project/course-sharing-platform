@@ -6,9 +6,9 @@
 
 	import { ProjectEditMode } from '$lib/types';
 
-	import { Save, Trash, Pen } from 'lucide-svelte';
+	import { Pen } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
+
 	import { Button } from '$lib/components/ui/button';
 	import type { Project } from '$lib/types';
 	import { enhance } from '$app/forms';
@@ -19,7 +19,7 @@
 </script>
 
 <div class="mb-8 flex w-full gap-2">
-	{#if ProjectEditMode.description === FieldToEdit}
+	{#if ProjectEditMode.live === FieldToEdit}
 		<form
 			use:enhance={() => {
 				loading = true;
@@ -30,36 +30,37 @@
 			}}
 			class="flex w-full flex-col gap-2"
 			method="POST"
-			action="?/updateDescription"
+			action="?/updateLive"
 		>
-			<div class="grid w-full max-w-md items-center gap-1.5">
-				<Label for="description">Beskrivelse</Label>
-
-				<Textarea
-					placeholder="description"
-					value={form?.formData?.description || project.description}
-					name="description"
-					class="w-full"
-				/>
+			<div class="flex w-full flex-col gap-1.5">
+				<Label for="livemode" class="text-lg">Udgivelsestidpunkt</Label>
+				<div>
+					<input checked={true} type="radio" name="live" value="yes" />
+					<Label for="livemode">Udgiv nu</Label>
+				</div>
+				<div>
+					<input type="radio" name="live" value="no" />
+					<Label for="livemode">Gem klade og udgiv senere</Label>
+				</div>
 			</div>
 			<SaveOrDisgardButtons bind:FieldToEdit />
 		</form>
 	{:else}
 		<div class="flex flex-col">
 			<div class="flex items-center gap-2">
-				<h2 class="mb-1 text-xl font-bold">Beskrivelse</h2>
+				<h2 class="mb-1 text-xl font-bold">Synlig for alle?</h2>
 				<Button
 					size="icon"
 					variant="ghost"
 					on:click={() => {
-						FieldToEdit = ProjectEditMode.description;
+						FieldToEdit = ProjectEditMode.live;
 					}}
 				>
 					<Pen class="h-5 w-5" />
 				</Button>
 			</div>
 			<p class="text max-w-[40rem] font-light leading-7">
-				{form?.formData?.description || project.description}
+				{form?.formData?.live || project.live ? 'Ja' : 'Nej'}
 			</p>
 		</div>
 	{/if}

@@ -15,9 +15,10 @@ export const DELETE: RequestHandler = async ({ locals, url }) => {
 	const client = await pool.connect();
 	try {
 		//remove user with
-		ids.forEach(async (id: number) => {
+		for (const id of ids) {
 			await client.query('SELECT delete_user($1);', [id]);
-		});
+		}
+
 		await client.query('COMMIT');
 	} catch (e) {
 		console.error('Error deleting user:', e);
