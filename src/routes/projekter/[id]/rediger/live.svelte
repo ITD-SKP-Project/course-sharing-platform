@@ -2,7 +2,9 @@
 	export let FieldToEdit: ProjectEditMode;
 	export let loading: boolean = false;
 	export let project: Project;
+	$: console.log('🚀 ~ project:', project);
 	export let form: any;
+	$: console.log('🚀 ~ form:', form);
 
 	import { ProjectEditMode } from '$lib/types';
 
@@ -15,10 +17,11 @@
 	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
 
 	import { createEventDispatcher } from 'svelte';
+	import DataTable from '../../../admin/brugere/data-table.svelte';
 	const dispatch = createEventDispatcher();
 </script>
 
-<div class="mb-8 flex w-full gap-2">
+<div class="mb-8 mt-16 flex w-full gap-2">
 	{#if ProjectEditMode.live === FieldToEdit}
 		<form
 			use:enhance={() => {
@@ -35,11 +38,29 @@
 			<div class="flex w-full flex-col gap-1.5">
 				<Label for="livemode" class="text-lg">Udgivelsestidpunkt</Label>
 				<div>
-					<input checked={true} type="radio" name="live" value="yes" />
+					<input
+						checked={form?.formData?.live
+							? form?.formData?.live === 'yes'
+								? true
+								: false
+							: project.live}
+						type="radio"
+						name="live"
+						value="yes"
+					/>
 					<Label for="livemode">Udgiv nu</Label>
 				</div>
 				<div>
-					<input type="radio" name="live" value="no" />
+					<input
+						checked={form?.formData?.live
+							? form?.formData?.live === 'no'
+								? true
+								: false
+							: !project.live}
+						type="radio"
+						name="live"
+						value="no"
+					/>
 					<Label for="livemode">Gem klade og udgiv senere</Label>
 				</div>
 			</div>
@@ -60,7 +81,13 @@
 				</Button>
 			</div>
 			<p class="text max-w-[40rem] font-light leading-7">
-				{form?.formData?.live || project.live ? 'Ja' : 'Nej'}
+				{form?.formData?.live
+					? form?.formData?.live === 'yes'
+						? 'ja'
+						: 'nej'
+					: project.live
+						? 'ja'
+						: 'nej'}
 			</p>
 		</div>
 	{/if}

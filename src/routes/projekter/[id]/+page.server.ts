@@ -2,9 +2,9 @@ import type { PageServerLoad } from './$types';
 
 import { pool } from '$lib/server/database';
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
-import { error, json } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 
-export const load = (async ({ url, locals, params }) => {
+export const load = (async ({ locals, params }) => {
 	const client = await pool.connect();
 
 	const id = params.id;
@@ -25,9 +25,14 @@ export const load = (async ({ url, locals, params }) => {
 				  projects
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
+				 LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
 				WHERE 
-				  projects.id = $1
-				  AND projects.live = true
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $2)
+				  )
+				  AND projects.id = $1
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
@@ -49,15 +54,34 @@ export const load = (async ({ url, locals, params }) => {
 				  projects
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
+				LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
 				WHERE 
-				  projects.id = $1
-				  AND projects.live = true
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $2)
+				  )
+				  AND projects.id = $1
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
 			  `,
-			[id]
+			[id, locals.user?.id]
 		);
+
+		/*
+			LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
+				WHERE 
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $1)
+				  )
+				  AND projects.id = $1
+				GROUP BY 
+				  projects.id
+				LIMIT 1;
+		*/
 
 		if (!projects || projects.length == 0) {
 			errorType = 404;
