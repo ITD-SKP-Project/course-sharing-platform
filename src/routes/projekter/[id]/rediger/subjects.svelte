@@ -86,7 +86,13 @@
 								</Button>
 							{/if}
 						</div>
+						{#if form?.validationErrors?.[`subjects-${index}`]}
+							<p class="text-red-500">{form?.validationErrors?.[`subjects-${index}`]}</p>
+						{/if}
 					{/each}
+					{#if form?.validationErrors?.[`subjects`]}
+						<p class="text-red-500">{form?.validationErrors?.[`subjects`]}</p>
+					{/if}
 				{/key}
 
 				<Button
@@ -102,7 +108,7 @@
 				</Button>
 			</div>
 		</form>
-	{:else if project.subjects}
+	{:else}
 		<Collapsible.Root class="w-fit min-w-52">
 			<div class="flex items-center justify-between space-x-4">
 				<div class="flex items-center gap-2">
@@ -117,23 +123,26 @@
 						<Pen class="h-5 w-5" />
 					</Button>
 				</div>
+
 				{#key form}
-					{#if toArrayOfStrings(form?.formData, 'subjects-').length > 1 || project.subjects.split('[ENTER]').length > 1}
-						<Collapsible.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
-								{#if builder['data-state'] === 'open'}
-									<ChevronDown class="h-4 w-4 rotate-180 transform" />
-								{:else}
-									<ChevronUp class="h-4 w-4 rotate-180 transform" />
-								{/if}
-								<span class="sr-only">Toggle</span>
-							</Button>
-						</Collapsible.Trigger>
-					{/if}
+					<Collapsible.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+							{#if builder['data-state'] === 'open'}
+								<ChevronDown class="h-4 w-4 rotate-180 transform" />
+							{:else}
+								<ChevronUp class="h-4 w-4 rotate-180 transform" />
+							{/if}
+							<span class="sr-only">Toggle</span>
+						</Button>
+					</Collapsible.Trigger>
 				{/key}
 			</div>
 			<div class="rounded-md border px-4 py-3 font-mono text-sm">
-				{toArrayOfStrings(form?.formData, 'subjects-')[0] || project.subjects.split('[ENTER]')[0]}
+				{#if toArrayOfStrings(form?.formData, 'subjects-').length > 1 || project.subjects.split('[ENTER]').length > 1}
+					{toArrayOfStrings(form?.formData, 'subjects-')[0] || project.subjects.split('[ENTER]')[0]}
+				{:else}
+					<div class="">Dette projekt har ingen Fagområder</div>
+				{/if}
 			</div>
 			<Collapsible.Content class="space-y-2">
 				{#key form}

@@ -18,7 +18,7 @@ export const months = [
 ];
 
 export function toArrayOfStrings(data: Object | undefined, keyword: string): string[] {
-	if (!data || typeof data != 'object') return [];
+	if (!data || typeof data != 'object' || data === '') return [];
 
 	//return keys where value includes keyword
 	let result: string[] = [];
@@ -45,6 +45,7 @@ export function validateCustomFileArray(files: any): { success: boolean; errors?
 }
 export function validateCustomArray(array: any): { success: boolean; errors?: any } {
 	let errors: any = {};
+
 	for (let [key, value] of array) {
 		if (value == '') {
 			errors[key] = 'Dette felt skal udfyldes';

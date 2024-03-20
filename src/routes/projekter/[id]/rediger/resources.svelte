@@ -87,7 +87,13 @@
 								</Button>
 							{/if}
 						</div>
+						{#if form?.validationErrors?.[`resources-${index}`]}
+							<p class="text-red-500">{form?.validationErrors?.[`resources-${index}`]}</p>
+						{/if}
 					{/each}
+					{#if form?.validationErrors?.[`resources`]}
+						<p class="text-red-500">{form?.validationErrors?.[`resources`]}</p>
+					{/if}
 				{/key}
 
 				<Button
@@ -103,7 +109,7 @@
 				</Button>
 			</div>
 		</form>
-	{:else if project.resources}
+	{:else}
 		<Collapsible.Root class="w-fit min-w-52">
 			<div class="flex items-center justify-between space-x-4">
 				<div class="flex items-center gap-2">
@@ -130,10 +136,17 @@
 							<span class="sr-only">Toggle</span>
 						</Button>
 					</Collapsible.Trigger>
+				{:else}
+					<p class="text-muted">Dette projekt har ingen ressourcer.</p>
 				{/if}
 			</div>
 			<div class="rounded-md border px-4 py-3 font-mono text-sm">
-				{toArrayOfStrings(form?.formData, 'resources-')[0] || project.resources.split('[ENTER]')[0]}
+				{#if toArrayOfStrings(form?.formData, 'resources-').length > 1 || project.resources.split('[ENTER]').length > 1}
+					{toArrayOfStrings(form?.formData, 'resources-')[0] ||
+						project.resources.split('[ENTER]')[0]}
+				{:else}
+					<div class="">Dette projekt har ingen ressourcer</div>
+				{/if}
 			</div>
 			<Collapsible.Content class="space-y-2">
 				{#key form}

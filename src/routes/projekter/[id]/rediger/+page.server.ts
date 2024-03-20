@@ -280,6 +280,12 @@ export const actions = {
 			key.startsWith('subjects-')
 		);
 
+		if (subjectsArray.length == 0) {
+			return {
+				validationErrors: { subjects: 'Du skal vælge mindst et Fagområde.' },
+				formData: formData
+			};
+		}
 		const { errors: subjectErrors } = validateCustomArray(subjectsArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
 
@@ -314,6 +320,13 @@ export const actions = {
 		const resourcesArray = Object.entries(formData).filter(([key, value]) =>
 			key.startsWith('resources-')
 		);
+
+		if (resourcesArray.length == 0) {
+			return {
+				validationErrors: { resources: 'Du skal vælge mindst en ressource.' },
+				formData: formData
+			};
+		}
 
 		const { errors: subjectErrors } = validateCustomArray(resourcesArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
