@@ -5,7 +5,7 @@
 	export let form;
 
 	let project = data.project as Project;
-	console.log('🚀 ~ project:', project);
+
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
 	import * as Collapsible from '$lib/components/ui/collapsible';

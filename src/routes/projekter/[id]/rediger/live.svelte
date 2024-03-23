@@ -2,9 +2,8 @@
 	export let FieldToEdit: ProjectEditMode;
 	export let loading: boolean = false;
 	export let project: Project;
-	$: console.log('🚀 ~ project:', project);
+
 	export let form: any;
-	$: console.log('🚀 ~ form:', form);
 
 	import { ProjectEditMode } from '$lib/types';
 
@@ -17,7 +16,6 @@
 	import SaveOrDisgardButtons from './SaveOrDisgardButtons.svelte';
 
 	import { createEventDispatcher } from 'svelte';
-	import DataTable from '../../../admin/brugere/data-table.svelte';
 	const dispatch = createEventDispatcher();
 </script>
 

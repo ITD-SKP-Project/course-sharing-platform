@@ -42,6 +42,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sentry/browser": "^7.108.0",
 		"@sentry/sveltekit": "^7.107.0",
 		"@sveltejs/adapter-vercel": "^4.0.5",
 		"@vercel/postgres": "^0.5.1",

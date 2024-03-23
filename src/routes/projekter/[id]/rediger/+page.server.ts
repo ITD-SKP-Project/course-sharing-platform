@@ -517,9 +517,7 @@ export const actions = {
 			await client.query(projectAuthorQueryText, projectAuthorValues);
 			for (const author of userIds) {
 				if (addedIds.includes(author) || addedIds.includes(locals.user?.id)) continue;
-				console.log('author', author);
-				console.log('locals.user.id', locals.user.id);
-				console.log('addedIds', addedIds);
+
 				addedIds.push(author);
 				const projectAuthorValues = [params.id, author, 1]; // Assuming authority_level is the correct column name
 				if (author != locals.user.id)

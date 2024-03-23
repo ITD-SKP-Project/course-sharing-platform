@@ -5,7 +5,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Input } from '$lib/components/ui/input';
 	import { Cross2 } from 'radix-icons-svelte';
-	import { Heart, Star } from 'lucide-svelte';
+	import { Star } from 'lucide-svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { derived, writable, type Writable } from 'svelte/store';
 	import { Badge } from '$lib/components/ui/badge';
@@ -18,8 +18,8 @@
 	export let data: PageData;
 	import { user as userStore } from '$lib/index';
 	const user: User | null = data.user || $userStore;
-
 	import { goto } from '$app/navigation';
+
 	let titleValue = '';
 	$: itSupport = ($filters.itSupport as boolean) || false;
 	$: programmer = ($filters.programmer as boolean) || false;
