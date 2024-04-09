@@ -230,6 +230,9 @@ async function createProject(
 
 		for (const [key, value] of files) {
 			const file = value as unknown as File;
+			if (file.size === 0) {
+				continue;
+			}
 
 			const fileQueryText =
 				'INSERT INTO project_files (name, project_id, file_type, pathname, size) VALUES ($1, $2, $3, $4, $5)';

@@ -31,9 +31,13 @@ export function toArrayOfStrings(data: Object | undefined, keyword: string): str
 }
 export function validateCustomFileArray(files: any): { success: boolean; errors?: any } {
 	let errors: any = {};
+	let index = 0;
 	//validate each file and pust the error to the errors object
 	files.forEach(([key, value]) => {
 		if (value.size == 0) {
+			if (index == 0) {
+				return;
+			}
 			errors[key] = 'Filen må ikke være tom';
 		}
 		if (value.size > 1_000_000_000) {

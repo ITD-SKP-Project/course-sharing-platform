@@ -31,23 +31,11 @@ export const load = (async ({ locals, url }) => {
 				  )
 				GROUP BY 
 				  projects.id
-				LIMIT 1;
+
 			`,
 			[locals.user?.id]
 		);
-		/*
-			LEFT JOIN 
-				  project_authors ON projects.id = project_authors.project_id
-				WHERE 
-				  (
-					projects.live = true
-					OR (projects.live = false AND project_authors.user_id = $2)
-				  )
-				  AND projects.id = $1
-				GROUP BY 
-				  projects.id
-				LIMIT 1;
-		*/
+
 		if (!projects) {
 			errorType = 404;
 			throw error(404, 'Der blev ikke fundet nogle projekter.');

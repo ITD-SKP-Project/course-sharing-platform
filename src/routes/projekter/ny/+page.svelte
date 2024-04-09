@@ -376,20 +376,19 @@
 
 					{#each numberOfFiles as index}
 						<div class="flex gap-2" id="files-{index}">
-							<Input type="file" name={`files-${index}`} required={index == 0} />
-							
-								<Button
-									size="icon"
-									class="aspect-square"
-									variant="destructive"
-									on:click={() => {
-										const target = document.querySelector(`#files-${index}`);
-										target?.remove();
-									}}
-								>
-									<X class="h-4 w-4" />
-								</Button>
-							
+							<Input type="file" name={`files-${index}`} />
+
+							<Button
+								size="icon"
+								class="aspect-square"
+								variant="destructive"
+								on:click={() => {
+									const target = document.querySelector(`#files-${index}`);
+									target?.remove();
+								}}
+							>
+								<X class="h-4 w-4" />
+							</Button>
 						</div>
 						<p class="text-sm text-muted-foreground">
 							Upload filer som er relateret til projektet. F.eks. kodefiler, billeder og dokumenter.
