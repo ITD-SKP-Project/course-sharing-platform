@@ -14,7 +14,7 @@
 
 import type { PageServerLoad } from './$types';
 import type { Project, ProjectFile, ProjectFileCreation, UserEssentials, User } from '$lib/types';
-import { error, redirect } from '@sveltejs/kit';
+import { error, redirect, fail } from '@sveltejs/kit';
 import { pool } from '$lib/server/database';
 import { ProjectSchema } from '$lib/zodSchemas';
 import { z } from 'zod';
@@ -26,7 +26,7 @@ export const load = (async ({ locals }) => {
 		throw redirect(307, '/login?redirect=/projekter/ny');
 	}
 	if (!locals.user.validated) {
-		throw error(403, 'Div konto er endu ikke blevet godkendt.');
+		throw redirect(307, '/signup/afventer-godkendelse');
 	}
 	const client = await pool.connect();
 	try {

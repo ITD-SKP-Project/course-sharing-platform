@@ -88,7 +88,7 @@
 <main class="px-8 pb-8 pt-2">
 	<div class="flex justify-between">
 		<h1 class="text-3xl font-bold">Projekter</h1>
-		{#if user?.authority_level && user.authority_level > 0}
+		{#if user?.authority_level && user.authority_level > 0 && user.validated}
 			<Button href="/projekter/ny">Opret nyt projekt</Button>
 		{/if}
 	</div>

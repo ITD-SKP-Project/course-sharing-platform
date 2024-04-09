@@ -13,8 +13,11 @@
 		<Separator class="my-4" />
 
 		<p class="font-bold"></p>
-
-		<div>
+		<a
+			class=" font-medium text-foreground/60"
+			href="mailto:kenn7575@edu.sde.dk?subject=Support - opgavebank">Support email</a
+		>
+		<div class="mt-2">
 			<ul class="flex gap-3 text-foreground/60">
 				<li>
 					<a target="_blank" href="https://github.com/kenn7575">
