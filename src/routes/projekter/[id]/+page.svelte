@@ -2,30 +2,24 @@
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
+	console.log('🚀 ~ data:', data);
+
 	export let form;
 
 	let project = data.project as Project;
-
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
 	import * as Collapsible from '$lib/components/ui/collapsible';
-
-	import { ChevronDown, ChevronUp, Loader2, Star } from 'lucide-svelte';
-
+	import Comments from './comments.svelte';
+	import { ChevronDown, ChevronUp, Loader2, Star, BadgeInfo } from 'lucide-svelte';
+	import { months, user } from '$lib/index';
 	import * as Card from '$lib/components/ui/card';
-
 	import * as Table from '$lib/components/ui/table';
 	import * as Alert from '$lib/components/ui/alert';
-	import { Heart, BadgeInfo } from 'lucide-svelte';
-
-	import { months } from '$lib/index';
 	import { Button } from '$lib/components/ui/button';
-
 	import DowdloadLink from '$lib/components/DowdloadLink.svelte';
-
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
-
 	let loadingLike = false;
 	const likeProject = async () => {
 		if (!data.user) {
@@ -173,7 +167,7 @@
 			class="sticky top-24 mb-4 mt-8 h-fit min-w-72 bg-primary text-primary-foreground lg:ml-auto lg:mt-0 lg:max-w-96"
 		>
 			<Card.Header class="pb-4">
-				{#if project?.authors?.some((author) => author.user_id === data.user?.id)}
+				{#if data.user?.validated && project?.authors?.some((author) => author.user_id === data.user?.id)}
 					<Button href="/projekter/{project.id}/rediger" class="mb-2" size="lg" variant="secondary"
 						>Rediger projekt</Button
 					>
@@ -243,5 +237,8 @@
 			</Card.Content>
 		</Card.Root>
 	</div>
+	{#if data.user}
+		<Comments user={data.user} {project} />
+	{/if}
 </main>
 <Toaster />

@@ -52,6 +52,7 @@ export interface Project extends ProjectCreation {
 	professions?: ProjectProfession[];
 	files?: ProjectFile[];
 	likedByUser?: boolean;
+	projectComments?: ProjectComment[];
 }
 export interface ProjectCreation {
 	title: string;
@@ -102,4 +103,23 @@ export interface VerificationToken {
 	user_id: number;
 	token: string;
 	type: string;
+}
+export interface ProjectLike {
+	id: number;
+	project_id: number;
+	user_id: number;
+	liked_at: string;
+}
+export interface ProjectComment {
+	id: number;
+	project_id: number;
+	user_id: number;
+	message: string;
+	created_at: string;
+	updated_at: string;
+	root_comment_id: number | null;
+	answer_comment_id: number | null;
+	firstname?: string;
+	lastname?: string;
+	authority_level?: number;
 }

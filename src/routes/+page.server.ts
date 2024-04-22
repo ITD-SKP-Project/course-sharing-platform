@@ -14,8 +14,22 @@ export const load = (async ({ locals, url }) => {
 	const client = await pool.connect();
 	let errorType: number | null = null;
 	try {
-		const { rows: projects } = await client.query<Project>(
-			`SELECT 
+		let queryParams: number | string[];
+		let query: string;
+		if (locals.user && locals.user?.authority_level && locals.user?.authority_level > 1) {
+			queryParams = [];
+			query = `SELECT 
+			projects.*,
+			CAST(COUNT(project_likes.id) AS INTEGER) AS likes
+		FROM 
+			projects
+		LEFT JOIN 
+			project_likes ON projects.id = project_likes.project_id
+		GROUP BY 
+			projects.id;`;
+		} else {
+			queryParams = [locals.user?.id];
+			query = `SELECT 
 			projects.*,
 			CAST(COUNT(project_likes.id) AS INTEGER) AS likes
 			FROM 
@@ -30,16 +44,16 @@ export const load = (async ({ locals, url }) => {
 					OR (projects.live = false AND project_authors.user_id = $1)
 				  )
 				GROUP BY 
-				  projects.id
+				  projects.id`;
+		}
 
-			`,
-			[locals.user?.id]
-		);
+		const { rows: projects } = await client.query<Project>(query, queryParams);
 
 		if (!projects) {
 			errorType = 404;
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
 		}
+
 		//try to find project_like from locals.user
 		if (locals.user) {
 			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
@@ -78,7 +92,7 @@ export const load = (async ({ locals, url }) => {
 		return { projects: projects, professions: professions };
 	} catch (err) {
 		// Handle or throw the error as per your application's error handling policy
-		console.error(JSON.stringify(error));
+		console.error(JSON.stringify(err), 'ERROR');
 		if (errorType === 404) {
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
 		} else throw error(500, 'Fejl: ' + JSON.stringify(err));

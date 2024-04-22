@@ -14,6 +14,19 @@ export const load = (async ({ locals, params }) => {
 	if (!locals.user) {
 		throw redirect(307, `/login?redirect=/projekter/${params.id}/rediger`);
 	}
+	if (locals.onboardingStatus != 'validated') {
+		throw error(
+			403,
+			'Du har ikke adgang til denne side.  Kontakt support hvis du mener dette er en fejl.'
+		);
+	}
+	if (locals.user.authority_level < 1) {
+		throw error(
+			403,
+			'Du har ikke adgang til denne side.  Kontakt support hvis du mener dette er en fejl.'
+		);
+	}
+
 	const client = await pool.connect();
 
 	const id = params.id;

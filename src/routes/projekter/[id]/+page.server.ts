@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import { pool } from '$lib/server/database';
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
 import { error } from '@sveltejs/kit';
+import { sortComments } from '$lib';
 
 export const load = (async ({ locals, params }) => {
 	const client = await pool.connect();
@@ -96,6 +97,27 @@ export const load = (async ({ locals, params }) => {
 				project.likedByUser = likes.some((like) => like.project_id === project.id);
 			});
 		}
+
+		//if user, get comments and the name of the user
+		if (locals.user) {
+			const { rows: comments } = await client.query(
+				`SELECT pc.*, u.firstname, u.lastname, u.authority_level
+				 FROM project_comments pc
+				 JOIN users u ON pc.user_id = u.id
+				 WHERE pc.project_id = $1
+				 ORDER BY pc.created_at DESC`, // Sorting by creation time in ascending order
+				[id]
+			);
+			//sort comments by time but place comments with an answer_comment_id at the same level as the comment they answer
+			comments.sort((a, b) => {
+				if (a.answer_comment_id === b.id) return -1;
+				if (b.answer_comment_id === a.id) return 1;
+				return a.created_at > b.created_at ? -1 : 1;
+			});
+
+			projects[0].projectComments = sortComments(comments);
+		}
+
 		//for each project, get authors and professions
 		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
 

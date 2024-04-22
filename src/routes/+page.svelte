@@ -16,6 +16,7 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;
+	console.log('🚀 ~ data:', data);
 	import { user as userStore } from '$lib/index';
 	const user: User | null = data.user || $userStore;
 	import { goto } from '$app/navigation';
@@ -247,7 +248,9 @@
 
 	<div class="g grid w-full gap-8">
 		{#each $filteredProjects as project}
-			<Card.Root class="flex flex-col justify-between">
+			<Card.Root
+				class={`flex flex-col justify-between ${project.live ? '' : 'opacity-50'} ${project?.authors?.some((author) => author.user_id === data.user?.id) ? 'border-4 border-primary' : ''}`}
+			>
 				<Card.Header>
 					<div class="flex justify-between">
 						<Card.Title>{project.title}</Card.Title>
@@ -288,7 +291,9 @@
 											<div
 												class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/75 text-primary-foreground"
 											>
-												{projectAuthor.user?.firstname[0]}{projectAuthor.user?.lastname[0]}
+												{projectAuthor.user?.firstname
+													? projectAuthor.user?.firstname[0]
+													: ''}{projectAuthor.user?.lastname ? projectAuthor.user?.lastname[0] : ''}
 											</div>
 											<span class="ml-2 font-medium"
 												>{projectAuthor.user?.firstname}
