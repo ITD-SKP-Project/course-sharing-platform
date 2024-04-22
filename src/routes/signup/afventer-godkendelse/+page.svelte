@@ -10,7 +10,7 @@
 	import { Pencil2 } from 'radix-icons-svelte';
 </script>
 
-<main class="flex flex-col items-center px-4 pt-2">
+<main class="mb-48 flex min-h-96 flex-col items-center px-4">
 	<h1 class="text-4xl font-bold">Afventer godkendelse</h1>
 	<p class="mt-2 text-foreground/80">
 		tak for din tilmelding. Du vil modtage en email når din konto er godkendt.
@@ -21,21 +21,14 @@
 		<Card.Root>
 			<Card.Header>
 				<Card.Title>Opret projekter</Card.Title>
-				<Card.Description
-					>Du kan allerede nu oprette projekter, men de vil kun være synlige for dig ind til din
-					konto er godkendt.</Card.Description
-				>
+				<Card.Description>Når du er godkendt kan du begynde at oprette projekter</Card.Description>
 			</Card.Header>
 			<Card.Content>
 				Tryk på
-				<Badge variant="secondary">
-					<Pencil2 class="h-4 w-4" />
-				</Badge>
-				øverst på menubaren, for at se dine projekter og oprette nye.
+				<Badge variant="secondary">Opret projekt</Badge>
+				øverst på hjem siden for at oprette et projekt.
 			</Card.Content>
-			<Card.Footer class="justify-end">
-				<Button href="/projekter/opret-projekt">Opret projekt</Button>
-			</Card.Footer>
+			<Card.Footer class="justify-end"></Card.Footer>
 		</Card.Root>
 		<Card.Root>
 			<Card.Header>
@@ -44,12 +37,9 @@
 				>
 			</Card.Header>
 			<Card.Content>
-				Forfatteren som har oprettet projektet, kan tilføje andre forfattere. Forfattere med admin
-				rettigheder kan herefter vælge hvilke rettigheder de nye forfattere skal have.
+				Forfatteren som har oprettet projektet, kan tilføje andre forfattere.
 			</Card.Content>
-			<Card.Footer class="justify-end">
-				<Button href="/projekter/opret-projekt">Opret projekt</Button>
-			</Card.Footer>
+			<Card.Footer class="justify-end"></Card.Footer>
 		</Card.Root>
 	</div>
 </main>

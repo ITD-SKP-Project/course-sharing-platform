@@ -13,3 +13,6 @@ vite.config.ts.timestamp-*
 .session.sql
 /static/files
 package-lock.json
+opgbank_priv_key
+# Sentry Config File
+.sentryclirc

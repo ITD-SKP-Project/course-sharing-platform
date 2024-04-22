@@ -1,14 +1,21 @@
+/* 
+	load function
+		if user is not logged in, redirect to login page
+		if user is not validated, throw error
+		query users from database and return them so they can be used in the form
+
+	default action
+		get form data from request
+		validate form data
+		if validation fails, return validation errors and form data
+		create project in database
+		return formData and project id
+*/
+
 import type { PageServerLoad } from './$types';
 import type { Project, ProjectFile, ProjectFileCreation, UserEssentials, User } from '$lib/types';
-// import { writeFileSync, existsSync, mkdirSync } from 'fs';
-import { error, redirect } from '@sveltejs/kit';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+import { error, redirect, fail } from '@sveltejs/kit';
+import { pool } from '$lib/server/database';
 import { ProjectSchema } from '$lib/zodSchemas';
 import { z } from 'zod';
 import { postFile } from '$lib/server/files';
@@ -17,6 +24,9 @@ import { postFile } from '$lib/server/files';
 export const load = (async ({ locals }) => {
 	if (!locals.user) {
 		throw redirect(307, '/login?redirect=/projekter/ny');
+	}
+	if (!locals.user.validated) {
+		throw redirect(307, '/signup/afventer-godkendelse');
 	}
 	const client = await pool.connect();
 	try {
@@ -40,7 +50,6 @@ export const load = (async ({ locals }) => {
 type ProjectSchemaType = z.infer<typeof ProjectSchema>;
 
 import { validateCustomArray } from '$lib/index';
-
 import { validateCustomFileArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';
 //action
@@ -127,7 +136,6 @@ export const actions = {
 
 			const project: Project = await createProject(
 				result,
-				pool,
 				locals.user,
 				filesArray,
 				userIds,
@@ -164,7 +172,6 @@ export const actions = {
 
 async function createProject(
 	Project: ProjectSchemaType,
-	pool: pkg.Pool,
 	user: User,
 	files: any,
 	authors: number[],
@@ -176,13 +183,14 @@ async function createProject(
 		await client.query('BEGIN'); // Start transaction
 
 		const projectQueryText =
-			'INSERT INTO projects (title, description, resources, subjects, notes) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+			'INSERT INTO projects (title, description, resources, subjects, notes, course_length) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
 		const projectValues = [
 			Project.title,
 			Project.description,
-			resources.join('[ENTER]'),
-			subjects.join('[ENTER]'),
-			Project.notes
+			resources.join('[ENTER]') || '',
+			subjects.join('[ENTER]') || '',
+			Project.notes,
+			Project.course_length
 		];
 		const { rows: projects } = await client.query<Project>(projectQueryText, projectValues);
 
@@ -194,10 +202,10 @@ async function createProject(
 			'INSERT INTO project_authors (project_id, user_id, authority_level) VALUES ($1, $2, $3)';
 		const projectAuthorValues = [projects[0].id, user.id, 3]; // Assuming authority_level is the correct column name
 		await client.query(projectAuthorQueryText, projectAuthorValues);
-		authors.forEach(async (author) => {
+		for (const author of authors) {
 			const projectAuthorValues = [projects[0].id, author, 1]; // Assuming authority_level is the correct column name
 			await client.query(projectAuthorQueryText, projectAuthorValues);
-		});
+		}
 
 		if (Project.it_supporter) {
 			const itSupporterQueryText =
@@ -220,8 +228,11 @@ async function createProject(
 			await client.query(infrastrukturQueryText, infrastrukturValues);
 		}
 
-		files.forEach(async ([key, value]) => {
+		for (const [key, value] of files) {
 			const file = value as unknown as File;
+			if (file.size === 0) {
+				continue;
+			}
 
 			const fileQueryText =
 				'INSERT INTO project_files (name, project_id, file_type, pathname, size) VALUES ($1, $2, $3, $4, $5)';
@@ -235,13 +246,14 @@ async function createProject(
 			await client.query(fileQueryText, fileValues);
 
 			await postFile(file, projects[0].id.toString());
-		});
+		}
 
 		await client.query('COMMIT'); // Commit the transaction
 
 		// Return success or the created project details
 		return projects[0];
 	} catch (err) {
+		console.error('Error creating project:', err);
 		await client.query('ROLLBACK'); // Rollback the transaction on error
 		throw error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {

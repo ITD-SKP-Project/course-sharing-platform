@@ -5,13 +5,9 @@ import { JWT_SECRET } from '$env/static/private';
 import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+import { user as userStore } from '$lib/index';
+
+import { pool } from '$lib/server/database';
 
 export const load = (async ({ locals, url }) => {
 	if (locals.onboardingStatus !== 'none') {
@@ -85,6 +81,7 @@ export const actions = {
 				secure: true,
 				sameSite: 'strict'
 			});
+			userStore.set(user);
 
 			// Determine redirect logic
 		} catch (err: any) {

@@ -4,7 +4,6 @@
 	export let form: ActionData;
 	export let data: PageData;
 
-	$: console.log(form);
 	$: if (form?.projectId) {
 		goto(`/projekter/${form.projectId}`);
 	}
@@ -109,6 +108,21 @@
 						<p class="text-red-500">{form?.validationErrors?.description}</p>
 					{/if}
 				</div>
+				<!-- ? course length -->
+				<div class="flex w-full flex-col gap-1.5">
+					<Label class="text-lg" for="description">Tidforbrug</Label>
+					<Input
+						name="course_length"
+						value={form?.formData?.course_length}
+						id="course_length"
+						required={true}
+						placeholder="f.eks. 2 Uger"
+					/>
+					<p class="text-sm text-muted-foreground">Hvor lang tid tager det at lave projektet?</p>
+					{#if form?.validationErrors?.course_length}
+						<p class="text-red-500">{form?.validationErrors?.course_length}</p>
+					{/if}
+				</div>
 				<!-- ? notes -->
 				<div class="flex w-full flex-col gap-1.5">
 					<Label for="notes" class="text-lg">Underviser notater</Label>
@@ -136,7 +150,6 @@
 								<input
 									on:input={(e) => {
 										itSupoter = e.target?.checked ? true : false;
-										console.log(itSupoter);
 									}}
 									type="checkbox"
 									name="it_supporter"
@@ -363,20 +376,19 @@
 
 					{#each numberOfFiles as index}
 						<div class="flex gap-2" id="files-{index}">
-							<Input type="file" name={`files-${index}`} required={index == 0} />
-							{#if index != 0}
-								<Button
-									size="icon"
-									class="aspect-square"
-									variant="destructive"
-									on:click={() => {
-										const target = document.querySelector(`#files-${index}`);
-										target?.remove();
-									}}
-								>
-									<X class="h-4 w-4" />
-								</Button>
-							{/if}
+							<Input type="file" name={`files-${index}`} />
+
+							<Button
+								size="icon"
+								class="aspect-square"
+								variant="destructive"
+								on:click={() => {
+									const target = document.querySelector(`#files-${index}`);
+									target?.remove();
+								}}
+							>
+								<X class="h-4 w-4" />
+							</Button>
 						</div>
 						<p class="text-sm text-muted-foreground">
 							Upload filer som er relateret til projektet. F.eks. kodefiler, billeder og dokumenter.

@@ -1,13 +1,8 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
 
 export const load = (async ({ locals, url }) => {
 	if (locals.onboardingStatus !== 'needs-account-info') {
@@ -63,7 +58,7 @@ export const actions = {
 
 			// Insert into pending_users
 			const insertPendingUserQuery = 'INSERT INTO pending_users (user_id, context) VALUES ($1, $2)';
-			await client.query(insertPendingUserQuery, [result.userId, result.context]);
+			await client.query(insertPendingUserQuery, [locals.user.id, result.context]);
 
 			// Commit transaction
 			await client.query('COMMIT');

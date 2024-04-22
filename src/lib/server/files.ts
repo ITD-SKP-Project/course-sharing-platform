@@ -34,7 +34,7 @@ export async function postFile(file: File, subFolder?: string) {
 //delete file
 export async function deleteFile(path: string) {
 	try {
-		const dirPath = resolve('uploads', path);
+		const dirPath = resolve('/home/opgbank/uploads', path);
 
 		if (!fs.existsSync(dirPath)) {
 			return {

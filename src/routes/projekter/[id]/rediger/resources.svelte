@@ -6,6 +6,7 @@
 
 	import { ProjectEditMode } from '$lib/types';
 	import { toArrayOfStrings } from '$lib/index';
+	import * as Tooltip from '$lib/components/ui/tooltip';
 
 	import { Save, Trash, Pen, X, Plus, ChevronDown, ChevronUp } from 'lucide-svelte';
 	import { Label } from '$lib/components/ui/label';
@@ -15,8 +16,8 @@
 	import { enhance } from '$app/forms';
 	import { Input } from '$lib/components/ui/input';
 
-	let subjectsArray: string[] = project.subjects.split('[ENTER]') ?? [''];
-	const subjectsArrayBackup = subjectsArray;
+	let resourcesArray: string[] = project.resources.split('[ENTER]') ?? [''];
+	const resourcesArrayBackup = resourcesArray;
 
 	let reRender = false;
 
@@ -25,9 +26,9 @@
 </script>
 
 <div class="mt-16">
-	{#if ProjectEditMode.subjects === FieldToEdit}
+	{#if ProjectEditMode.resources === FieldToEdit}
 		<form
-			action="?/updateSubjects"
+			action="?/updateResources"
 			method="POST"
 			use:enhance={() => {
 				loading = true;
@@ -39,13 +40,13 @@
 		>
 			<div class="flex flex-col gap-2">
 				<div class="mt-2 flex items-center gap-2">
-					<Label for="subjects" class="text-lg">Fagområder</Label>
+					<Label for="resources" class="text-lg">Ressourcer</Label>
 					<Button
 						size="icon"
 						variant="destructive"
 						on:click={() => {
 							FieldToEdit = ProjectEditMode.none;
-							subjectsArray = subjectsArrayBackup;
+							resourcesArray = resourcesArrayBackup;
 						}}
 					>
 						<Trash class="h-5 w-5" />
@@ -59,15 +60,15 @@
 					</Button>
 				</div>
 				{#key form || reRender}
-					{#each subjectsArray as item, index}
+					{#each resourcesArray as item, index}
 						<div class="flex gap-2">
 							<Input
 								on:input={(e) => {
-									subjectsArray[index] = e.target?.value;
+									resourcesArray[index] = e.target?.value;
 								}}
 								type="text"
-								name="subjects-{index}"
-								value={subjectsArray[index] ?? form?.formData[`subjects-${index}`] ?? ''}
+								name="resources-{index}"
+								value={resourcesArray[index] ?? form?.formData[`resources-${index}`] ?? ''}
 								placeholder="Router 2901"
 								required={index == 0}
 							/>
@@ -77,8 +78,8 @@
 									class="aspect-square"
 									variant="destructive"
 									on:click={() => {
-										subjectsArray = subjectsArray.toSpliced(index, 1); // Remove the item at the specified index
-										subjectsArray = subjectsArray;
+										resourcesArray = resourcesArray.toSpliced(index, 1); // Remove the item at the specified index
+										resourcesArray = resourcesArray;
 										reRender = !reRender;
 									}}
 								>
@@ -86,70 +87,84 @@
 								</Button>
 							{/if}
 						</div>
+						{#if form?.validationErrors?.[`resources-${index}`]}
+							<p class="text-red-500">{form?.validationErrors?.[`resources-${index}`]}</p>
+						{/if}
 					{/each}
+					{#if form?.validationErrors?.[`resources`]}
+						<p class="text-red-500">{form?.validationErrors?.[`resources`]}</p>
+					{/if}
 				{/key}
 
 				<Button
 					class=" w-fit items-center justify-start"
 					type="button"
 					on:click={() => {
-						subjectsArray.push('');
-						subjectsArray = [...subjectsArray];
+						resourcesArray.push('');
+						resourcesArray = [...resourcesArray];
 					}}
 				>
 					<Plus class="mr-1.5 h-4 w-4" />
-					Tilføj fagområde
+					Tilføj ressourcer
 				</Button>
 			</div>
 		</form>
-	{:else if project.subjects}
+	{:else}
 		<Collapsible.Root class="w-fit min-w-52">
 			<div class="flex items-center justify-between space-x-4">
-				<h2 class="mb-1 text-xl font-bold">Fagområder</h2>
-				{#key form}
-					{#if toArrayOfStrings(form?.formData, 'subjects-').length > 1 || project.subjects.split('[ENTER]').length > 1}
-						<Collapsible.Trigger asChild let:builder>
-							<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
-								{#if builder['data-state'] === 'open'}
-									<ChevronDown class="h-4 w-4 rotate-180 transform" />
-								{:else}
-									<ChevronUp class="h-4 w-4 rotate-180 transform" />
-								{/if}
-								<span class="sr-only">Toggle</span>
-							</Button>
-						</Collapsible.Trigger>
-					{/if}
-				{/key}
+				<div class="flex items-center gap-2">
+					<h2 class="mb-1 text-xl font-bold">Ressourcer</h2>
+					<Button
+						size="icon"
+						variant="ghost"
+						on:click={() => {
+							FieldToEdit = ProjectEditMode.resources;
+						}}
+					>
+						<Pen class="h-5 w-5" />
+					</Button>
+				</div>
+
+				{#if toArrayOfStrings(form?.formData, 'resources-').length > 1 || project.resources.split('[ENTER]').length > 1}
+					<Collapsible.Trigger asChild let:builder>
+						<Button builders={[builder]} variant="ghost" size="sm" class="w-9 p-0">
+							{#if builder['data-state'] === 'open'}
+								<ChevronDown class="h-4 w-4 rotate-180 transform" />
+							{:else}
+								<ChevronUp class="h-4 w-4 rotate-180 transform" />
+							{/if}
+							<span class="sr-only">Toggle</span>
+						</Button>
+					</Collapsible.Trigger>
+				{:else}
+					<p class="text-muted">Dette projekt har ingen ressourcer.</p>
+				{/if}
 			</div>
 			<div class="rounded-md border px-4 py-3 font-mono text-sm">
-				{toArrayOfStrings(form?.formData, 'subjects-')[0] || project.subjects.split('[ENTER]')[0]}
+				{#if toArrayOfStrings(form?.formData, 'resources-').length > 1 || project.resources.split('[ENTER]').length > 1}
+					{toArrayOfStrings(form?.formData, 'resources-')[0] ||
+						project.resources.split('[ENTER]')[0]}
+				{:else}
+					<div class="">Dette projekt har ingen ressourcer</div>
+				{/if}
 			</div>
 			<Collapsible.Content class="space-y-2">
 				{#key form}
-					{#if form?.successMessage && toArrayOfStrings(form?.formData, 'subjects-').length > 0}
-						{#each toArrayOfStrings(form?.formData, 'subjects-').splice(1) as resource, index}
+					{#if form?.successMessage && toArrayOfStrings(form?.formData, 'resources-').length > 0}
+						{#each toArrayOfStrings(form?.formData, 'resources-').splice(1) as resource, index}
 							<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
 								{resource}
 							</div>
 						{/each}
 					{:else}
-						{#each project.subjects.split('[ENTER]').splice(1) as subject, index}
+						{#each project.resources.split('[ENTER]').splice(1) as resource, index}
 							<div class="mt-2 rounded-md border px-4 py-3 font-mono text-sm">
-								{subject}
+								{resource}
 							</div>
 						{/each}
 					{/if}
 				{/key}
 			</Collapsible.Content>
 		</Collapsible.Root>
-		<Button
-			size="icon"
-			variant="ghost"
-			on:click={() => {
-				FieldToEdit = ProjectEditMode.subjects;
-			}}
-		>
-			<Pen class="h-5 w-5" />
-		</Button>
 	{/if}
 </div>

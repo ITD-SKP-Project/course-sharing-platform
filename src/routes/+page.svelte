@@ -5,7 +5,7 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Input } from '$lib/components/ui/input';
 	import { Cross2 } from 'radix-icons-svelte';
-	import { Heart, Star } from 'lucide-svelte';
+	import { Star } from 'lucide-svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { derived, writable, type Writable } from 'svelte/store';
 	import { Badge } from '$lib/components/ui/badge';
@@ -16,11 +16,11 @@
 	import type { PageData } from './$types';
 	import { page } from '$app/stores';
 	export let data: PageData;
-	console.log(data);
+	console.log('🚀 ~ data:', data);
 	import { user as userStore } from '$lib/index';
 	const user: User | null = data.user || $userStore;
-
 	import { goto } from '$app/navigation';
+
 	let titleValue = '';
 	$: itSupport = ($filters.itSupport as boolean) || false;
 	$: programmer = ($filters.programmer as boolean) || false;
@@ -89,7 +89,7 @@
 <main class="px-8 pb-8 pt-2">
 	<div class="flex justify-between">
 		<h1 class="text-3xl font-bold">Projekter</h1>
-		{#if user?.authority_level && user.authority_level > 0}
+		{#if user?.authority_level && user.authority_level > 0 && user.validated}
 			<Button href="/projekter/ny">Opret nyt projekt</Button>
 		{/if}
 	</div>
@@ -248,7 +248,9 @@
 
 	<div class="g grid w-full gap-8">
 		{#each $filteredProjects as project}
-			<Card.Root class="flex flex-col justify-between">
+			<Card.Root
+				class={`flex flex-col justify-between ${project.live ? '' : 'opacity-50'} ${project?.authors?.some((author) => author.user_id === data.user?.id) ? 'border-4 border-primary' : ''}`}
+			>
 				<Card.Header>
 					<div class="flex justify-between">
 						<Card.Title>{project.title}</Card.Title>
@@ -289,7 +291,9 @@
 											<div
 												class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/75 text-primary-foreground"
 											>
-												{projectAuthor.user?.firstname[0]}{projectAuthor.user?.lastname[0]}
+												{projectAuthor.user?.firstname
+													? projectAuthor.user?.firstname[0]
+													: ''}{projectAuthor.user?.lastname ? projectAuthor.user?.lastname[0] : ''}
 											</div>
 											<span class="ml-2 font-medium"
 												>{projectAuthor.user?.firstname}

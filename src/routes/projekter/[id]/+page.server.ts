@@ -1,22 +1,20 @@
 import type { PageServerLoad } from './$types';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
-import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
-import { error, json } from '@sveltejs/kit';
 
-export const load = (async ({ url, locals, params }) => {
+import { pool } from '$lib/server/database';
+import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
+import { error } from '@sveltejs/kit';
+import { sortComments } from '$lib';
+
+export const load = (async ({ locals, params }) => {
 	const client = await pool.connect();
 
 	const id = params.id;
 	if (!id) throw error(400, 'Der blev ikke givet et id.');
-	if (typeof +id != 'number') throw error(404, 'Der blev ikke fundet nogle projekter.');
+	//check if id is a number
+	if (isNaN(+id)) throw error(400, "Id'et skal være et tal.");
 
 	//get project
+	let errorType: number | null = null;
 	try {
 		const { rows: projects } = await client.query<Project>(
 			locals.user
@@ -28,9 +26,14 @@ export const load = (async ({ url, locals, params }) => {
 				  projects
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
+				 LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
 				WHERE 
-				  projects.id = ${id}
-				  AND projects.live = true
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $2)
+				  )
+				  AND projects.id = $1
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
@@ -52,17 +55,39 @@ export const load = (async ({ url, locals, params }) => {
 				  projects
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
+				LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
 				WHERE 
-				  projects.id = ${id}
-				  AND projects.live = true
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $2)
+				  )
+				  AND projects.id = $1
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
-			  `
+			  `,
+			[id, locals.user?.id]
 		);
 
-		if (!projects || projects.length == 0)
+		/*
+			LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
+				WHERE 
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $1)
+				  )
+				  AND projects.id = $1
+				GROUP BY 
+				  projects.id
+				LIMIT 1;
+		*/
+
+		if (!projects || projects.length == 0) {
+			errorType = 404;
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		}
 
 		if (locals.user) {
 			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
@@ -72,6 +97,27 @@ export const load = (async ({ url, locals, params }) => {
 				project.likedByUser = likes.some((like) => like.project_id === project.id);
 			});
 		}
+
+		//if user, get comments and the name of the user
+		if (locals.user) {
+			const { rows: comments } = await client.query(
+				`SELECT pc.*, u.firstname, u.lastname, u.authority_level
+				 FROM project_comments pc
+				 JOIN users u ON pc.user_id = u.id
+				 WHERE pc.project_id = $1
+				 ORDER BY pc.created_at DESC`, // Sorting by creation time in ascending order
+				[id]
+			);
+			//sort comments by time but place comments with an answer_comment_id at the same level as the comment they answer
+			comments.sort((a, b) => {
+				if (a.answer_comment_id === b.id) return -1;
+				if (b.answer_comment_id === a.id) return 1;
+				return a.created_at > b.created_at ? -1 : 1;
+			});
+
+			projects[0].projectComments = sortComments(comments);
+		}
+
 		//for each project, get authors and professions
 		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
 
@@ -103,7 +149,9 @@ export const load = (async ({ url, locals, params }) => {
 		return { project: project };
 	} catch (err) {
 		console.error(err);
-		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		if (errorType === 404) {
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		} else throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();
 	}

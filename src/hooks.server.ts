@@ -1,17 +1,21 @@
+import { sequence } from '@sveltejs/kit/hooks';
+import * as Sentry from '@sentry/sveltekit';
 import jwt from 'jsonwebtoken';
-import { sql } from '@vercel/postgres';
 import { JWT_SECRET } from '$env/static/private';
 import type { Handle } from '@sveltejs/kit';
 import type { User } from '$lib/types';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
 
-export const handle = (async ({ event, resolve }) => {
+import { pool } from '$lib/server/database';
+
+//import env development or production
+if (import.meta.env.PROD) {
+	Sentry.init({
+		dsn: 'https://bd0b656d83362f80416a093a00c42a41@o4506914465447936.ingest.us.sentry.io/4506914478358528',
+		tracesSampleRate: 1
+	});
+}
+
+export const handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }) => {
 	const sessionCookie = event.cookies.get('token');
 	if (!sessionCookie) {
 		event.locals.user = null;
@@ -23,6 +27,7 @@ export const handle = (async ({ event, resolve }) => {
 
 	jwt.verify(sessionCookie, JWT_SECRET, (err, decoded) => {
 		if (err || !decoded) {
+			console.warn('Error decoding token:', err);
 			event.locals.user = null;
 
 			event.cookies.delete('token', {
@@ -40,15 +45,20 @@ export const handle = (async ({ event, resolve }) => {
 	try {
 		const queryText = 'SELECT * from users where id = $1 LIMIT 1';
 		const { rows: users } = await client.query<User>(queryText, [decodedUser.id]);
+
 		client.release();
 
 		if (!users || users.length <= 0) {
+			event.cookies.delete('token', {
+				path: '/'
+			});
 			event.locals.onboardingStatus = 'none';
 			event.locals.onboardingRedirectLocation = '/login';
 			return resolve(event);
 		}
 
 		const user = users[0] as User;
+
 		event.locals.user = user;
 
 		if (!user.email_verified) {
@@ -76,4 +86,6 @@ export const handle = (async ({ event, resolve }) => {
 	}
 
 	return resolve(event);
-}) satisfies Handle;
+}) satisfies Handle);
+
+export const handleError = Sentry.handleErrorWithSentry();

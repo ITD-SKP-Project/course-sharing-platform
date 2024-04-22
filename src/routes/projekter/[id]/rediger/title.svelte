@@ -45,21 +45,26 @@
 			{#if form?.validationErrors?.title}
 				<p class="text-red-500">{form?.validationErrors?.title}</p>
 			{/if}
-			<SaveOrDisgardButtons {FieldToEdit} />
+			<SaveOrDisgardButtons bind:FieldToEdit />
 		</form>
 	{:else}
 		<div class="flex flex-col">
-			<h2 class="mb-1 text-xl font-bold">Title</h2>
-			<h1 class="text-4xl font-semibold">{form?.formData?.title ?? project.title}</h1>
+			<div class="flex items-center gap-2">
+				<h2 class="mb-1 text-xl font-bold">Title</h2>
+				<Button
+					size="icon"
+					variant="ghost"
+					on:click={() => {
+						FieldToEdit = ProjectEditMode.title;
+					}}
+				>
+					<Pen class="h-5 w-5" />
+				</Button>
+			</div>
+
+			<p class="text max-w-[40rem] font-light leading-7">
+				{form?.formData?.title ?? project.title}
+			</p>
 		</div>
-		<Button
-			size="icon"
-			variant="ghost"
-			on:click={() => {
-				FieldToEdit = ProjectEditMode.title;
-			}}
-		>
-			<Pen class="h-5 w-5" />
-		</Button>
 	{/if}
 </div>

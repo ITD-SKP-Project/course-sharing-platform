@@ -3,12 +3,13 @@ import type { RequestHandler } from './$types';
 import fs from 'fs';
 import { resolve } from 'path';
 import { createReadStream } from 'fs';
+// import { PATH_TO_FILES } from '$env/static/private';
 
 export const POST: RequestHandler = async ({ request }) => {
 	// get the last part of the url
 	const { pathName } = await request.json();
 
-	let filePath = resolve('uploads', pathName);
+	let filePath = resolve('/home/opgbank/uploads', pathName);
 
 	if (!fs.existsSync(filePath)) {
 		throw error(404, { message: `File "${pathName}" not found` });

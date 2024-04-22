@@ -9,13 +9,8 @@ import { Resend } from 'resend';
 import * as randombytes from 'randombytes';
 import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
 
 const registerSchema = z.object({
 	email: z
@@ -107,7 +102,7 @@ export const actions = {
 		if (process.env.NODE_ENV === 'development') {
 			domain = 'http://localhost:5173';
 		} else {
-			domain = 'https://course-sharing-platform.vercel.app';
+			domain = 'https://opgavebank.webhotel-itskp.dk';
 		}
 
 		const resend = new Resend(RESEND_API_KEY);

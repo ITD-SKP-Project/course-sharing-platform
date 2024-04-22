@@ -2,30 +2,24 @@
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
+	console.log('🚀 ~ data:', data);
+
 	export let form;
-	$: console.log(form, 'form');
-	$: console.log(data, 'data');
+
 	let project = data.project as Project;
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
 	import * as Collapsible from '$lib/components/ui/collapsible';
-
-	import { ChevronDown, ChevronUp, Loader2, Star } from 'lucide-svelte';
-
+	import Comments from './comments.svelte';
+	import { ChevronDown, ChevronUp, Loader2, Star, BadgeInfo } from 'lucide-svelte';
+	import { months, user } from '$lib/index';
 	import * as Card from '$lib/components/ui/card';
-
 	import * as Table from '$lib/components/ui/table';
 	import * as Alert from '$lib/components/ui/alert';
-	import { Heart, BadgeInfo } from 'lucide-svelte';
-
-	import { months } from '$lib/index';
 	import { Button } from '$lib/components/ui/button';
-
 	import DowdloadLink from '$lib/components/DowdloadLink.svelte';
-
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
-
 	let loadingLike = false;
 	const likeProject = async () => {
 		if (!data.user) {
@@ -35,7 +29,7 @@
 			return;
 		}
 		loadingLike = true;
-		console.log(`/api/projects/${project.id}/like`);
+
 		const response = await fetch(`/api/projects/${project.id}/like`, {
 			method: 'POST',
 			headers: {
@@ -46,7 +40,7 @@
 
 		if (response.ok) {
 			const data = await response.json();
-			console.log('🚀 ~ likeProject ~ data:', data);
+
 			project.likedByUser = data.liked;
 			project.likes = data.likes ?? 0;
 		}
@@ -78,15 +72,7 @@
 			</div>
 			<h1 class="mb-8 text-4xl font-semibold">{project.title}</h1>
 			<p class="text max-w-[40rem] font-light leading-7">
-				{project.description} Lorem ipsum dolor sit amet consectetur adipisicing elit. Quos expedita
-				earum a dolorum corrupti cupiditate commodi facilis similique voluptates nihil corporis laborum
-				officiis reprehenderit id labore neque pariatur sint voluptatem molestias quis magni asperiores,
-				reiciendis dolor! Laudantium, aspernatur tenetur? Deleniti exercitationem iste incidunt sit non,
-				numquam itaque qui quod suscipit quasi veniam sint deserunt distinctio earum necessitatibus,
-				facilis officiis assumenda dolores. Porro quo voluptatem corrupti vero commodi provident ipsum
-				optio eaque natus perspiciatis et perferendis, ea iure ad ullam doloremque sapiente odio! Necessitatibus
-				animi illum numquam aut, nam quisquam labore nihil placeat sint. Perspiciatis quibusdam, nobis
-				obcaecati illo expedita in.
+				{project.description}
 			</p>
 			{#if project.notes}
 				<h2 class="mb-2 mt-16 text-xl font-bold">Underviser Notater</h2>
@@ -178,18 +164,20 @@
 
 		<!-- ? infobox -->
 		<Card.Root
-			class="sticky top-24 mb-4 mt-8 h-fit min-w-72 border-primary lg:ml-auto lg:mt-0 lg:max-w-96"
+			class="sticky top-24 mb-4 mt-8 h-fit min-w-72 bg-primary text-primary-foreground lg:ml-auto lg:mt-0 lg:max-w-96"
 		>
 			<Card.Header class="pb-4">
-				{#if project?.authors?.some((author) => author.user_id === data.user?.id)}
-					<Button class="mb-2" size="lg">Rediger projekt</Button>
+				{#if data.user?.validated && project?.authors?.some((author) => author.user_id === data.user?.id)}
+					<Button href="/projekter/{project.id}/rediger" class="mb-2" size="lg" variant="secondary"
+						>Rediger projekt</Button
+					>
 				{/if}
 				<Card.Title>Info</Card.Title>
 			</Card.Header>
 			<Card.Content>
 				<div class="flex flex-col gap-4">
 					<div class="flex flex-col gap-1">
-						<span class="text-sm text-muted-foreground">Oprettet</span>
+						<span class="text-sm font-semibold text-primary-foreground/75">Oprettet</span>
 						<span class="text-sm"
 							>{created_at.getDay()}.
 							{months[created_at.getMonth()]}
@@ -197,7 +185,7 @@
 						>
 					</div>
 					<div class="flex flex-col gap-1">
-						<span class="text-sm text-muted-foreground">Senest opdateret</span>
+						<span class="text-sm font-semibold text-primary-foreground/75">Senest opdateret</span>
 						<span class="text-sm"
 							>{updated_at.getDay()}.
 							{months[updated_at.getMonth()]}
@@ -210,7 +198,9 @@
 				<Card.Title class="flex items-center gap-2">Forfattere</Card.Title>
 			</Card.Header>
 			<Card.Content>
-				<span class="text-sm text-muted-foreground">Dette project er lavet af</span>
+				<span class="text-sm font-semibold text-primary-foreground/75"
+					>Dette project er lavet af</span
+				>
 				<div
 					id="authors"
 					class="p.2 mt-2 flex w-full flex-col flex-wrap gap-x-2 gap-y-2 rounded-md border-secondary"
@@ -221,7 +211,7 @@
 								<a href="/?forfatter={author.user.firstname}-{author.user.lastname}">
 									<div class="flex min-w-max items-center gap-2">
 										<div
-											class="flex h-8 w-8 items-center justify-center rounded-full bg-primary/75 text-primary-foreground"
+											class="flex h-8 w-8 items-center justify-center rounded-full bg-card/75 text-card-foreground"
 										>
 											{author.user.firstname ? author.user.firstname[0] : ''}{author.user.lastname
 												? author.user.lastname[0]
@@ -237,13 +227,9 @@
 						{/each}
 					{/if}
 				</div>
-			</Card.Content>
 
-			<Card.Header class="pb-4">
-				<Card.Title>Projekt links</Card.Title>
-			</Card.Header>
-			<Card.Content>
-				{#if project.files}
+				{#if project.files && project.files.length > 0}
+					<Card.Title class="mt-8">Projekt links</Card.Title>
 					{#each project.files as file}
 						<DowdloadLink pathName={`${project.id}/${file.name}`}>{file.name}</DowdloadLink>
 					{/each}
@@ -251,5 +237,8 @@
 			</Card.Content>
 		</Card.Root>
 	</div>
+	{#if data.user}
+		<Comments user={data.user} {project} />
+	{/if}
 </main>
 <Toaster />

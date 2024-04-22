@@ -25,20 +25,16 @@ jobs:
       uses: SpicyPizza/create-envfile@v2.0
       with:
         #This actually even though its thinks it wont
-        envkey_POSTGRES_URL: ${{ secrets.POSTGRES_URL }}
-        envkey_POSTGRES_URL_NON_POOLING: ${{ secrets.POSTGRES_URL_NON_POOLING }}
-        envkey_POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-        envkey_POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        envkey_POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
-        envkey_POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
+        envkey_SOP_POSTGRES_DATABASE: ${{ secrets.SOP_POSTGRES_DATABASE }}
+        envkey_SOP_POSTGRES_PASSWORD: ${{ secrets.SOP_POSTGRES_PASSWORD }}
+        envkey_SOP_POSTGRES_HOST: ${{ secrets.SOP_POSTGRES_HOST }}
+        envkey_SOP_POSTGRES_USER: ${{ secrets.SOP_POSTGRES_USER }}
         envkey_JWT_SECRET: ${{ secrets.JWT_SECRET }}
         envkey_BCRYPT_SALT_ROUNDS: ${{ secrets.BCRYPT_SALT_ROUNDS }}
         envkey_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        envkey_BODY_SIZE_LIMIT: ${{ secrets.BODY_SIZE_LIMIT }}
     
     - run: npm i
     - run: npm run build
-    - run: ls -lah .svelte-kit
     
     - name: Stop running deployment
       continue-on-error: true
@@ -49,7 +45,7 @@ jobs:
         key: ${{ secrets.NODE_SERVER_SSH_KEY }}
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
-          pm2 delete index
+          killall node
 
     - name: Delete old deployment
       uses: appleboy/ssh-action@master
@@ -105,15 +101,15 @@ jobs:
         target: "/home/opgbank/build" # Update this with the target path on your server
         strip_components: 0
 
-    - name: symlink data folder
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
-        username: ${{ secrets.PRODUCTION_SERVER_USER }}
-        key: ${{ secrets.NODE_SERVER_SSH_KEY }}
-        port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
-        script: |
-          ln -s /home/opgbank/data/ /home/opgbank/uploads
+    # - name: symlink data folder
+    #   uses: appleboy/ssh-action@master
+    #   with:
+    #     host: ${{ secrets.PRODUCTION_SERVER_HOST_NAME }}
+    #     username: ${{ secrets.PRODUCTION_SERVER_USER }}
+    #     key: ${{ secrets.NODE_SERVER_SSH_KEY }}
+    #     port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
+    #     script: |
+    #       ln -s /home/opgbank/data/ uploads
 
     - name: Copy env file
       uses: appleboy/ssh-action@master
@@ -135,5 +131,6 @@ jobs:
         port:  ${{ secrets.PRODUCTION_SERVER_PORT }}
         script: |
           cd /home/opgbank/build
-          pm2 start index.js
+          nohup node -r dotenv/config index.js > output.log 2>&1 &  
+
   

@@ -42,23 +42,25 @@
 					class="w-full"
 				/>
 			</div>
-			<SaveOrDisgardButtons {FieldToEdit} />
+			<SaveOrDisgardButtons bind:FieldToEdit />
 		</form>
 	{:else}
 		<div class="flex flex-col">
-			<h2 class="mb-1 text-xl font-bold">Beskrivelse</h2>
+			<div class="flex items-center gap-2">
+				<h2 class="mb-1 text-xl font-bold">Beskrivelse</h2>
+				<Button
+					size="icon"
+					variant="ghost"
+					on:click={() => {
+						FieldToEdit = ProjectEditMode.description;
+					}}
+				>
+					<Pen class="h-5 w-5" />
+				</Button>
+			</div>
 			<p class="text max-w-[40rem] font-light leading-7">
 				{form?.formData?.description || project.description}
 			</p>
 		</div>
-		<Button
-			size="icon"
-			variant="ghost"
-			on:click={() => {
-				FieldToEdit = ProjectEditMode.description;
-			}}
-		>
-			<Pen class="h-5 w-5" />
-		</Button>
 	{/if}
 </div>

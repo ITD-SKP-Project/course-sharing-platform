@@ -1,17 +1,15 @@
-import type { PageServerLoad } from './$types';
+import type { PageServerLoad } from '../$types';
 import { error, redirect } from '@sveltejs/kit';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
+
 import type { User, UserExludingPassword } from '$lib/types';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+import { pool } from '$lib/server/database';
 import { z } from 'zod';
 export const load = (async ({ params, locals }) => {
-	if (!locals.user || locals.user.authority_level < 3) {
-		throw error(401, 'Du har ikke adgang til denne side');
+	if (!locals.user) {
+		throw error(401, 'Du skal være logget ind for at se denne side.');
+	}
+	if (locals.user.authority_level < 3) {
+		throw error(403, 'Du har ikke adgang til at se denne side.');
 	}
 
 	let user: UserExludingPassword | null;
@@ -36,16 +34,16 @@ export const load = (async ({ params, locals }) => {
 		client.release();
 	}
 	if (!user) {
-		throw error(404, 'Brugeren blev ikke fundet');
+		throw error(404, 'Brugeren blev ikke fundet.');
 	}
 	if (user.id === locals.user.id) {
 		throw error(
 			403,
-			'Du kan ikke redigere din egen bruger her. Gå til din konto for at redigere din egen bruger'
+			'Du kan ikke redigere din egen bruger her. Gå til din konto for at redigere din egen bruger.'
 		);
 	}
 	if (user.authority_level && user.authority_level >= locals.user.authority_level) {
-		throw error(403, 'Du har ikke adgang til at redigere denne bruger');
+		throw error(403, 'Du har ikke adgang til at redigere denne bruger.');
 	}
 	return { userToEdit: user };
 }) satisfies PageServerLoad;
@@ -59,7 +57,8 @@ const updateUserSchema = z.object({
 export const actions = {
 	default: async ({
 		request,
-		locals
+		locals,
+		params
 	}): Promise<{
 		formData: any;
 		validationErrors?: any;
@@ -67,8 +66,6 @@ export const actions = {
 		successMessage?: string;
 	} | void> => {
 		const formData = Object.fromEntries(await request.formData());
-
-		console.log('formData:', formData);
 
 		//validate form
 		let user: User | null = locals.user;
@@ -81,6 +78,7 @@ export const actions = {
 			result = updateUserSchema.parse(formData);
 		} catch (err: any) {
 			const { fieldErrors: errors } = err.flatten();
+			console.error('errors', errors);
 			return {
 				formData: formData,
 				validationErrors: errors
@@ -97,8 +95,8 @@ export const actions = {
 		const client = await pool.connect();
 		try {
 			const queryText =
-				'UPDATE users SET firstname = $1, lastnasme = $2, authority_level = $3 auth WHERE id = $4';
-			const values = [result.firstname, result.lastname, result.authority_level, user.id];
+				'UPDATE users SET firstname = $1, lastname = $2, authority_level = $3 WHERE id = $4';
+			const values = [result.firstname, result.lastname, result.authority_level, params.id];
 			await client.query<User>(queryText, values);
 
 			return {

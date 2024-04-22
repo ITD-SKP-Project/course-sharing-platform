@@ -16,6 +16,9 @@
 	import { readable } from 'svelte/store';
 	import { Input } from '$lib/components/ui/input';
 	import type { UserExludingPassword, User } from '$lib/types';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog';
+	import { toast } from 'svelte-sonner';
+	let loaded = false;
 
 	const table = createTable(readable(data), {
 		page: addPagination(),
@@ -36,18 +39,30 @@
 					value: 'ID'
 				});
 			},
-			cell: ({ row }, { pluginStates }) => {
+			cell: ({ row, value }, { pluginStates }) => {
 				const { getRowState } = pluginStates.select;
 				const { isSelected } = getRowState(row);
 				return createRender(DataTableCheckbox, {
 					checked: isSelected,
-					value: row.id
+					value: value
 				});
 			},
 			plugins: {
 				sort: {
-					disable: true
+					disable: false
 				}
+			}
+		}),
+		table.column({
+			accessor: 'context',
+			header: 'Skal godkendes',
+			plugins: {
+				filter: {
+					exclude: true
+				}
+			},
+			cell: ({ value }) => {
+				return value ? 'Ja' : 'Nej';
 			}
 		}),
 		table.column({
@@ -65,11 +80,8 @@
 		}),
 		table.column({
 			accessor: 'validated',
-			header: 'Godkendt',
+			header: 'Aktiveret',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -82,9 +94,6 @@
 			accessor: 'authority_level',
 			header: 'Retighedsniveau',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -99,7 +108,7 @@
 						return 'Bruge Moderator';
 					case 4:
 						return 'Administrator';
-					case 4:
+					case 5:
 						return 'Jeff Bezos';
 					default:
 						return 'Ukendt';
@@ -110,9 +119,6 @@
 			accessor: 'created_at',
 			header: 'Oprettet',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -126,21 +132,19 @@
 			accessor: 'updated_at',
 			header: 'Opdateret',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
+			},
+			cell: ({ value }) => {
+				const date = new Date(value);
+				return date.toLocaleTimeString().toString() + '\n' + date.toLocaleDateString().toString();
 			}
 		}),
 		table.column({
 			accessor: 'email_verified',
 			header: 'Email verificeret',
 			plugins: {
-				sort: {
-					disable: true
-				},
 				filter: {
 					exclude: true
 				}
@@ -149,6 +153,7 @@
 				return value ? 'Ja' : 'Nej';
 			}
 		}),
+
 		table.column({
 			accessor: ({ id }) => id,
 			header: '',
@@ -172,16 +177,160 @@
 
 	const { filterValue } = pluginStates.filter;
 	const { selectedDataIds } = pluginStates.select;
+
+	table.data.subscribe((data) => data);
+
+	function getTheFreakingData(data: any, ids: string[]) {
+		const objects = ids.map((id) => data[+id]) as UserExludingPassword[];
+		const userIds = objects.map((o) => o.id);
+		return userIds;
+	}
+	async function deleteUsers() {
+		let data: any;
+		const unsub = table.data.subscribe((d) => (data = d));
+		unsub();
+		let userIds = getTheFreakingData(data, Object.keys($selectedDataIds));
+		const res = await fetch(`/api/users/delete?ids=${JSON.stringify(userIds)}`, {
+			method: 'DELETE',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+		if (res.ok) {
+			if (loaded)
+				localStorage.setItem('toast', JSON.stringify({ title: 'Brugeren/e er blevet slettet.' }));
+			// window.location.href = '/admin/brugere';
+		} else {
+			const json = await res.json();
+			toast('Der skete en fejl', { description: json.message, duration: 5000 });
+		}
+	}
+	async function activateUser() {
+		let data: any;
+		const unsub = table.data.subscribe((d) => (data = d));
+		unsub();
+		let userIds = getTheFreakingData(data, Object.keys($selectedDataIds));
+		const res = await fetch(`/api/users/activate?ids=${JSON.stringify(userIds)}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (res.ok) {
+			//put message in local storage
+			if (loaded)
+				localStorage.setItem('toast', JSON.stringify({ title: 'Brugeren/e er blevet aktiveret.' }));
+			window.location.href = '/admin/brugere';
+		} else {
+			const json = await res.json();
+			toast('Der skete en fejl', { description: json.message, duration: 5000 });
+		}
+	}
+	async function deactivateUser() {
+		let data: any;
+		const unsub = table.data.subscribe((d) => (data = d));
+		unsub();
+		let userIds = getTheFreakingData(data, Object.keys($selectedDataIds));
+		const res = await fetch(`/api/users/deactivate?ids=${JSON.stringify(userIds)}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		});
+
+		if (res.ok) {
+			//put message in local storage
+			if (loaded)
+				localStorage.setItem(
+					'toast',
+					JSON.stringify({ title: 'Brugeren/e er blevet deaktiveret.' })
+				);
+			window.location.href = '/admin/brugere';
+		} else {
+			const json = await res.json();
+			toast('Der skete en fejl', {
+				description: json.message,
+				duration: 5000
+			});
+		}
+	}
+
+	let confirnDelete = '';
 </script>
 
 <div>
-	<div class="flex items-center py-4">
+	<div class="flex items-center gap-2 py-4">
 		<Input
 			class="max-w-sm"
 			placeholder="Søg efter navn eller email..."
 			type="text"
 			bind:value={$filterValue}
 		/>
+		<AlertDialog.Root>
+			<AlertDialog.Trigger asChild let:builder>
+				<Button
+					builders={[builder]}
+					disabled={Object.keys($selectedDataIds).length === 0}
+					class="px-4"
+					variant="destructive">Slet</Button
+				>
+			</AlertDialog.Trigger>
+			<AlertDialog.Content>
+				<AlertDialog.Header>
+					<AlertDialog.Title
+						>Er du sikker på du vil slette {Object.keys($selectedDataIds).length > 1
+							? 'disse brugere'
+							: 'denne bruger'} permanent?</AlertDialog.Title
+					>
+					<AlertDialog.Description>
+						Dette kan ikke fortrydes. Alle brugerens data vil blive slettet permanent. Alle
+						brugerens projekter vil stadig eksistere men vil ikke være tilknyttet en bruger.
+					</AlertDialog.Description>
+				</AlertDialog.Header>
+
+				<AlertDialog.Footer class="m-0 w-full p-0">
+					<div class="flex w-full flex-col">
+						<p>
+							Skriv <strong
+								>{Object.keys($selectedDataIds).length > 1 ? 'slet brugere' : 'slet bruger'}</strong
+							> før du kan slette din konto.
+						</p>
+						<div class="flex w-48 flex-col gap-2">
+							<Input
+								class=" w-full border-destructive outline-destructive"
+								bind:value={confirnDelete}
+							></Input>
+							<div class=" mr-auto flex flex-row">
+								<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+								<AlertDialog.Action asChild let:builder>
+									<Button
+										disabled={Object.keys($selectedDataIds).length > 1
+											? confirnDelete.toLowerCase() != 'slet brugere'
+											: confirnDelete.toLowerCase() != 'slet bruger'}
+										builders={[builder]}
+										on:click={deleteUsers}
+										variant="destructive">Slet forevigt</Button
+									>
+								</AlertDialog.Action>
+							</div>
+						</div>
+					</div>
+				</AlertDialog.Footer>
+			</AlertDialog.Content>
+		</AlertDialog.Root>
+
+		<Button
+			on:click={deactivateUser}
+			disabled={Object.keys($selectedDataIds).length === 0}
+			class=" bg-yellow-400 px-4 text-yellow-950 hover:bg-yellow-500">Deaktiver</Button
+		>
+		<Button
+			class="bg-blue-500 text-blue-50 hover:bg-blue-600"
+			on:click={activateUser}
+			disabled={Object.keys($selectedDataIds).length === 0}>Aktiver</Button
+		>
+		<!-- <Button class="ml-auto px-4">Opret</Button> -->
 	</div>
 	<div class="rounded-md border">
 		<Table.Root {...$tableAttrs}>
@@ -192,7 +341,7 @@
 							{#each headerRow.cells as cell (cell.id)}
 								<Subscribe attrs={cell.attrs()} let:attrs props={cell.props()} let:props>
 									<Table.Head {...attrs} class="[&:has([role=checkbox])]:pl-3">
-										{#if cell.id === 'email'}
+										{#if cell.id === 'id' || cell.id === 'email' || cell.id === 'firstname' || cell.id === 'lastname' || cell.id === 'context' || cell.id === 'created_at' || cell.id === 'updated_at' || cell.id === 'authority_level' || cell.id === 'email_verified' || cell.id === 'validated'}
 											<Button variant="ghost" on:click={props.sort.toggle}>
 												<Render of={cell.render()} />
 												<ArrowUpDown class="h-4 w-4" />
@@ -213,7 +362,13 @@
 						<Table.Row {...rowAttrs} data-state={$selectedDataIds[row.id] && 'selected'}>
 							{#each row.cells as cell (cell.id)}
 								<Subscribe attrs={cell.attrs()} let:attrs>
-									<Table.Cell {...attrs}>
+									<Table.Cell
+										class={(cell.id == 'context' && cell.render().toString() == 'Ja') ||
+										(cell.id == 'validated' && cell.render().toString() == 'Nej')
+											? ' font-bold text-red-500'
+											: ''}
+										{...attrs}
+									>
 										<Render of={cell.render()} />
 									</Table.Cell>
 								</Subscribe>

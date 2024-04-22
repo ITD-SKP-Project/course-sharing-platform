@@ -43,7 +43,7 @@
 					class="min-h-32 w-full"
 				/>
 			</div>
-			<SaveOrDisgardButtons {FieldToEdit} />
+			<SaveOrDisgardButtons bind:FieldToEdit />
 		</form>
 	{:else}
 		<div class="flex items-center gap-2">

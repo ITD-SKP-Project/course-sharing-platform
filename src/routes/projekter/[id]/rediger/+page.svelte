@@ -9,37 +9,41 @@
 	import Subjects from './subjects.svelte';
 	import Resources from './resources.svelte';
 	import Files from './files.svelte';
+	import Live from './live.svelte';
 	import Authors from './authors.svelte';
 	import type { PageData } from './$types';
 	import type { Project } from '$lib/types';
 	export let data: PageData;
-	$: console.log('data:', data);
+
 	export let form;
-	$: console.log('form:', form);
+
 	let project = data.project as Project;
 	const created_at = new Date(project.created_at);
 	const updated_at = new Date(project.updated_at);
 	import { months } from '$lib/index';
 	import { ProjectEditMode } from '$lib/types';
 	import * as Dialog from '$lib/components/ui/dialog';
-	import { Toaster } from '$lib/components/ui/sonner';
+	import CourseLength from './courseLength.svelte';
+
 	import { toast } from 'svelte-sonner';
 
 	let FieldToEdit: ProjectEditMode = ProjectEditMode.none;
 	$: loading = false;
 
 	function handleUpdate() {
-		loading = false;
-		if (!form?.validationErrors && form?.successMessage) {
-			FieldToEdit = ProjectEditMode.none;
-			if (form.successMessage) {
-				toast('Handlingen lykkedes!', {
-					description: form.successMessage
-				});
-			} else {
-				toast('Fejl');
+		setTimeout(() => {
+			loading = false;
+			if (!form?.validationErrors && form?.successMessage) {
+				FieldToEdit = ProjectEditMode.none;
+				if (form.successMessage) {
+					toast('Handlingen lykkedes!', {
+						description: form.successMessage
+					});
+				} else {
+					toast('Fejl');
+				}
 			}
-		}
+		}, 500);
 	}
 </script>
 
@@ -52,7 +56,7 @@
 			<Description {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 
 			<!-- ? Noter -->
-			<Notes {project} {form} bind:loading {FieldToEdit} on:update={handleUpdate} />
+			<Notes {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 
 			<!-- ? Professions -->
 			<Professions {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
@@ -62,17 +66,21 @@
 
 			<!-- ? Resources -->
 			<Resources {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
+
+			<!-- ? Live -->
+			<Live {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 		</div>
 
 		<!-- ? infobox -->
 		<Card.Root
 			class="sticky top-24 mb-4 mt-8 h-fit min-w-72 border-primary bg-primary text-primary-foreground lg:ml-auto lg:mt-0 lg:max-w-96"
 		>
-			<Card.Header class="pb-4">
+			<Card.Header>
 				<Card.Title>Info</Card.Title>
 			</Card.Header>
 
-			<Card.Content>
+			<Card.Content class="m-0">
+				<!-- ? dates -->
 				<div class="flex flex-col gap-4">
 					<div class="flex flex-col gap-1">
 						<span class="text-sm font-semibold text-primary-foreground/75">Oprettet</span>
@@ -91,30 +99,31 @@
 						>
 					</div>
 				</div>
-			</Card.Content>
-			<div class="p-6">
-				<Separator class=" my-0 w-full bg-primary-foreground/25" />
 
-				{#key FieldToEdit}
-					<Authors
-						on:update={() => {
-							handleUpdate();
-							location.reload();
-						}}
-						currentUser={data.user}
-						{project}
-						bind:form
-						bind:loading
-						bind:FieldToEdit
-						users={data.users.filter((user) => user.id !== data.user.id)}
-					/>
-				{/key}
+				<Separator class="my-3  w-full bg-primary-foreground/25" />
 
-				<Separator class=" my-0 w-full bg-primary-foreground/25" />
-			</div>
+				<!-- ? authors -->
+				<Authors
+					on:update={() => {
+						handleUpdate();
+						location.reload();
+					}}
+					currentUser={data.user}
+					{project}
+					bind:form
+					bind:loading
+					bind:FieldToEdit
+					users={data.users.filter((user) => user.id !== data.user.id)}
+				/>
 
-			<Card.Content>
-				<!-- files -->
+				<Separator class="my-3 w-full bg-primary-foreground/25" />
+
+				<!-- ? course length -->
+				<CourseLength {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
+
+				<Separator class="my-3 w-full bg-primary-foreground/25" />
+
+				<!-- ? files -->
 				<Files {project} {form} bind:loading bind:FieldToEdit on:update={handleUpdate} />
 			</Card.Content>
 		</Card.Root>
@@ -137,4 +146,3 @@
 		</Dialog.Header>
 	</Dialog.Content>
 </Dialog.Root>
-<Toaster />

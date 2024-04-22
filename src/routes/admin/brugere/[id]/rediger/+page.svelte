@@ -8,6 +8,7 @@
 	import { Loader2 } from 'lucide-svelte';
 	import { enhance } from '$app/forms';
 	import { Input } from '$lib/components/ui/input';
+	import { goto } from '$app/navigation';
 
 	export let data: PageData;
 
@@ -17,6 +18,9 @@
 	const user = data.userToEdit;
 	const currentUser = data.user;
 	export let form;
+	$: if (form?.successMessage) {
+		goto(`/admin/brugere`);
+	}
 </script>
 
 <main class="mb-16 flex flex-col gap-8 p-2 sm:p-8">

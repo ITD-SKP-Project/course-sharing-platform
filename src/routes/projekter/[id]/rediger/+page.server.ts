@@ -1,11 +1,7 @@
 import type { PageServerLoad } from './$types';
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+
+import { pool } from '$lib/server/database';
+
 import { validateCustomArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';
 import { validateCustomFileArray } from '$lib/index';
@@ -16,32 +12,52 @@ import { deleteFile, postFile } from '$lib/server/files';
 
 export const load = (async ({ locals, params }) => {
 	if (!locals.user) {
-		throw redirect(307, `/login?redirect=/projekter/${params.id}/edit`);
+		throw redirect(307, `/login?redirect=/projekter/${params.id}/rediger`);
 	}
+	if (locals.onboardingStatus != 'validated') {
+		throw error(
+			403,
+			'Du har ikke adgang til denne side.  Kontakt support hvis du mener dette er en fejl.'
+		);
+	}
+	if (locals.user.authority_level < 1) {
+		throw error(
+			403,
+			'Du har ikke adgang til denne side.  Kontakt support hvis du mener dette er en fejl.'
+		);
+	}
+
 	const client = await pool.connect();
 
 	const id = params.id;
-	if (!id) throw error(400, 'Der blev ikke givet et id.');
-	if (typeof +id != 'number') throw error(404, 'Der blev ikke fundet nogle projekter.');
+	if (isNaN(+id)) throw error(400, "Id'et skal være et tal.");
 
 	//get project
+
+	let errorType: number | null = null;
 	try {
 		const { rows: projects } = await client.query<Project>(
 			locals.user
 				? `
 				SELECT 
-				  projects.*,
-				 CAST(COUNT(project_likes.id) AS INTEGER) AS likes
-				FROM 
-				  projects
-				LEFT JOIN 
-				  project_likes ON projects.id = project_likes.project_id
-				WHERE 
-				  projects.id = ${id}
-				  AND projects.live = true
-				GROUP BY 
-				  projects.id
-				LIMIT 1;
+				projects.*,
+				COALESCE(CAST(COUNT(project_likes.id) AS INTEGER), 0) AS likes
+			  FROM 
+				projects
+			  LEFT JOIN 
+				project_likes ON projects.id = project_likes.project_id
+			  LEFT JOIN 
+				project_authors ON projects.id = project_authors.project_id
+			  WHERE 
+				(
+				  projects.live = true
+				  OR (projects.live = false AND project_authors.user_id = $2)
+				)
+				AND projects.id = $1
+			  GROUP BY 
+				projects.id
+			  LIMIT 1;
+			
 			  `
 				: `
 				SELECT 
@@ -56,36 +72,54 @@ export const load = (async ({ locals, params }) => {
 				  projects.resources,
 				  projects.live,
 				  COALESCE(CAST(COUNT(project_likes.id) AS INTEGER), 0) AS likes
-				FROM 
+				  FROM 
 				  projects
 				LEFT JOIN 
 				  project_likes ON projects.id = project_likes.project_id
+				LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
 				WHERE 
-				  projects.id = ${id}
-				  AND projects.live = true
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $2)
+				  )
+				  AND projects.id = $1
 				GROUP BY 
 				  projects.id
 				LIMIT 1;
-			  `
+			  `,
+			[id, locals.user?.id]
 		);
 
-		if (!projects || projects.length == 0)
+		if (!projects || projects.length == 0) {
+			errorType = 404;
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
-
-		if (locals.user) {
-			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
-				locals.user.id
-			]);
-			projects.forEach((project) => {
-				project.likedByUser = likes.some((like) => like.project_id === project.id);
-			});
 		}
+		let project = projects[0] as Project;
+
+		const { rows: likes } = await client.query(
+			`SELECT * FROM project_likes WHERE user_id = $1 AND project_id = $2`,
+			[locals.user.id, id]
+		);
+
+		project.likedByUser = likes.some((like) => like.project_id === project.id);
+
 		//for each project, get authors and professions
-		const { rows: authors } = await client.query<ProjectAuthor>('SELECT * FROM project_authors');
+		const { rows: authors } = await client.query<ProjectAuthor>(
+			'SELECT * FROM project_authors WHERE project_id = $1',
+			[id]
+		);
+		//if the user who is logged in is not an admin, check if the user is an author of the project
+		if (locals.user.authority_level < 3) {
+			if (!authors.some((author) => author.user_id === locals.user.id) || authors.length == 0) {
+				errorType = 403;
+				throw error(403, 'Du har ikke adgang til denne side');
+			}
+		}
 
 		//get all users and add them to authors
 		const { rows: users } = await client.query<UserEssentials>(
-			'SELECT id, firstname, lastname, email, validated FROM users'
+			'SELECT id, firstname, lastname, email, validated FROM users where validated = true'
 		);
 
 		const { rows: projectProfessions } =
@@ -98,7 +132,7 @@ export const load = (async ({ locals, params }) => {
 		);
 
 		//add authors and professions to projects
-		const project = projects[0];
+
 		project.authors = authors.filter((author) => author.project_id === project.id);
 		project.professions = projectProfessions.filter(
 			(projectProfession) => projectProfession.project_id === project.id
@@ -111,7 +145,10 @@ export const load = (async ({ locals, params }) => {
 		return { project: project, users: users };
 	} catch (err) {
 		console.error(err);
-		throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		if (errorType == 403)
+			return error(403, 'Du har ikke rettigheder til at ændre på dette projekt.');
+		else if (errorType == 404) throw error(404, 'Der blev ikke fundet nogle projekter.');
+		else throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();
 	}
@@ -256,14 +293,18 @@ export const actions = {
 			key.startsWith('subjects-')
 		);
 
-		console.log('subjectsArray:', subjectsArray);
+		if (subjectsArray.length == 0) {
+			return {
+				validationErrors: { subjects: 'Du skal vælge mindst et Fagområde.' },
+				formData: formData
+			};
+		}
 		const { errors: subjectErrors } = validateCustomArray(subjectsArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
 
 		const subjects = subjectsArray.map(([key, value]) => value.toString());
-		console.log('subjects:', subjects);
+
 		const subjectsString = subjects.join('[ENTER]');
-		console.log('subjectsString:', subjectsString);
 
 		const client = await pool.connect();
 		try {
@@ -293,14 +334,19 @@ export const actions = {
 			key.startsWith('resources-')
 		);
 
-		console.log('resourcesArray:', resourcesArray);
+		if (resourcesArray.length == 0) {
+			return {
+				validationErrors: { resources: 'Du skal vælge mindst en ressource.' },
+				formData: formData
+			};
+		}
+
 		const { errors: subjectErrors } = validateCustomArray(resourcesArray);
 		if (subjectErrors) return { validationErrors: subjectErrors, formData: formData };
 
 		const resources = resourcesArray.map(([key, value]) => value.toString());
-		console.log('resources:', resources);
+
 		const resourcesString = resources.join('[ENTER]');
-		console.log('resourcesString:', resourcesString);
 
 		const client = await pool.connect();
 		try {
@@ -410,7 +456,7 @@ export const actions = {
 			await client.query<Project>(`BEGIN`);
 			await client.query(`DELETE from project_files where project_id = $1`, [params.id]);
 
-			filesArray.forEach(async ([key, value]) => {
+			for (const [key, value] of filesArray) {
 				const file = value as unknown as File;
 
 				const fileQueryText =
@@ -425,13 +471,13 @@ export const actions = {
 				await client.query(fileQueryText, fileValues);
 
 				await postFile(file, params.id);
-			});
+			}
 
 			const res: {
 				status: number;
 				body: { message: string };
 			} = await deleteFile(params.id);
-			console.log('res:', res);
+
 			if (res.status != 200) {
 				await client.query<Project>(`ROLLBACK`);
 				return { serverError: res.body.message };
@@ -457,6 +503,7 @@ export const actions = {
 		serverError?: string;
 		formData: any;
 	} | void> => {
+		let addedIds: number[] = [];
 		let formData = Object.fromEntries(await request.formData());
 		const usersArray = Object.entries(formData).filter(([key, value]) => key.startsWith('users-'));
 		const { success: userSuccess, errors: userErrors } = validateCustomArray(usersArray);
@@ -481,11 +528,14 @@ export const actions = {
 				'INSERT INTO project_authors (project_id, user_id, authority_level) VALUES ($1, $2, $3)';
 			const projectAuthorValues = [params.id, locals.user.id, 3]; // Assuming authority_level is the correct column name
 			await client.query(projectAuthorQueryText, projectAuthorValues);
-			userIds.forEach(async (author) => {
+			for (const author of userIds) {
+				if (addedIds.includes(author) || addedIds.includes(locals.user?.id)) continue;
+
+				addedIds.push(author);
 				const projectAuthorValues = [params.id, author, 1]; // Assuming authority_level is the correct column name
 				if (author != locals.user.id)
 					await client.query(projectAuthorQueryText, projectAuthorValues);
-			});
+			}
 
 			await client.query<Project>(`COMMIT`);
 			return { successMessage: 'Filer blev opdateret', formData: formData };
@@ -493,6 +543,84 @@ export const actions = {
 			console.error(err);
 			await client.query<Project>(`ROLLBACK`);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} finally {
+			client.release();
+		}
+	},
+	updateCourseLength: async ({
+		params,
+		request,
+		locals
+	}): Promise<{
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+		formData: any;
+	} | void> => {
+		let formData = Object.fromEntries(await request.formData());
+		const titleSchema = z.object({
+			course_length: z.string().min(1, 'Projekt tidsforbrug er påkrævet.')
+		});
+		type titleSchemaType = z.infer<typeof titleSchema>;
+
+		let result: titleSchemaType;
+		const client = await pool.connect();
+		try {
+			result = titleSchema.parse({ ...formData });
+
+			await client.query<Project>(
+				`UPDATE projects SET course_length = $1 WHERE id = $2 RETURNING *;`,
+				[result.course_length, params.id]
+			);
+			return { successMessage: 'Projekt tidsforbrug blev opdateret', formData: formData };
+		} catch (err) {
+			if (err instanceof z.ZodError) {
+				const { fieldErrors: errors } = err.flatten();
+				return { validationErrors: errors, formData: formData };
+			} else {
+				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+			}
+		} finally {
+			client.release();
+		}
+	},
+	updateLive: async ({
+		params,
+		request,
+		locals
+	}): Promise<{
+		validationErrors?: any;
+		successMessage?: any;
+		serverError?: string;
+		formData: any;
+	} | void> => {
+		const liveSchema = z.object({
+			live: z.enum(['yes', 'no'])
+		});
+
+		let formData = Object.fromEntries(await request.formData());
+		const titleSchema = z.object({
+			course_length: z.string().min(1, 'Projekt tidsforbrug er påkrævet.')
+		});
+		type LiveSchemaType = z.infer<typeof liveSchema>;
+
+		let result: LiveSchemaType;
+		const client = await pool.connect();
+		try {
+			result = liveSchema.parse({ ...formData });
+
+			await client.query<Project>(`UPDATE projects SET live = $1 WHERE id = $2 RETURNING *;`, [
+				result.live == 'no' ? false : true,
+				params.id
+			]);
+			return { successMessage: 'Projekt synlighed blev opdateret', formData: formData };
+		} catch (err) {
+			if (err instanceof z.ZodError) {
+				const { fieldErrors: errors } = err.flatten();
+				return { validationErrors: errors, formData: formData };
+			} else {
+				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+			}
 		} finally {
 			client.release();
 		}

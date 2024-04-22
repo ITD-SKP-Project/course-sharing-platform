@@ -1,12 +1,6 @@
 import type { PageServerLoad } from './$types';
 
-import pkg from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
-const { Pool } = pkg;
-const pool = new Pool({
-	connectionString: POSTGRES_URL,
-	ssl: true
-});
+import { pool } from '$lib/server/database';
 import type {
 	Profession,
 	Project,
@@ -14,27 +8,52 @@ import type {
 	ProjectProfession,
 	UserEssentials
 } from '$lib/types';
-import { error, json } from '@sveltejs/kit';
-import type { User } from '$lib/types';
+import { error } from '@sveltejs/kit';
 
-export const load = (async ({ locals }) => {
+export const load = (async ({ locals, url }) => {
 	const client = await pool.connect();
+	let errorType: number | null = null;
 	try {
-		const { rows: projects } = await client.query<Project>(
-			`SELECT 
+		let queryParams: number | string[];
+		let query: string;
+		if (locals.user && locals.user?.authority_level && locals.user?.authority_level > 1) {
+			queryParams = [];
+			query = `SELECT 
+			projects.*,
+			CAST(COUNT(project_likes.id) AS INTEGER) AS likes
+		FROM 
+			projects
+		LEFT JOIN 
+			project_likes ON projects.id = project_likes.project_id
+		GROUP BY 
+			projects.id;`;
+		} else {
+			queryParams = [locals.user?.id];
+			query = `SELECT 
 			projects.*,
 			CAST(COUNT(project_likes.id) AS INTEGER) AS likes
 			FROM 
 			projects
 			LEFT JOIN 
 			project_likes ON projects.id = project_likes.project_id
-			WHERE 
-			projects.live = true
-			GROUP BY 
-			projects.id;
-			`
-		);
-		if (!projects) throw error(404, 'Der blev ikke fundet nogle projekter.');
+			LEFT JOIN 
+				  project_authors ON projects.id = project_authors.project_id
+				WHERE 
+				  (
+					projects.live = true
+					OR (projects.live = false AND project_authors.user_id = $1)
+				  )
+				GROUP BY 
+				  projects.id`;
+		}
+
+		const { rows: projects } = await client.query<Project>(query, queryParams);
+
+		if (!projects) {
+			errorType = 404;
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		}
+
 		//try to find project_like from locals.user
 		if (locals.user) {
 			const { rows: likes } = await client.query(`SELECT * FROM project_likes WHERE user_id = $1`, [
@@ -71,12 +90,12 @@ export const load = (async ({ locals }) => {
 		});
 
 		return { projects: projects, professions: professions };
-	} catch (error) {
+	} catch (err) {
 		// Handle or throw the error as per your application's error handling policy
-		console.error('Authentication error:', JSON.stringify(error));
-		throw new Error(
-			'Error processing your request. Please try again later. ' + JSON.stringify(error)
-		);
+		console.error(JSON.stringify(err), 'ERROR');
+		if (errorType === 404) {
+			throw error(404, 'Der blev ikke fundet nogle projekter.');
+		} else throw error(500, 'Fejl: ' + JSON.stringify(err));
 	} finally {
 		client.release();
 	}

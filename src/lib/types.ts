@@ -7,7 +7,9 @@ export enum ProjectEditMode {
 	subjects = 'subjects',
 	resources = 'resources',
 	files = 'files',
-	authors = 'authors'
+	authors = 'authors',
+	course_length = 'course_length',
+	live = 'live'
 }
 export interface User {
 	id: number;
@@ -21,6 +23,7 @@ export interface User {
 	validated: boolean;
 	email_verified: boolean;
 	last_send_email?: Date;
+	context?: string;
 }
 export interface UserEssentials {
 	id: number;
@@ -35,6 +38,7 @@ export interface UserExludingPassword extends UserEssentials {
 	updated_at: string;
 	email_verified: boolean;
 	last_send_email?: Date | null;
+	context?: string;
 }
 export interface Project extends ProjectCreation {
 	id: number;
@@ -48,6 +52,7 @@ export interface Project extends ProjectCreation {
 	professions?: ProjectProfession[];
 	files?: ProjectFile[];
 	likedByUser?: boolean;
+	projectComments?: ProjectComment[];
 }
 export interface ProjectCreation {
 	title: string;
@@ -55,6 +60,7 @@ export interface ProjectCreation {
 	subjects: string;
 	resources: string;
 	notes: string;
+	course_length: string;
 }
 export interface ProjectAuthor extends ProjectAuthorCreation {
 	id: number;
@@ -74,6 +80,11 @@ export interface ProjectAuthorCreation {
 	user_id: number;
 	authority_level: number;
 }
+export interface pending_users {
+	id: number;
+	user_id: number;
+	context: string;
+}
 export interface ProjectProfession extends ProjectProfessionCreation {
 	id: number;
 	profession_name?: string;
@@ -92,4 +103,23 @@ export interface VerificationToken {
 	user_id: number;
 	token: string;
 	type: string;
+}
+export interface ProjectLike {
+	id: number;
+	project_id: number;
+	user_id: number;
+	liked_at: string;
+}
+export interface ProjectComment {
+	id: number;
+	project_id: number;
+	user_id: number;
+	message: string;
+	created_at: string;
+	updated_at: string;
+	root_comment_id: number | null;
+	answer_comment_id: number | null;
+	firstname?: string;
+	lastname?: string;
+	authority_level?: number;
 }
