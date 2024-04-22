@@ -32,15 +32,17 @@
 	let loading = false;
 
 	async function deleteAccount() {
-		const res = await fetch(`/api/users/delete`, {
+		const res = await fetch(`/api/users/delete?ids=[${data.user?.id}]`, {
 			method: 'DELETE',
 			headers: {
 				'Content-Type': 'application/json'
 			}
 		});
+		console.log(res);
 		if (res.ok) {
+			const json = await res.json();
 			toast('Din konto er blevet slettet.', {
-				description: form.successMessage
+				description: json.message
 			});
 			window.location.href = '/';
 		} else {
