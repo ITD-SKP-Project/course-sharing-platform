@@ -124,7 +124,7 @@
 					<Button variant="outline" builders={[builder]}>Uddannelser</Button>
 				</DropdownMenu.Trigger>
 				<DropdownMenu.Content class="w-56">
-					<DropdownMenu.Label>Appearance</DropdownMenu.Label>
+					<DropdownMenu.Label>Uddannelser</DropdownMenu.Label>
 					<DropdownMenu.Separator />
 
 					<DropdownMenu.CheckboxItem
