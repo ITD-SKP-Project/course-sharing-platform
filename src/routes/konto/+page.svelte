@@ -29,6 +29,7 @@
 
 	import { enhance } from '$app/forms';
 	import { Loader2 } from 'lucide-svelte';
+	import { user } from '$lib';
 	let loading = false;
 
 	async function deleteAccount() {
@@ -69,7 +70,7 @@
 		</Sheet.Trigger>
 		<Sheet.Content side="right" class="overflow-y-auto">
 			<Sheet.Header>
-				<Sheet.Title>Administrer din konto</Sheet.Title>
+				<Sheet.Title>Administrer din konto for {data.user.email}</Sheet.Title>
 				<Sheet.Description
 					>Du kan ændre dine oplysninger her. Tryk "Gem ændringer" når du er færdig.</Sheet.Description
 				>

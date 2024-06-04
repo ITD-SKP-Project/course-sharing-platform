@@ -36,14 +36,22 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 		}
 
 		//delete comment
+		await client.query('BEGIN');
+		await client.query(
+			`DELETE FROM project_comments
+			WHERE root_comment_id = $1`,
+			[id]
+		);
 		await client.query(
 			`DELETE FROM project_comments
 			WHERE id = $1`,
 			[id]
 		);
+		await client.query('COMMIT');
 	} catch (err) {
 		console.error('Error:', err);
 		Sentry.captureException(err);
+		await client.query('ROLLBACK');
 		return error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {
 		client.release();
