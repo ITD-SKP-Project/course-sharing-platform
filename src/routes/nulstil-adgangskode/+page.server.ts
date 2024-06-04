@@ -1,13 +1,12 @@
 import { z } from 'zod';
 import pkg, { type PoolClient } from 'pg';
-import { POSTGRES_URL } from '$env/static/private';
 import type { User, VerificationToken } from '$lib/types';
 import * as randombytes from 'randombytes';
 import { RESEND_API_KEY } from '$env/static/private';
 import { Resend } from 'resend';
 const { Pool } = pkg;
 import { pool } from '$lib/server/database';
-
+import * as Sentry from '@sentry/sveltekit';
 const registerSchema = z.object({
 	email: z
 		.string({ required_error: 'Email mangler at blive udfyldt.' })
@@ -73,6 +72,7 @@ export const actions = {
 			};
 		} catch (err) {
 			console.error(err);
+			Sentry.captureException(err);
 			return {
 				serverError: 'Der skete en fejl.',
 				formData: rest

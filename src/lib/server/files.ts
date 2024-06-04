@@ -1,5 +1,6 @@
 import { writeFile } from 'fs/promises';
 import fs from 'fs';
+import * as Sentry from '@sentry/sveltekit';
 
 import { resolve, join } from 'path';
 
@@ -64,6 +65,8 @@ export async function deleteFile(path: string) {
 		};
 	} catch (err) {
 		console.error(err);
+		Sentry.captureException(err);
+
 		return {
 			status: 500,
 			body: { message: `Oops. An unknown error occurred on the server.` }

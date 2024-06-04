@@ -1,4 +1,5 @@
 import type { PageServerLoad } from './$types';
+import * as Sentry from '@sentry/sveltekit';
 
 import { pool } from '$lib/server/database';
 import type {
@@ -95,7 +96,10 @@ export const load = (async ({ locals, url }) => {
 		console.error(JSON.stringify(err), 'ERROR');
 		if (errorType === 404) {
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
-		} else throw error(500, 'Fejl: ' + JSON.stringify(err));
+		} else {
+			Sentry.captureException(err);
+			throw error(500, 'Fejl: ' + JSON.stringify(err));
+		}
 	} finally {
 		client.release();
 	}

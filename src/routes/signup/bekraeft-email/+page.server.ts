@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
-
+import * as Sentry from '@sentry/sveltekit';
 import { pool } from '$lib/server/database';
 
 export const load = (async ({ locals, url }) => {
@@ -38,6 +38,7 @@ export const load = (async ({ locals, url }) => {
 	} catch (error) {
 		// Handle or throw the error as per your application's error handling policy
 		console.error('Authentication error:', JSON.stringify(error));
+		Sentry.captureException(error);
 		throw new Error(
 			'Error processing your request. Please try again later. ' + JSON.stringify(error)
 		);

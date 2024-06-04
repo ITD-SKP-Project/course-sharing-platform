@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types';
 import type { ProjectComment } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 import { pool } from '$lib/server/database';
+import * as Sentry from '@sentry/sveltekit';
 
 export const POST: RequestHandler = async ({ request, locals }) => {
 	if (!locals.user) {
@@ -29,6 +30,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		);
 	} catch (err) {
 		console.error('Error:', err);
+		Sentry.captureException(err);
+
 		return error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {
 		client.release();

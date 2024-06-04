@@ -1,7 +1,7 @@
 import type { VerificationToken } from '$lib/types';
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
-
+import * as Sentry from '@sentry/sveltekit';
 import { pool } from '$lib/server/database';
 export const load = (async ({ url }) => {
 	const token = url.searchParams.get('token');
@@ -21,6 +21,7 @@ export const load = (async ({ url }) => {
 	} catch (err) {
 		// Handle or throw the error as per your application's error handling policy
 		console.warn('Authentication error:', JSON.stringify(err));
+		Sentry.captureException(err);
 		throw redirect(303, '/login');
 	} finally {
 		client.release();

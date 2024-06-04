@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { redirect, error } from '@sveltejs/kit';
-
+import * as Sentry from '@sentry/sveltekit';
 import bcrypt from 'bcrypt';
 import { BCRYPT_SALT_ROUNDS } from '$env/static/private';
 import { z } from 'zod';
@@ -23,6 +23,7 @@ export const load = (async ({ url }) => {
 	} catch (error) {
 		// Handle or throw the error as per your application's error handling policy
 		console.error('Authentication error:', JSON.stringify(error));
+		Sentry.captureException(error);
 		throw redirect(303, '/login');
 	} finally {
 		client.release();
@@ -113,6 +114,7 @@ export const actions = {
 			}
 		} catch (err) {
 			console.error(err);
+			Sentry.captureException(err);
 			return {
 				serverError: 'Der skete en fejl.',
 				formData: rest

@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types';
 import { error, json } from '@sveltejs/kit';
 import { RESEND_API_KEY } from '$env/static/private';
 import { Resend } from 'resend';
+import * as Sentry from '@sentry/sveltekit';
 
 import { pool } from '$lib/server/database';
 
@@ -34,8 +35,8 @@ export const POST: RequestHandler = async ({ locals, url }) => {
 			sendVerificationEmail(user[0].email);
 		}
 		await client.query('COMMIT');
-	} catch (e) {
-		console.error('Error deleting user:', e);
+	} catch (err) {
+		console.error('Error deleting user:', err);
 		client.query('ROLLBACK');
 
 		if (privilegeErrorId)
@@ -43,7 +44,10 @@ export const POST: RequestHandler = async ({ locals, url }) => {
 				403,
 				'Du har ikke rettigheder til at ændre på brugeren med id: ' + privilegeErrorId + '.'
 			);
-		else throw error(500, 'Der skete en fejl under aktivering af din konto.');
+		else {
+			Sentry.captureException(err);
+			throw error(500, 'Der skete en fejl under aktivering af din konto.');
+		}
 	} finally {
 		client.release();
 	}
@@ -65,6 +69,7 @@ async function sendVerificationEmail(toEmail: string) {
 		}
 	} catch (err) {
 		console.error('Error in sendVerificationEmail:' + JSON.stringify(err));
+		Sentry.captureException(err);
 		throw error(500, JSON.stringify(err));
 	}
 }

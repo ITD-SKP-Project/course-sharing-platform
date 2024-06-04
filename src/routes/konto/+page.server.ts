@@ -3,6 +3,7 @@ import type { PageServerLoad } from './$types';
 import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
+import * as Sentry from '@sentry/sveltekit';
 import { error, json } from '@sveltejs/kit';
 import type {
 	Profession,
@@ -84,6 +85,7 @@ export const load = (async ({ locals }) => {
 		return { userProjects: projects };
 	} catch (err) {
 		console.error('Error fetching projects:', JSON.stringify(err));
+		Sentry.captureException(err);
 		throw error(
 			500,
 			'Error processing your request. Please try again later. ' + JSON.stringify(err)
@@ -181,6 +183,7 @@ export const actions = {
 			};
 		} catch (err: any) {
 			console.error(err);
+			Sentry.captureException(err);
 			return {
 				formData: formData,
 				serverError: JSON.stringify(err)
@@ -243,6 +246,7 @@ export const actions = {
 			};
 		} catch (err: any) {
 			console.error(err);
+			Sentry.captureException(err);
 			return {
 				formData: formData,
 				serverError: JSON.stringify(err)
@@ -294,6 +298,7 @@ export const actions = {
 			};
 		} catch (err: any) {
 			console.error(err);
+			Sentry.captureException(err);
 			return {
 				formData: formData,
 				serverError: JSON.stringify(err)

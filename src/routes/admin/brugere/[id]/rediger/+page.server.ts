@@ -1,9 +1,9 @@
 import type { PageServerLoad } from '../$types';
 import { error, redirect } from '@sveltejs/kit';
-
 import type { User, UserExludingPassword } from '$lib/types';
 import { pool } from '$lib/server/database';
 import { z } from 'zod';
+import * as Sentry from '@sentry/sveltekit';
 export const load = (async ({ params, locals }) => {
 	if (!locals.user) {
 		throw error(401, 'Du skal være logget ind for at se denne side.');
@@ -24,6 +24,8 @@ export const load = (async ({ params, locals }) => {
 		user = users[0];
 	} catch (err) {
 		console.error('Error fetching users:', err);
+		Sentry.captureException(err);
+
 		// Handle or throw the error as per your application's error handling policy
 		throw error(
 			500,
@@ -105,6 +107,7 @@ export const actions = {
 			};
 		} catch (err: any) {
 			console.error(err);
+			Sentry.captureException(err);
 			return {
 				formData: formData,
 				serverError: JSON.stringify(err)

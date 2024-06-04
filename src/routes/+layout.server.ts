@@ -1,6 +1,7 @@
 import type { User, pending_users } from '$lib/types';
 import type { LayoutServerLoad } from './$types';
 import { pool } from '$lib/server/database';
+import * as Sentry from '@sentry/sveltekit';
 
 export const load = (async ({ cookies, locals }) => {
 	const darkmode = cookies.get('darkmode');
@@ -25,6 +26,7 @@ export const load = (async ({ cookies, locals }) => {
 		};
 	} catch (err) {
 		console.error('Error:', err);
+		Sentry.captureException(err);
 		return {
 			darkmode: darkmode ? JSON.parse(darkmode) : null,
 			color: color ? color : null,

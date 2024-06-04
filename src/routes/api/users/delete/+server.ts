@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types';
 import { error, fail, json } from '@sveltejs/kit';
 import { RESEND_API_KEY } from '$env/static/private';
 import { Resend } from 'resend';
+import * as Sentry from '@sentry/sveltekit';
 
 import { pool } from '$lib/server/database';
 
@@ -33,15 +34,18 @@ export const DELETE: RequestHandler = async ({ locals, url }) => {
 			await client.query('SELECT delete_user($1);', [id]);
 		}
 		await client.query('COMMIT');
-	} catch (e) {
-		console.error('Error deleting user:', e);
+	} catch (err) {
+		console.error('Error deleting user:', err);
 		await client.query('ROLLBACK');
 		if (privilegeErrorId)
 			return error(
 				403,
 				'Du har ikke rettigheder til at slette brugeren med id: ' + privilegeErrorId + '.'
 			);
-		else throw error(500, 'Der skete en fejl under sletning af din konto.');
+		else {
+			Sentry.captureException(err);
+			throw error(500, 'Der skete en fejl under sletning af din konto.');
+		}
 	} finally {
 		client.release();
 	}

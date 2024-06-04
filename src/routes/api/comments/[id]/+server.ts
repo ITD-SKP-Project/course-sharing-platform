@@ -2,6 +2,7 @@ import type { RequestHandler } from './$types';
 import type { ProjectComment } from '$lib/types';
 import { error, json } from '@sveltejs/kit';
 import { pool } from '$lib/server/database';
+import * as Sentry from '@sentry/sveltekit';
 
 export const DELETE: RequestHandler = async ({ locals, params }) => {
 	const { id } = params;
@@ -42,6 +43,7 @@ export const DELETE: RequestHandler = async ({ locals, params }) => {
 		);
 	} catch (err) {
 		console.error('Error:', err);
+		Sentry.captureException(err);
 		return error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {
 		client.release();
@@ -91,6 +93,7 @@ export const POST: RequestHandler = async ({ request, locals, params }) => {
 			[message, id]
 		);
 	} catch (err) {
+		Sentry.captureException(err);
 		console.error('Error:', err);
 		return error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {

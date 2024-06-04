@@ -6,6 +6,7 @@ import type { User } from '$lib/types';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { user as userStore } from '$lib/index';
+import * as Sentry from '@sentry/sveltekit';
 
 import { pool } from '$lib/server/database';
 
@@ -38,6 +39,7 @@ export const actions = {
 		let user: User | null = null;
 		const { password, ...rest } = formData;
 		let result: any;
+
 		try {
 			result = registerSchema.parse(formData);
 		} catch (err: any) {
@@ -86,6 +88,7 @@ export const actions = {
 			// Determine redirect logic
 		} catch (err: any) {
 			console.error(err);
+			Sentry.captureException(err);
 			return {
 				formData: rest,
 				serverError: JSON.stringify(error)

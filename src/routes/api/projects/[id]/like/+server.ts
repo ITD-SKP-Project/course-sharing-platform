@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-
+import * as Sentry from '@sentry/sveltekit';
 import { pool } from '$lib/server/database';
 import { error, json } from '@sveltejs/kit';
 
@@ -41,6 +41,7 @@ export const POST: RequestHandler = async ({ locals, url, params }) => {
 		}
 	} catch (err) {
 		console.error('Error:', err);
+		Sentry.captureException(err);
 		return error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {
 		client.release();

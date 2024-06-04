@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 import { redirect } from '@sveltejs/kit';
 import { z } from 'zod';
-
+import * as Sentry from '@sentry/sveltekit';
 import { pool } from '$lib/server/database';
 
 export const load = (async ({ locals, url }) => {
@@ -64,6 +64,7 @@ export const actions = {
 			await client.query('COMMIT');
 		} catch (error) {
 			await client.query('ROLLBACK');
+			Sentry.captureException(error);
 			console.error('Database transaction error:', error);
 			return {
 				formData: { ...formData },

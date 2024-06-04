@@ -5,7 +5,7 @@ import { error, json } from '@sveltejs/kit';
 import { RESEND_API_KEY } from '$env/static/private';
 import { Resend } from 'resend';
 import * as randombytes from 'randombytes';
-
+import * as Sentry from '@sentry/sveltekit';
 export const POST: RequestHandler = async ({ request }) => {
 	const client = await pool.connect();
 	try {
@@ -45,6 +45,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return new Response(); // Successful response
 	} catch (err) {
 		console.error('Error:', err);
+		Sentry.captureException(err);
 		return error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {
 		client.release();
@@ -65,6 +66,7 @@ async function sendVerificationEmail(toEmail: string, key: string, domain: strin
 			throw new Error('Email sending failed: ' + JSON.stringify(sendError));
 		}
 	} catch (err) {
+		Sentry.captureException(err);
 		console.error('Error in sendVerificationEmail:' + JSON.stringify(err));
 		throw err;
 	}

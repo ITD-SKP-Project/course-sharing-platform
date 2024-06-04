@@ -1,6 +1,7 @@
 <script lang="ts">
 	export let user: User;
 	export let project: Project;
+	import * as Sentry from '@sentry/sveltekit';
 
 	import { Pen, Trash, Undo2, Send, CornerDownRight } from 'lucide-svelte';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
@@ -207,6 +208,7 @@
 													updateComment(comment.id, e.target['message'].value);
 												} catch (error) {
 													console.error(error);
+													Sentry.captureException(error);
 												}
 											}}
 										>

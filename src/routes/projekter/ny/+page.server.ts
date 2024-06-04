@@ -11,6 +11,7 @@
 		create project in database
 		return formData and project id
 */
+import * as Sentry from '@sentry/sveltekit';
 
 import type { PageServerLoad } from './$types';
 import type { Project, ProjectFile, ProjectFileCreation, UserEssentials, User } from '$lib/types';
@@ -36,6 +37,7 @@ export const load = (async ({ locals }) => {
 		);
 		return { users: users };
 	} catch (err) {
+		Sentry.captureException(err);
 		// Handle or throw the error as per your application's error handling policy
 		throw error(
 			500,
@@ -164,6 +166,7 @@ export const actions = {
 					}
 				};
 			} else {
+				Sentry.captureException(err);
 				throw error(500, 'Internal server error: ' + JSON.stringify(err));
 			}
 		}
@@ -254,6 +257,7 @@ async function createProject(
 		return projects[0];
 	} catch (err) {
 		console.error('Error creating project:', err);
+		Sentry.captureException(err);
 		await client.query('ROLLBACK'); // Rollback the transaction on error
 		throw error(500, 'Internal server error: ' + JSON.stringify(err));
 	} finally {

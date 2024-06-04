@@ -8,12 +8,12 @@ import type { User } from '$lib/types';
 import { pool } from '$lib/server/database';
 
 //import env development or production
-if (import.meta.env.PROD) {
-	Sentry.init({
-		dsn: 'https://bd0b656d83362f80416a093a00c42a41@o4506914465447936.ingest.us.sentry.io/4506914478358528',
-		tracesSampleRate: 1
-	});
-}
+// if (import.meta.env.PROD) {
+Sentry.init({
+	dsn: 'https://bd0b656d83362f80416a093a00c42a41@o4506914465447936.ingest.us.sentry.io/4506914478358528',
+	tracesSampleRate: 1
+});
+// }
 
 export const handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }) => {
 	const sessionCookie = event.cookies.get('token');
@@ -80,6 +80,7 @@ export const handle = sequence(Sentry.sentryHandle(), (async ({ event, resolve }
 		event.locals.onboardingStatus = 'validated';
 		event.locals.onboardingRedirectLocation = '/konto';
 	} catch (error) {
+		Sentry.captureException(error);
 		event.cookies.delete('token', {
 			path: '/'
 		});

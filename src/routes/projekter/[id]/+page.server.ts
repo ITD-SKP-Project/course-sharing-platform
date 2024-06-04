@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-
+import * as Sentry from '@sentry/sveltekit';
 import { pool } from '$lib/server/database';
 import type { Project, ProjectAuthor, ProjectProfession, User, UserEssentials } from '$lib/types';
 import { error } from '@sveltejs/kit';
@@ -151,7 +151,10 @@ export const load = (async ({ locals, params }) => {
 		console.error(err);
 		if (errorType === 404) {
 			throw error(404, 'Der blev ikke fundet nogle projekter.');
-		} else throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} else {
+			Sentry.captureException(err);
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		}
 	} finally {
 		client.release();
 	}
@@ -168,6 +171,7 @@ export const actions = {
 			);
 			return { users: users };
 		} catch (err) {
+			Sentry.captureException(err);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();
