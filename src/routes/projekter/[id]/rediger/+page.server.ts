@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 
 import { pool } from '$lib/server/database';
-
+import * as Sentry from '@sentry/sveltekit';
 import { validateCustomArray } from '$lib/index';
 import { validateCustomObject } from '$lib/zodSchemas';
 import { validateCustomFileArray } from '$lib/index';
@@ -148,7 +148,10 @@ export const load = (async ({ locals, params }) => {
 		if (errorType == 403)
 			return error(403, 'Du har ikke rettigheder til at ændre på dette projekt.');
 		else if (errorType == 404) throw error(404, 'Der blev ikke fundet nogle projekter.');
-		else throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		else {
+			Sentry.captureException(err);
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		}
 	} finally {
 		client.release();
 	}
@@ -165,6 +168,7 @@ export const actions = {
 			);
 			return { users: users };
 		} catch (err) {
+			Sentry.captureException(err);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();
@@ -200,6 +204,7 @@ export const actions = {
 				const { fieldErrors: errors } = err.flatten();
 				return { validationErrors: errors, formData: formData };
 			} else {
+				Sentry.captureException(err);
 				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 			}
 		} finally {
@@ -236,6 +241,7 @@ export const actions = {
 				const { fieldErrors: errors } = err.flatten();
 				return { validationErrors: errors, formData: formData };
 			} else {
+				Sentry.captureException(err);
 				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 			}
 		} finally {
@@ -272,6 +278,7 @@ export const actions = {
 				const { fieldErrors: errors } = err.flatten();
 				return { validationErrors: errors, formData: formData };
 			} else {
+				Sentry.captureException(err);
 				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 			}
 		} finally {
@@ -314,6 +321,7 @@ export const actions = {
 			]);
 			return { successMessage: 'Fagområder blev opdateret', formData: formData };
 		} catch (err) {
+			Sentry.captureException(err);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();
@@ -356,6 +364,7 @@ export const actions = {
 			]);
 			return { successMessage: 'Fagområder blev opdateret', formData: formData };
 		} catch (err) {
+			Sentry.captureException(err);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();
@@ -426,6 +435,7 @@ export const actions = {
 				const { fieldErrors: errors } = err.flatten();
 				return { validationErrors: errors, formData: formData };
 			}
+			Sentry.captureException(err);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();
@@ -486,6 +496,7 @@ export const actions = {
 				return { successMessage: 'Filer blev opdateret' };
 			}
 		} catch (err) {
+			Sentry.captureException(err);
 			console.error(err);
 			await client.query<Project>(`ROLLBACK`);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
@@ -540,6 +551,7 @@ export const actions = {
 			await client.query<Project>(`COMMIT`);
 			return { successMessage: 'Filer blev opdateret', formData: formData };
 		} catch (err) {
+			Sentry.captureException(err);
 			console.error(err);
 			await client.query<Project>(`ROLLBACK`);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
@@ -578,6 +590,7 @@ export const actions = {
 				const { fieldErrors: errors } = err.flatten();
 				return { validationErrors: errors, formData: formData };
 			} else {
+				Sentry.captureException(err);
 				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 			}
 		} finally {
@@ -619,6 +632,7 @@ export const actions = {
 				const { fieldErrors: errors } = err.flatten();
 				return { validationErrors: errors, formData: formData };
 			} else {
+				Sentry.captureException(err);
 				throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 			}
 		} finally {
