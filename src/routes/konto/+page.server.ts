@@ -101,13 +101,13 @@ const updateNameSchema = z.object({
 		.min(2, {
 			message: 'Fornavn skal være på mindst 2 tegn.'
 		})
-		.max(64, { message: 'Fornavn skal være længere end 64 tegn.' }),
+		.max(250, { message: 'Fornavn skal være længere end 250 tegn.' }),
 	lastname: z
 		.string({ required_error: 'Efternavn mangler at blive udfyldt.' })
 		.min(2, {
 			message: 'Efternavn skal være på mindst 2 tegn.'
 		})
-		.max(64, { message: 'Efternavn skal være længere end 64 tegn.' })
+		.max(250, { message: 'Efternavn skal være længere end 250 tegn.' })
 });
 const updatePasswordSchema = z
 	.object({
@@ -124,15 +124,20 @@ const updatePasswordSchema = z
 		previousPassword: z
 			.string({ required_error: 'Nuværende adgangskode mangler at blive udfyldt.' })
 			.min(8, { message: 'Adgangskode skal være mindst 8 tegn.' })
-			.max(64, { message: 'Adgangskode må ikke være mere end 63 tegn.' })
+			.max(64, { message: 'Adgangskode må ikke være mere end 64 tegn.' })
 			.trim()
 	})
-	.superRefine(({ password, confirmPassword, previousPassword }, ctx) => {
+	.superRefine(({ password, confirmPassword }, ctx) => {
 		if (password !== confirmPassword) {
 			ctx.addIssue({
 				code: 'custom',
 				message: 'Adgangskoderne skal være ens.',
 				path: ['confirmPassword']
+			});
+			ctx.addIssue({
+				code: 'custom',
+				message: 'Adgangskoderne skal være ens.',
+				path: ['password']
 			});
 		}
 	});

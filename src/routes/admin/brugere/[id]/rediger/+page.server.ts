@@ -51,8 +51,14 @@ export const load = (async ({ params, locals }) => {
 }) satisfies PageServerLoad;
 
 const updateUserSchema = z.object({
-	firstname: z.string().min(1, { message: 'Fornavn skal udfyldes' }),
-	lastname: z.string().min(1, { message: 'Efternavn skal udfyldes' }),
+	firstname: z
+		.string()
+		.min(1, { message: 'Fornavn skal udfyldes' })
+		.max(250, 'Fornavn kan ikke være længere end 250 tegn'),
+	lastname: z
+		.string()
+		.min(1, { message: 'Efternavn skal udfyldes' })
+		.max(250, 'Fornavn kan ikke være længere end 250 tegn'),
 	authority_level: z.enum(['1', '2', '3', '4'])
 });
 

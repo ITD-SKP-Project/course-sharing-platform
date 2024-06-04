@@ -71,6 +71,14 @@ export const POST: RequestHandler = async ({ request, locals, params }) => {
 	}
 
 	const { message } = (await request.json()) as ProjectComment;
+
+	if (!message) {
+		return error(400, 'Der mangler information i kommentaren.');
+	}
+	if (message.length > 250) {
+		return error(400, 'Kommentaren er for lang.');
+	}
+
 	console.log('🚀 ~ constPOST:RequestHandler= ~ message:', message);
 
 	const client = await pool.connect();

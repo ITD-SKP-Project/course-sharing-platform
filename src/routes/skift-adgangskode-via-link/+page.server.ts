@@ -38,12 +38,12 @@ const registerSchema = z
 		password: z
 			.string({ required_error: 'Adgangskode mangler.' })
 			.min(8, { message: 'Adgangskode skal være mindst 8 tegn.' })
-			.max(64, { message: 'Adgangskode må ikke være mere end 63 tegn.' })
+			.max(64, { message: 'Adgangskode må ikke være mere end 64 tegn.' })
 			.trim(),
 		passwordConfirm: z
 			.string({ required_error: 'Password is required' })
 			.min(8, { message: 'Adgangskode skal være mindst 8 tegn.' })
-			.max(64, { message: 'Adgangskode må ikke være mere end 63 tegn.' })
+			.max(64, { message: 'Adgangskode må ikke være mere end 64 tegn.' })
 			.trim()
 	})
 	.superRefine(({ passwordConfirm, password }, ctx) => {

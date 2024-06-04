@@ -16,11 +16,12 @@ import { pool } from '$lib/server/database';
 const registerSchema = z.object({
 	email: z
 		.string({ required_error: 'Email mangler at blive udfyldt.' })
-		.email({ message: 'Indtast venligst en rigtig email adresse.' }),
+		.email({ message: 'Indtast venligst en rigtig email adresse.' })
+		.max(250, 'Email må ikke være mere end 250 tegn.'),
 	password: z
 		.string({ required_error: 'Password is required' })
 		.min(8, { message: 'Adgangskode skal være mindst 8 tegn.' })
-		.max(64, { message: 'Adgangskode må ikke være mere end 63 tegn.' })
+		.max(64, { message: 'Adgangskode må ikke være mere end 64 tegn.' })
 		.trim()
 });
 

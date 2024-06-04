@@ -49,6 +49,9 @@ export function validateCustomFileArray(files: any): { success: boolean; errors?
 }
 export function validateCustomArray(array: any): { success: boolean; errors?: any } {
 	let errors: any = {};
+	if (array.length > 5000) {
+		errors['array'] = 'Der er for mange tekst i dette felt.';
+	}
 
 	for (let [key, value] of array) {
 		if (value == '') {

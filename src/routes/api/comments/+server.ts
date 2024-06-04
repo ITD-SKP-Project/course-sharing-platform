@@ -18,6 +18,12 @@ export const POST: RequestHandler = async ({ request, locals }) => {
 		'🚀 ~ constPOST:RequestHandler= ~  { message, root_comment_id, answer_comment_id, project_id }:',
 		{ message, root_comment_id, answer_comment_id, project_id }
 	);
+	if (!message || !project_id) {
+		return error(400, 'Der mangler information i kommentaren.');
+	}
+	if (message.length > 250) {
+		return error(400, 'Kommentaren er for lang.');
+	}
 
 	const userId = locals.user?.id;
 

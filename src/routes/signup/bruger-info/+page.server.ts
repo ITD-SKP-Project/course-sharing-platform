@@ -16,11 +16,11 @@ const userInfoSchema = z.object({
 	firstname: z
 		.string({ required_error: 'Email mangler at blive udfyldt.' })
 		.min(2, { message: 'Fornavn skal være på mindst 2 tegn.' })
-		.max(64, { message: 'Fornavn må ikke være længere end 63 tegn.' }),
+		.max(250, { message: 'Fornavn må ikke være længere end 250 tegn.' }),
 	lastname: z
 		.string({ required_error: 'Adgangskode mangler at blive udfyldt.' })
 		.min(2, { message: 'Efternavn skal være på mindst 2 tegn.' })
-		.max(64, { message: 'Efternavn må ikke være længere end 63 tegn.' }),
+		.max(250, { message: 'Efternavn må ikke være længere end 250 tegn.' }),
 	context: z
 		.string({ required_error: 'Du mangler at udfylde beskrivelsen.' })
 		.min(50, { message: 'Beskrivelsen skal være på mindst 50 tegn.' })

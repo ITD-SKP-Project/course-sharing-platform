@@ -185,7 +185,7 @@ export const actions = {
 	} | void> => {
 		let formData = Object.fromEntries(await request.formData());
 		const titleSchema = z.object({
-			title: z.string().min(1, 'Title er påkrævet.')
+			title: z.string().min(1, 'Title er påkrævet.').max(50, 'Maks 50 tegn')
 		});
 		type titleSchemaType = z.infer<typeof titleSchema>;
 
@@ -222,7 +222,7 @@ export const actions = {
 	} | void> => {
 		let formData = Object.fromEntries(await request.formData());
 		const titleSchema = z.object({
-			description: z.string().min(1, 'Beskrivelse er påkrævet.')
+			description: z.string().min(1, 'Beskrivelse er påkrævet.').max(9999, 'Maks 9999 tegn')
 		});
 		type titleSchemaType = z.infer<typeof titleSchema>;
 
@@ -259,7 +259,7 @@ export const actions = {
 	} | void> => {
 		let formData = Object.fromEntries(await request.formData());
 		const titleSchema = z.object({
-			notes: z.string().min(1, 'Beskrivelse er påkrævet.')
+			notes: z.string().min(1, 'Beskrivelse er påkrævet.').max(9999, 'Maks 9999 tegn')
 		});
 		type titleSchemaType = z.infer<typeof titleSchema>;
 
@@ -381,11 +381,20 @@ export const actions = {
 	} | void> => {
 		let professionsSchema = z.object({
 			it_supporter: z.enum(['on']).optional(),
-			it_supporter_skill_level: z.string().optional(),
+			it_supporter_skill_level: z
+				.string()
+				.max(50, 'Niveau må ikke være mere end 50 tegn.')
+				.optional(),
 			programmering: z.enum(['on']).optional(),
-			programmering_skill_level: z.string().optional(),
+			programmering_skill_level: z
+				.string()
+				.max(50, 'Niveau må ikke være mere end 50 tegn.')
+				.optional(),
 			infrastruktur: z.enum(['on']).optional(),
-			infrastruktur_skill_level: z.string().optional()
+			infrastruktur_skill_level: z
+				.string()
+				.max(50, 'Niveau må ikke være mere end 50 tegn.')
+				.optional()
 		});
 		let formData = Object.fromEntries(await request.formData());
 
@@ -571,7 +580,7 @@ export const actions = {
 	} | void> => {
 		let formData = Object.fromEntries(await request.formData());
 		const titleSchema = z.object({
-			course_length: z.string().min(1, 'Projekt tidsforbrug er påkrævet.')
+			course_length: z.string().min(1, 'Projekt tidsforbrug er påkrævet.').max(50, 'Maks 50 tegn')
 		});
 		type titleSchemaType = z.infer<typeof titleSchema>;
 

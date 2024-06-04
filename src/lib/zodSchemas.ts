@@ -77,23 +77,27 @@ export const ProjectAuthorsSchema = z.array(
 		})
 		.optional()
 );
+
 export const ProjectSchema = z.object({
-	title: z.string().min(1, 'Title er påkrævet.'),
+	title: z.string().min(1, 'Title er påkrævet.').max(50, 'Title må ikke være mere end 50 tegn.'),
 	description: z
 		.string({ required_error: 'Beskrivelsen er påkrævet.' })
 		.min(1, 'Beskrivelsener påkrævet.')
-		.max(500, 'Beskrivelse må ikke være mere end 500 tegn.'),
+		.max(9999, 'Beskrivelse må ikke være mere end 500 tegn.'),
 	project_root_id: z.number().optional(),
 	project_fork_id: z.number().optional(),
 	live: z.enum(['yes', 'no']),
-	notes: z.string().optional(),
+	notes: z.string().max(9999, 'Noter må ikke være mere end 500 tegn.').optional(),
 	it_supporter: z.enum(['on']).optional(),
-	it_supporter_skill_level: z.string().optional(),
+	it_supporter_skill_level: z.string().max(50, 'Niveau må ikke være mere end 50 tegn.').optional(),
 	programmering: z.enum(['on']).optional(),
-	programmering_skill_level: z.string().optional(),
+	programmering_skill_level: z.string().max(50, 'Niveau må ikke være mere end 50 tegn.').optional(),
 	infrastruktur: z.enum(['on']).optional(),
-	infrastruktur_skill_level: z.string().optional(),
-	course_length: z.string().min(1, 'Du skal skrive hvor lang tid projektet tager.')
+	infrastruktur_skill_level: z.string().max(50, 'Niveau må ikke være mere end 50 tegn.').optional(),
+	course_length: z
+		.string()
+		.min(1, 'Du skal skrive hvor lang tid projektet tager.')
+		.max(50, 'Course length må ikke være mere end 50 tegn.')
 });
 
 export function validateCustomObject(project: any): { success: boolean; errors?: any } {
