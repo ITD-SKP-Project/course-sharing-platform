@@ -18,7 +18,13 @@
 	import type { UserExludingPassword, User } from '$lib/types';
 	import * as AlertDialog from '$lib/components/ui/alert-dialog';
 	import { toast } from 'svelte-sonner';
+	import { onMount } from 'svelte';
+	import { on } from 'pg-pool';
 	let loaded = false;
+	onMount(() => {
+		loaded = true;
+		//
+	});
 
 	const table = createTable(readable(data), {
 		page: addPagination(),
@@ -176,6 +182,7 @@
 	const { hasNextPage, hasPreviousPage, pageIndex, pageSize, pageCount } = pluginStates.page;
 
 	const { filterValue } = pluginStates.filter;
+
 	const { selectedDataIds } = pluginStates.select;
 
 	table.data.subscribe((data) => data);
