@@ -71,25 +71,25 @@ export function formatCommentTimePosted(date: string | Date): string {
 
 	if (timeElapsed < 60000) {
 		// less than 1 minute
-		return Math.floor(timeElapsed / 1000) + 's';
+		return Math.floor(timeElapsed / 1000) + 's ek.';
 	} else if (timeElapsed < 3600000) {
 		// less than 1 hour
-		return Math.floor(timeElapsed / 60000) + 'min';
+		return Math.floor(timeElapsed / 60000) + ' min';
 	} else if (timeElapsed < 86400000) {
 		// less than 1 day
-		return Math.floor(timeElapsed / 3600000) + 't';
+		return Math.floor(timeElapsed / 3600000) + ' timer';
 	} else if (timeElapsed < 604800000) {
 		// less than 1 week
-		return Math.floor(timeElapsed / 86400000) + 'd';
+		return Math.floor(timeElapsed / 86400000) + ' dage';
 	} else if (timeElapsed < 2419200000) {
 		// less than 1 month
-		return Math.floor(timeElapsed / 604800000) + 'uger';
+		return Math.floor(timeElapsed / 604800000) + ' uger';
 	} else if (timeElapsed < 29030400000) {
 		// less than 1 year
-		return Math.floor(timeElapsed / 2419200000) + 'mdr';
+		return Math.floor(timeElapsed / 2419200000) + ' mdr';
 	} else {
 		// more than 1 year
-		return Math.floor(timeElapsed / 29030400000) + 'år';
+		return Math.floor(timeElapsed / 29030400000) + ' år';
 	}
 }
 export function sortComments(comments: ProjectComment[]): ProjectComment[] {

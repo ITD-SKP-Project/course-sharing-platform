@@ -7,7 +7,10 @@ import { pool } from '$lib/server/database';
 
 export const load = (async ({ locals, url }) => {
 	if (!locals.user) {
-		throw redirect(307, `/konto?redirect=${url.pathname}`);
+		throw redirect(307, `/login?redirect=${url.pathname}`);
+	}
+	if (locals.user.authority_level < 3) {
+		throw error(403, 'Du har ikke adgang til at se denne side.');
 	}
 
 	const client = await pool.connect();
