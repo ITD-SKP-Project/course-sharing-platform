@@ -43,15 +43,10 @@ To get the project up and running yourself, follow these steps:
 * run ```npm run dev```
 
 ## License
-<<<<<<< HEAD
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-=======
 This project is licensed under the MIT License - see the LICENSE.md file for details
 
 ## Created by
 **Kenni**
 > if you have any questions, please never contact me at this [number](tel:66118888).
 
-## Database diagram
-![Database diagram](
->>>>>>> 3a9218c (chore: Update README.md and .env.example files)
+
