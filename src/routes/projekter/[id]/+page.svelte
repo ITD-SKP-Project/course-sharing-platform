@@ -20,6 +20,10 @@
 	import DowdloadLink from '$lib/components/DowdloadLink.svelte';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { toast } from 'svelte-sonner';
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import * as AlertDialog from '$lib/components/ui/alert-dialog/index.js';
+
 	let loadingLike = false;
 	const likeProject = async () => {
 		if (!data.user) {
@@ -168,6 +172,45 @@
 		>
 			<Card.Header class="pb-4">
 				{#if data.user?.validated && project?.authors?.some((author) => author.user_id === data.user?.id)}
+					<AlertDialog.Root>
+						<AlertDialog.Trigger asChild let:builder>
+							<Button builders={[builder]} variant="destructive">Slet projekt</Button>
+						</AlertDialog.Trigger>
+						<AlertDialog.Content>
+							<AlertDialog.Header>
+								<AlertDialog.Title
+									>Er du sikker på at du vil slette dette projekt for evigt?</AlertDialog.Title
+								>
+								<AlertDialog.Description>
+									Projektet vil blive slettet for evigt og kan ikke gendannes. Udover projektet vil
+									alle kommentarer, likes og filer også blive slettet.
+								</AlertDialog.Description>
+							</AlertDialog.Header>
+							<AlertDialog.Footer>
+								<AlertDialog.Cancel>Cancel</AlertDialog.Cancel>
+								<form
+									use:enhance={() => {
+										return async ({ update }) => {
+											goto('/');
+										};
+									}}
+									class="flex w-full flex-col gap-2"
+									method="POST"
+									action="?/deleteProject"
+								>
+									<AlertDialog.Action asChild>
+										<Button
+											class="mb-2 border-2 border-background"
+											size="lg"
+											type="submit"
+											variant="destructive">Slet projekt</Button
+										>
+									</AlertDialog.Action>
+								</form>
+							</AlertDialog.Footer>
+						</AlertDialog.Content>
+					</AlertDialog.Root>
+
 					<Button href="/projekter/{project.id}/rediger" class="mb-2" size="lg" variant="secondary"
 						>Rediger projekt</Button
 					>

@@ -161,9 +161,7 @@ export const load = (async ({ locals, params }) => {
 }) satisfies PageServerLoad;
 
 export const actions = {
-	getUsers: async ({}): Promise<{
-		users?: User[];
-	} | void> => {
+	getUsers: async ({}): Promise<{ users?: User[] } | void> => {
 		const client = await pool.connect();
 		try {
 			const { rows: users } = await client.query(
@@ -172,6 +170,54 @@ export const actions = {
 			return { users: users };
 		} catch (err) {
 			Sentry.captureException(err);
+			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
+		} finally {
+			client.release();
+		}
+	},
+
+	deleteProject: async ({ locals, params }): Promise<void> => {
+		const client = await pool.connect();
+		try {
+			await client.query('BEGIN'); // Start transaction
+
+			const id = params.id;
+			if (!id) throw error(400, 'Der blev ikke givet et id.');
+			//check if id is a number
+			if (isNaN(+id)) throw error(400, "Id'et skal være et tal.");
+
+			//get project
+			const { rows: projects } = await client.query<Project>(
+				'SELECT * FROM projects WHERE id = $1',
+				[id]
+			);
+			if (!projects || projects.length == 0)
+				throw error(404, 'Der blev ikke fundet nogle projekter.');
+
+			//check if user is author of project
+			const { rows: authors } = await client.query<ProjectAuthor>(
+				'SELECT * FROM project_authors WHERE project_id = $1 AND user_id = $2',
+				[id, locals.user?.id]
+			);
+			if (authors.length == 0)
+				throw error(403, 'Du har ikke rettigheder til at slette dette projekt.');
+
+			//delete project
+			await client.query('DELETE FROM project_authors WHERE project_id = $1', [id]);
+			await client.query('DELETE FROM project_comments WHERE project_id = $1', [id]);
+			await client.query('DELETE FROM project_files WHERE project_id = $1', [id]);
+			await client.query('DELETE FROM project_likes WHERE project_id = $1', [id]);
+			await client.query('DELETE FROM project_professions WHERE project_id = $1', [id]);
+			await client.query('DELETE FROM projects WHERE id = $1', [id]);
+
+			await client.query('COMMIT'); // Commit transaction
+
+			console.log('Project deleted');
+			return;
+		} catch (err) {
+			await client.query('ROLLBACK'); // Rollback transaction
+			Sentry.captureException(err);
+			console.error(err);
 			throw error(500, 'Der skete en uventet fejl: ' + JSON.stringify(err));
 		} finally {
 			client.release();
